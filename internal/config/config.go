@@ -35,7 +35,16 @@ type StorageConfig struct {
 }
 
 type BotConfig struct {
-	Token string `yaml:"token"`
+	Token         string        `yaml:"token"`
+	WebhookURL    string        `yaml:"webhook"`
+	UpdatesConfig UpdatesConfig `yaml:"updates_config"`
+}
+
+type UpdatesConfig struct {
+	Offset         int      `yaml:"offset"`
+	Limit          int      `yaml:"limit"`
+	Timeout        int      `yaml:"timeout"`
+	AllowedUpdates []string `yaml:"allowed_updates"`
 }
 
 type MISConfig struct {

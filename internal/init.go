@@ -6,14 +6,8 @@ import (
 	"net/http"
 	"sorkin_bot/internal/config"
 	"sorkin_bot/internal/controller"
-	v1 "sorkin_bot/internal/controller/v1"
-	"sorkin_bot/internal/domain/service/admin"
-	"sorkin_bot/internal/domain/service/referal"
-	"sorkin_bot/internal/domain/service/user"
-	"sorkin_bot/internal/domain/usercases/create_admin"
-	"sorkin_bot/internal/domain/usercases/create_referal"
-	"sorkin_bot/internal/domain/usercases/create_user"
 	"sorkin_bot/pkg/client/postgres"
+	"sorkin_bot/pkg/client/telegram"
 )
 
 type controllers struct {
@@ -21,24 +15,12 @@ type controllers struct {
 }
 
 type services struct {
-	userService    v1.UserService
-	referalService v1.ReferalService
-	adminService   admin.AdminService
 }
 
 type useCases struct {
-	createReferalUseCase referal.CreateReferalUseCase
-	createUserUseCase    user.CreateUserUseCase
-	createAdminUseCase   admin.CreateAdminUseCase
 }
 
 type storages struct {
-	adminReadStorage    admin.ReadAdminStorage
-	adminWriteStorage   create_admin.WriteRepo
-	referalReadStorage  referal.ReadReferalStorage
-	referalWriteStorage create_referal.WriteRepo
-	userReadStorage     user.ReadUserStorage
-	userWriteStorage    create_user.WriteRepo
 }
 
 type App struct {
@@ -48,6 +30,7 @@ type App struct {
 	services   services
 	storages   storages
 	useCases   useCases
+	bot        telegram.Bot
 	pgxClient  postgres.Client
 	server     *http.Server
 }
@@ -64,6 +47,7 @@ func NewApp(ctx context.Context) *App {
 		InitStorage(ctx).
 		InitUseCases(ctx).
 		InitServices(ctx).
+		InitTelegram(ctx).
 		InitControllers(ctx)
 
 	return app

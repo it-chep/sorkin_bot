@@ -9,7 +9,8 @@ create table if not exists tg_users
     username          varchar(255),
     registration_time timestamp,
     last_state        varchar(255),
-    phone             varchar(11)
+    phone             varchar(11),
+    language_code     varchar(5)
 );
 
 create table if not exists message_log
