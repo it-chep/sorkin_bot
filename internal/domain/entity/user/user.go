@@ -1,5 +1,7 @@
 package entity
 
+import "fmt"
+
 type User struct {
 	firstName    string
 	lastName     string
@@ -7,6 +9,7 @@ type User struct {
 	isBot        bool
 	username     string
 	languageCode string
+	state        fmt.State
 }
 
 func NewUser(tgId int64, firstName string, opts ...UserOpt) *User {
