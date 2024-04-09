@@ -22,3 +22,10 @@ func WithUsrLastName(lastName string) UserOpt {
 		return usr
 	}
 }
+
+func WithState(state string) UserOpt {
+	return func(usr *User) *User {
+		usr.state = state
+		return usr
+	}
+}

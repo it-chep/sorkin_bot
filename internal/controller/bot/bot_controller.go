@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +14,8 @@ import (
 	start2 "sorkin_bot/internal/controller/bot/callback_message"
 	"sorkin_bot/internal/controller/bot/start"
 	"sorkin_bot/internal/controller/dto/tg"
+	entity "sorkin_bot/internal/domain/entity/user"
+	"sorkin_bot/internal/domain/entity/user/state_machine"
 	"sorkin_bot/pkg/client/telegram"
 )
 
@@ -21,9 +24,15 @@ type TelegramWebhookController struct {
 	cfg    config.Config
 	logger *slog.Logger
 	bot    telegram.Bot
+	ufsm   *state_machine.UserStateMachine
 }
 
-func NewTelegramWebhookController(cfg config.Config, logger *slog.Logger, bot telegram.Bot) TelegramWebhookController {
+func NewTelegramWebhookController(
+	cfg config.Config,
+	logger *slog.Logger,
+	bot telegram.Bot,
+	ufsm *state_machine.UserStateMachine,
+) TelegramWebhookController {
 	router := gin.New()
 	router.Use(gin.Recovery())
 
@@ -32,6 +41,7 @@ func NewTelegramWebhookController(cfg config.Config, logger *slog.Logger, bot te
 		cfg:    cfg,
 		logger: logger,
 		bot:    bot,
+		ufsm:   ufsm,
 	}
 }
 
@@ -79,6 +89,8 @@ func (t TelegramWebhookController) BotWebhookHandler(c *gin.Context) {
 func (t TelegramWebhookController) ForkCommands(update tgbotapi.Update) error {
 	tgUser := t.getUserFromWebhook(update)
 	tgMessage := t.getMessageFromWebhook(update)
+	ctx := context.WithValue(context.Background(), "userID", update.Message.From.ID)
+
 	switch update.Message.Command() {
 	case "start":
 		command := start.NewStartBotCommand(t.logger, t.bot, tgUser)
@@ -140,9 +152,16 @@ func (t TelegramWebhookController) ForkCommands(update tgbotapi.Update) error {
 		}
 		return nil
 	case "change_language":
-		// service по работе с change_language
+		user := entity.NewUser(tgUser.TgID, tgUser.FirstName, entity.WithState("chooseLanguage"))
+		if user.GetState() == "chooseLanguage" {
+			if err := t.ufsm.FSM.Event(ctx, "chooseLanguage"); err != nil {
+				_, errMsg := t.bot.Bot.Send(tgbotapi.NewMessage(update.FromChat().ID, "Cannot change language at this time."))
+				return errMsg
+			}
+			t.logger.Info(fmt.Sprintf("USER STATE %s", user.GetState()))
+		}
 
-		_, err := t.bot.Bot.Send(tgbotapi.NewMessage(update.FromChat().ID, "my_appointments"))
+		_, err := t.bot.Bot.Send(tgbotapi.NewMessage(update.FromChat().ID, "Language changed."))
 		if err != nil {
 			return err
 		}

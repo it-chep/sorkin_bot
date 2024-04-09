@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"sorkin_bot/internal/controller"
+	"sorkin_bot/internal/domain/entity/user/state_machine"
 	"sorkin_bot/pkg/client/postgres"
 	"sorkin_bot/pkg/client/telegram"
 	"time"
@@ -41,13 +42,18 @@ func (app *App) InitServices(ctx context.Context) *App {
 
 }
 
+func (app *App) InitFSM(ctx context.Context) *App {
+	app.ufsm = state_machine.NewUserStateMachine("start")
+	return app
+}
+
 func (app *App) InitTelegram(ctx context.Context) *App {
 	app.bot = *telegram.NewTelegramBot(*app.config)
 	return app
 }
 
 func (app *App) InitControllers(ctx context.Context) *App {
-	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot)
+	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot, app.ufsm)
 	app.controller.telegramWebhookController.InitController(ctx)
 
 	app.server = &http.Server{

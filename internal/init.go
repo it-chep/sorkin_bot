@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sorkin_bot/internal/config"
 	"sorkin_bot/internal/controller"
+	"sorkin_bot/internal/domain/entity/user/state_machine"
 	"sorkin_bot/pkg/client/postgres"
 	"sorkin_bot/pkg/client/telegram"
 )
@@ -27,6 +28,7 @@ type App struct {
 	logger     *slog.Logger
 	config     *config.Config
 	controller controllers
+	ufsm       *state_machine.UserStateMachine
 	services   services
 	storages   storages
 	useCases   useCases
@@ -45,6 +47,7 @@ func NewApp(ctx context.Context) *App {
 	app.InitLogger(ctx).
 		InitPgxConn(ctx).
 		InitStorage(ctx).
+		InitFSM(ctx).
 		InitUseCases(ctx).
 		InitServices(ctx).
 		InitTelegram(ctx).

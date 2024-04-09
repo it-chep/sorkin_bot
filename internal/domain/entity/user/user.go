@@ -1,7 +1,5 @@
 package entity
 
-import "fmt"
-
 type User struct {
 	firstName    string
 	lastName     string
@@ -9,7 +7,8 @@ type User struct {
 	isBot        bool
 	username     string
 	languageCode string
-	state        fmt.State
+	state        string
+	//fsm          state_machine.UserStateMachine
 }
 
 func NewUser(tgId int64, firstName string, opts ...UserOpt) *User {
@@ -42,6 +41,15 @@ func (usr *User) GetUsername() string {
 
 func (usr *User) GetLanguageCode() string {
 	return usr.languageCode
+}
+
+func (usr *User) GetState() string {
+	return usr.state
+}
+
+// SetState обновляет текущее состояние пользователя.
+func (usr *User) SetState(newState string) {
+	usr.state = newState
 }
 
 type Appointment struct {

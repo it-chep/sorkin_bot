@@ -31,7 +31,7 @@ func NewUserStateMachine(to string) *UserStateMachine {
 			{Name: "detailMyAppointment", Src: []string{"myAppointments"}, Dst: "detailMyAppointment"},
 		},
 		fsm.Callbacks{
-			"enter_chooseLanguage": func(_ context.Context, e *fsm.Event) {
+			"enter_chooseLanguage": func(ctx context.Context, e *fsm.Event) {
 				fmt.Println("Entered state: chooseLanguage")
 			},
 			"enter_chooseSpeciallity": func(_ context.Context, e *fsm.Event) {
