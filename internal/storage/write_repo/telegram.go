@@ -2,6 +2,7 @@ package write_repo
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	entity "sorkin_bot/internal/domain/entity/tg"
 	"sorkin_bot/pkg/client/postgres"
@@ -37,14 +38,22 @@ func (ws TelegramMessageStorage) CreateMessageLog(ctx context.Context, messageLo
 	return nil
 }
 
-func (ws TelegramMessageStorage) GetConditionByKeyword() {
-
+func (ws TelegramMessageStorage) CreateMessageCondition() {
+	op := "internal/storage/write_repo/CreateMessageCondition"
+	panic(fmt.Sprintf("%s method not described", op))
 }
 
-func (ws TelegramMessageStorage) GetMessageByCondition() {
-
+func (ws TelegramMessageStorage) CreateMessage() {
+	op := "internal/storage/write_repo/CreateMessage"
+	panic(fmt.Sprintf("%s method not described", op))
 }
 
-func (ws TelegramMessageStorage) GetButtonByMessageId() {
+func (ws TelegramMessageStorage) UpdateMessageCondition() {
+	op := "internal/storage/write_repo/UpdateMessageCondition"
+	panic(fmt.Sprintf("%s method not described", op))
+}
 
+func (ws TelegramMessageStorage) UpdateMessage() {
+	op := "internal/storage/write_repo/UpdateMessage"
+	panic(fmt.Sprintf("%s method not described", op))
 }
