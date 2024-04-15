@@ -7,7 +7,18 @@ type MessageLog struct {
 	tgMessageId     int64
 	systemMessageId int64
 	userId          int64
-	timestamp       time.Time
+}
+
+func (ml *MessageLog) GetTgMessageId() int64 {
+	return ml.tgMessageId
+}
+
+func (ml *MessageLog) GetSystemMessageId() int64 {
+	return ml.systemMessageId
+}
+
+func (ml *MessageLog) GetUserTgId() int64 {
+	return ml.userId
 }
 
 type MessageCondition struct {

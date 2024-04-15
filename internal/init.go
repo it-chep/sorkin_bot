@@ -7,6 +7,10 @@ import (
 	"sorkin_bot/internal/config"
 	"sorkin_bot/internal/controller"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
+	"sorkin_bot/internal/domain/services/user"
+	"sorkin_bot/internal/domain/usecases/create_user"
+	"sorkin_bot/internal/storage/read_repo"
+	"sorkin_bot/internal/storage/write_repo"
 	"sorkin_bot/pkg/client/postgres"
 	"sorkin_bot/pkg/client/telegram"
 )
@@ -16,12 +20,16 @@ type controllers struct {
 }
 
 type services struct {
+	userService user.UserService
 }
 
 type useCases struct {
+	createUserUserCase create_user.CreateUserUseCase
 }
 
 type storages struct {
+	readUserStorage  read_repo.UserStorage
+	writeUserStorage write_repo.UserStorage
 }
 
 type App struct {

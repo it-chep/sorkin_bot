@@ -12,3 +12,11 @@ type ReadUserStorage interface {
 type CreateUserUseCase interface {
 	Execute(ctx context.Context, user entity.User) (userId int64, err error)
 }
+
+type UpdateUserLanguageUseCase interface {
+	Execute()
+}
+
+type UpdatePhoneLanguageUseCase interface {
+	Execute()
+}

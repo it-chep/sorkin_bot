@@ -16,15 +16,17 @@ import (
 	"sorkin_bot/internal/controller/dto/tg"
 	entity "sorkin_bot/internal/domain/entity/user"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
+	"sorkin_bot/internal/domain/services/user"
 	"sorkin_bot/pkg/client/telegram"
 )
 
 type TelegramWebhookController struct {
-	router *gin.Engine
-	cfg    config.Config
-	logger *slog.Logger
-	bot    telegram.Bot
-	ufsm   *state_machine.UserStateMachine
+	router      *gin.Engine
+	cfg         config.Config
+	logger      *slog.Logger
+	bot         telegram.Bot
+	ufsm        *state_machine.UserStateMachine
+	userService user.UserService
 }
 
 func NewTelegramWebhookController(
@@ -32,16 +34,18 @@ func NewTelegramWebhookController(
 	logger *slog.Logger,
 	bot telegram.Bot,
 	ufsm *state_machine.UserStateMachine,
+	userService user.UserService,
 ) TelegramWebhookController {
 	router := gin.New()
 	router.Use(gin.Recovery())
 
 	return TelegramWebhookController{
-		router: router,
-		cfg:    cfg,
-		logger: logger,
-		bot:    bot,
-		ufsm:   ufsm,
+		router:      router,
+		cfg:         cfg,
+		logger:      logger,
+		bot:         bot,
+		ufsm:        ufsm,
+		userService: userService,
 	}
 }
 
@@ -93,8 +97,9 @@ func (t TelegramWebhookController) ForkCommands(update tgbotapi.Update) error {
 
 	switch update.Message.Command() {
 	case "start":
-		command := start.NewStartBotCommand(t.logger, t.bot, tgUser)
-		command.Execute(tgMessage)
+		t.logger.Info("start command was called")
+		command := start.NewStartBotCommand(t.logger, t.bot, tgUser, t.userService)
+		command.Execute(ctx, tgMessage)
 	case "help":
 		// service по работе с help
 

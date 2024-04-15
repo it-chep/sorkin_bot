@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	botapi "sorkin_bot/internal/controller/bot"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
+	"sorkin_bot/internal/domain/services/user"
 	"sorkin_bot/pkg/client/telegram"
 
 	"log/slog"
@@ -17,13 +18,14 @@ type RestController struct {
 	cfg              config.Config
 	logger           *slog.Logger
 	botApiController botapi.TelegramWebhookController
+	userService      user.UserService
 }
 
-func NewRestController(cfg config.Config, logger *slog.Logger, bot telegram.Bot, ufsm *state_machine.UserStateMachine) *RestController {
+func NewRestController(cfg config.Config, logger *slog.Logger, bot telegram.Bot, ufsm *state_machine.UserStateMachine, userService user.UserService) *RestController {
 	router := gin.New()
 	router.Use(gin.Recovery())
 
-	botApiController := botapi.NewTelegramWebhookController(cfg, logger, bot, ufsm)
+	botApiController := botapi.NewTelegramWebhookController(cfg, logger, bot, ufsm, userService)
 
 	return &RestController{
 		router:           router,

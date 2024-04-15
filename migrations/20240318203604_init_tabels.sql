@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 create table if not exists tg_users
 (
-    id                bigint,
+    id                bigserial,
     tg_id             bigint,
     name              varchar(255),
     surname           varchar(255),
@@ -15,7 +15,7 @@ create table if not exists tg_users
 
 create table if not exists message_log
 (
-    id                bigint,
+    id                bigserial,
     tg_message_id     bigint,
     system_message_id bigint,
     user_tg_id        bigint,
@@ -24,7 +24,7 @@ create table if not exists message_log
 
 create table if not exists message
 (
-    id         bigint,
+    id         bigserial,
     name       text,
     ru_text    text,
     eng_text   text,
@@ -34,7 +34,7 @@ create table if not exists message
 
 create table if not exists message_condition
 (
-    id bigint
+    id bigserial
 );
 
 -- +goose StatementEnd
