@@ -38,9 +38,9 @@ func (ws UserStorage) CreateUser(ctx context.Context, user entity.User) (userID 
 }
 
 func (ws UserStorage) UpdateUserLanguageCode(ctx context.Context, user entity.User, newLanguage string) (err error) {
-	op := "internal/storage/write_repo/UpdateUserState"
+	op := "internal/storage/write_repo/UpdateUserLanguageCode"
 	q := `
-		update tg_users set last_state = $1 where tg_id = $2;
+		update tg_users set language_code = $1 where tg_id = $2;
 	`
 	ws.logger.Info(op)
 	err = ws.client.QueryRow(ctx, q, newLanguage, user.GetTgId()).Scan()
@@ -59,6 +59,19 @@ func (ws UserStorage) UpdateUserState(ctx context.Context, user entity.User) (er
 	ws.logger.Info(op)
 
 	err = ws.client.QueryRow(ctx, q, user.GetState(), user.GetTgId()).Scan()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ws UserStorage) UpdateUserPhone(ctx context.Context, user entity.User, phone string) (err error) {
+	op := "internal/storage/write_repo/UpdateUserPhone"
+	q := `
+		update tg_users set phone = $1 where tg_id = $2;
+	`
+	ws.logger.Info(op)
+	err = ws.client.QueryRow(ctx, q, phone, user.GetTgId()).Scan()
 	if err != nil {
 		return err
 	}
