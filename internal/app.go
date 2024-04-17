@@ -9,6 +9,7 @@ import (
 	"sorkin_bot/internal/controller"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
 	"sorkin_bot/internal/domain/services/user"
+	"sorkin_bot/internal/domain/usecases/changeLanguage"
 	"sorkin_bot/internal/domain/usecases/create_user"
 	"sorkin_bot/internal/storage/read_repo"
 	"sorkin_bot/internal/storage/write_repo"
@@ -41,12 +42,16 @@ func (app *App) InitStorage(ctx context.Context) *App {
 
 func (app *App) InitUseCases(ctx context.Context) *App {
 	app.useCases.createUserUserCase = create_user.NewCreateUserUseCase(app.storages.writeUserStorage, app.logger)
+	app.useCases.changeLanguageUseCase = changeLanguage.NewChangeLanguageUseCase(app.storages.writeUserStorage, app.logger)
 	return app
 }
 
 func (app *App) InitServices(ctx context.Context) *App {
 	app.services.userService = user.NewUserService(
-		app.useCases.createUserUserCase, app.storages.readUserStorage, app.logger,
+		app.useCases.createUserUserCase,
+		app.useCases.changeLanguageUseCase,
+		app.storages.readUserStorage,
+		app.logger,
 	)
 	return app
 

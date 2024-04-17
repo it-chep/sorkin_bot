@@ -13,6 +13,10 @@ type CreateUserUseCase interface {
 	Execute(ctx context.Context, user entity.User) (userId int64, err error)
 }
 
+type ChangeLanguageUseCase interface {
+	Execute(ctx context.Context, user entity.User, languageCode string) (err error)
+}
+
 type UpdateUserLanguageUseCase interface {
 	Execute()
 }

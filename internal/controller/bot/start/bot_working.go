@@ -28,23 +28,26 @@ func NewStartBotCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserD
 
 // Execute место связи telegram и бизнес логи
 func (c *StartBotCommand) Execute(ctx context.Context, message tg.MessageDTO) {
-	c.logger.Info("start executing start command")
+	user, err := c.userService.RegisterNewUser(ctx, c.tgUser)
+	var msg tgbotapi.MessageConfig
 
-	_, err := c.userService.RegisterNewUser(ctx, c.tgUser)
 	if err != nil {
 		return
 	}
-	c.logger.Info("start executing start command")
 
-	var keyboard = tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("🇬🇧 EN", "EN"),
-			tgbotapi.NewInlineKeyboardButtonData("🇷🇺 RU", "RU"),
-		),
-	)
+	if state := user.GetState(); state == "" {
+		var keyboard = tgbotapi.NewInlineKeyboardMarkup(
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData("🇬🇧 EN", "EN"),
+				tgbotapi.NewInlineKeyboardButtonData("🇷🇺 RU", "RU"),
+			),
+		)
 
-	msg := tgbotapi.NewMessage(c.tgUser.TgID, "Before you start using the bot, please select a language")
-	msg.ReplyMarkup = keyboard
+		msg = tgbotapi.NewMessage(c.tgUser.TgID, "Before you start using the bot, please select a language")
+		msg.ReplyMarkup = keyboard
+	} else {
+		msg = tgbotapi.NewMessage(c.tgUser.TgID, "Start message")
+	}
 
 	_, err = c.bot.Bot.Send(msg)
 	if err != nil {

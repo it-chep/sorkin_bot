@@ -8,6 +8,7 @@ import (
 	"sorkin_bot/internal/controller"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
 	"sorkin_bot/internal/domain/services/user"
+	"sorkin_bot/internal/domain/usecases/changeLanguage"
 	"sorkin_bot/internal/domain/usecases/create_user"
 	"sorkin_bot/internal/storage/read_repo"
 	"sorkin_bot/internal/storage/write_repo"
@@ -24,7 +25,8 @@ type services struct {
 }
 
 type useCases struct {
-	createUserUserCase create_user.CreateUserUseCase
+	createUserUserCase    create_user.CreateUserUseCase
+	changeLanguageUseCase changeLanguage.ChangeLanguageUseCase
 }
 
 type storages struct {

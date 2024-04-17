@@ -2,6 +2,7 @@ package write_repo
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	entity "sorkin_bot/internal/domain/entity/user"
 	"sorkin_bot/pkg/client/postgres"
@@ -37,14 +38,15 @@ func (ws UserStorage) CreateUser(ctx context.Context, user entity.User) (userID 
 	return userID, nil
 }
 
-func (ws UserStorage) UpdateUserLanguageCode(ctx context.Context, user entity.User, newLanguage string) (err error) {
+func (ws UserStorage) UpdateUserLanguageCode(ctx context.Context, user entity.User, languageCode string) (err error) {
 	op := "internal/storage/write_repo/UpdateUserLanguageCode"
 	q := `
 		update tg_users set language_code = $1 where tg_id = $2;
 	`
 	ws.logger.Info(op)
-	err = ws.client.QueryRow(ctx, q, newLanguage, user.GetTgId()).Scan()
+	_, err = ws.client.Exec(ctx, q, languageCode, user.GetTgId())
 	if err != nil {
+		ws.logger.Error(fmt.Sprintf("%s op %s", err, op))
 		return err
 	}
 	return nil

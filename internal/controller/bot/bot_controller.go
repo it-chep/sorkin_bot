@@ -193,11 +193,12 @@ func (t TelegramWebhookController) ForkMessages(update tgbotapi.Update) error {
 }
 
 func (t TelegramWebhookController) ForkCallbacks(update tgbotapi.Update) error {
+	ctx := context.TODO()
 	tgUser := t.getUserFromWebhook(update)
 	callbackData := update.CallbackData()
 	tgMessage := t.getMessageFromWebhook(update)
-	callback := start2.NewCallbackBot(t.logger, t.bot, tgUser)
-	callback.Execute(tgMessage, callbackData)
+	callback := start2.NewCallbackBot(t.logger, t.bot, tgUser, t.userService)
+	callback.Execute(ctx, tgMessage, callbackData)
 	return errors.New("no callbacks yet")
 }
 
