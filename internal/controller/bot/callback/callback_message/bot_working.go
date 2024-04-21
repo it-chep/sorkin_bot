@@ -34,7 +34,7 @@ func NewCallbackBot(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, 
 // Execute место связи telegram и бизнес логи
 func (c *CallbackBotMessage) Execute(ctx context.Context, message tg.MessageDTO, callbackData string) {
 	var msg tgbotapi.MessageConfig
-	if languagesMap[callbackData] {
+	if _, ok := languagesMap[callbackData]; ok {
 		_, err := c.userService.ChangeLanguage(ctx, c.tgUser, callbackData)
 		if err != nil {
 			return

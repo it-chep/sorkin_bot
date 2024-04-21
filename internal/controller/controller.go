@@ -21,11 +21,11 @@ type RestController struct {
 	userService      user.UserService
 }
 
-func NewRestController(cfg config.Config, logger *slog.Logger, bot telegram.Bot, ufsm *state_machine.UserStateMachine, userService user.UserService) *RestController {
+func NewRestController(cfg config.Config, logger *slog.Logger, bot telegram.Bot, machine *state_machine.UserStateMachine, userService user.UserService) *RestController {
 	router := gin.New()
 	router.Use(gin.Recovery())
 
-	botApiController := botapi.NewTelegramWebhookController(cfg, logger, bot, ufsm, userService)
+	botApiController := botapi.NewTelegramWebhookController(cfg, logger, bot, machine, userService)
 
 	return &RestController{
 		router:           router,

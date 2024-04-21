@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/looplab/fsm"
+	entity "sorkin_bot/internal/domain/entity/user"
 )
 
 type UserStateMachine struct {
@@ -12,10 +13,10 @@ type UserStateMachine struct {
 }
 
 func NewUserStateMachine(to string) *UserStateMachine {
-	ufsm := &UserStateMachine{
+	machine := &UserStateMachine{
 		To: to,
 	}
-	ufsm.FSM = fsm.NewFSM(
+	machine.FSM = fsm.NewFSM(
 		"start",
 		fsm.Events{
 			{Name: "chooseLanguage", Src: []string{"start"}, Dst: "chooseLanguage"},
@@ -67,9 +68,13 @@ func NewUserStateMachine(to string) *UserStateMachine {
 		},
 	)
 
-	return ufsm
+	return machine
 }
 
-func (ufsm *UserStateMachine) enterState(e *fsm.Event) {
-	fmt.Printf("The door to %s is %s\n", ufsm.To, e.Dst)
+func (machine *UserStateMachine) enterState(e *fsm.Event) {
+	fmt.Printf("The door to %s is %s\n", machine.To, e.Dst)
+}
+
+func (machine *UserStateMachine) SetState(user entity.User, to string) {
+	user.SetState(to)
 }

@@ -58,7 +58,7 @@ func (app *App) InitServices(ctx context.Context) *App {
 }
 
 func (app *App) InitFSM(ctx context.Context) *App {
-	app.ufsm = state_machine.NewUserStateMachine("start")
+	app.machine = state_machine.NewUserStateMachine("start")
 	return app
 }
 
@@ -68,7 +68,7 @@ func (app *App) InitTelegram(ctx context.Context) *App {
 }
 
 func (app *App) InitControllers(ctx context.Context) *App {
-	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot, app.ufsm, app.services.userService)
+	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot, app.machine, app.services.userService)
 	app.controller.telegramWebhookController.InitController(ctx)
 
 	app.server = &http.Server{

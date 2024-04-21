@@ -2,13 +2,15 @@ package read_repo
 
 import (
 	"context"
-	"errors"
-	"github.com/jackc/pgx/v5"
+	"fmt"
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"log/slog"
 	entity "sorkin_bot/internal/domain/entity/user"
 	"sorkin_bot/internal/storage/dao"
 	"sorkin_bot/pkg/client/postgres"
 )
+
+// Todo use scany
 
 type UserStorage struct {
 	client postgres.Client
@@ -22,25 +24,15 @@ func NewUserStorage(client postgres.Client, logger *slog.Logger) UserStorage {
 	}
 }
 
-func (u UserStorage) GetUserByTgID(ctx context.Context, userID int64) (user entity.User, err error) {
+func (rs UserStorage) GetUserByTgID(ctx context.Context, userID int64) (user entity.User, err error) {
+	op := "internal/storage/read_repo/users/GetUserByTgID"
 	q := "select tg_id, name, surname, username, last_state, phone, language_code from tg_users where tg_id = $1"
 
 	var userDAO dao.UserDAO
-
-	err = u.client.QueryRow(ctx, q, userID).Scan(
-		&userDAO.TgId,
-		&userDAO.FirstName,
-		&userDAO.LastName,
-		&userDAO.Username,
-		&userDAO.LastState,
-		&userDAO.Phone,
-		&userDAO.LanguageCode,
-	)
-
+	rs.logger.Info(op)
+	err = pgxscan.Get(ctx, rs.client, &userDAO, q, userID)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return entity.User{}, nil
-		}
+		rs.logger.Error(fmt.Sprintf("Error while scanning row: %s", err))
 		return entity.User{}, err
 	}
 

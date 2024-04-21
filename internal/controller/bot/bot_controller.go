@@ -11,8 +11,8 @@ import (
 	"log/slog"
 	"net/http"
 	"sorkin_bot/internal/config"
-	start2 "sorkin_bot/internal/controller/bot/callback_message"
-	"sorkin_bot/internal/controller/bot/start"
+	start2 "sorkin_bot/internal/controller/bot/callback/callback_message"
+	"sorkin_bot/internal/controller/bot/commands/start"
 	"sorkin_bot/internal/controller/dto/tg"
 	entity "sorkin_bot/internal/domain/entity/user"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
@@ -25,7 +25,7 @@ type TelegramWebhookController struct {
 	cfg         config.Config
 	logger      *slog.Logger
 	bot         telegram.Bot
-	ufsm        *state_machine.UserStateMachine
+	machine     *state_machine.UserStateMachine
 	userService user.UserService
 }
 
@@ -33,7 +33,7 @@ func NewTelegramWebhookController(
 	cfg config.Config,
 	logger *slog.Logger,
 	bot telegram.Bot,
-	ufsm *state_machine.UserStateMachine,
+	machine *state_machine.UserStateMachine,
 	userService user.UserService,
 ) TelegramWebhookController {
 	router := gin.New()
@@ -44,7 +44,7 @@ func NewTelegramWebhookController(
 		cfg:         cfg,
 		logger:      logger,
 		bot:         bot,
-		ufsm:        ufsm,
+		machine:     machine,
 		userService: userService,
 	}
 }
@@ -159,7 +159,7 @@ func (t TelegramWebhookController) ForkCommands(update tgbotapi.Update) error {
 	case "change_language":
 		user := entity.NewUser(tgUser.TgID, tgUser.FirstName, entity.WithState("chooseLanguage"))
 		if user.GetState() == "chooseLanguage" {
-			if err := t.ufsm.FSM.Event(ctx, "chooseLanguage"); err != nil {
+			if err := t.machine.FSM.Event(ctx, "chooseLanguage"); err != nil {
 				_, errMsg := t.bot.Bot.Send(tgbotapi.NewMessage(update.FromChat().ID, "Cannot change language at this time."))
 				return errMsg
 			}

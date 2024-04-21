@@ -38,7 +38,7 @@ type App struct {
 	logger     *slog.Logger
 	config     *config.Config
 	controller controllers
-	ufsm       *state_machine.UserStateMachine
+	machine    *state_machine.UserStateMachine
 	services   services
 	storages   storages
 	useCases   useCases

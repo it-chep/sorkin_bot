@@ -7,4 +7,5 @@ import (
 
 type WriteRepo interface {
 	UpdateUserLanguageCode(ctx context.Context, user entity.User, languageCode string) (err error)
+	UpdateUserState(ctx context.Context, user entity.User) (err error)
 }

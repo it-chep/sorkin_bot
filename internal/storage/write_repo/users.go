@@ -24,12 +24,12 @@ func NewUserStorage(client postgres.Client, logger *slog.Logger) UserStorage {
 func (ws UserStorage) CreateUser(ctx context.Context, user entity.User) (userID int64, err error) {
 	op := "internal/storage/write_repo/CreateUser"
 	q := `
-		insert into tg_users (tg_id, name, surname, username, registration_time, last_state, phone, language_code) 
+		insert into tg_users (tg_id, name, surname, username, registration_time) 
 		values ($1, $2, $3, $4, $5, $6, $7, $8) returning id;
 	`
 	ws.logger.Info(op)
 	err = ws.client.QueryRow(
-		ctx, q, user.GetTgId(), user.GetFirstName(), user.GetLastName(), user.GetUsername(), time.Now(), nil, nil, nil,
+		ctx, q, user.GetTgId(), user.GetFirstName(), user.GetLastName(), user.GetUsername(), time.Now(),
 	).Scan(&userID)
 	if err != nil {
 		return -1, err
@@ -60,8 +60,9 @@ func (ws UserStorage) UpdateUserState(ctx context.Context, user entity.User) (er
 
 	ws.logger.Info(op)
 
-	err = ws.client.QueryRow(ctx, q, user.GetState(), user.GetTgId()).Scan()
+	_, err = ws.client.Exec(ctx, q, user.GetState(), user.GetTgId())
 	if err != nil {
+		ws.logger.Error(fmt.Sprintf("%s op %s", err, op))
 		return err
 	}
 	return nil
@@ -73,8 +74,9 @@ func (ws UserStorage) UpdateUserPhone(ctx context.Context, user entity.User, pho
 		update tg_users set phone = $1 where tg_id = $2;
 	`
 	ws.logger.Info(op)
-	err = ws.client.QueryRow(ctx, q, phone, user.GetTgId()).Scan()
+	_, err = ws.client.Exec(ctx, q, phone, user.GetTgId())
 	if err != nil {
+		ws.logger.Error(fmt.Sprintf("%s op %s", err, op))
 		return err
 	}
 	return nil

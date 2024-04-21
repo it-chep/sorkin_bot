@@ -19,5 +19,14 @@ func NewChangeLanguageUseCase(writeRepo WriteRepo, logger *slog.Logger) ChangeLa
 }
 
 func (uc ChangeLanguageUseCase) Execute(ctx context.Context, user entity.User, languageCode string) (err error) {
-	return uc.writeRepo.UpdateUserLanguageCode(ctx, user, languageCode)
+	// TODO менеджер транзакций от авито
+	err = uc.writeRepo.UpdateUserLanguageCode(ctx, user, languageCode)
+	if err != nil {
+		return err
+	}
+	err = uc.writeRepo.UpdateUserState(ctx, user)
+	if err != nil {
+		return err
+	}
+	return nil
 }

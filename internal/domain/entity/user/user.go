@@ -8,7 +8,6 @@ type User struct {
 	username     string
 	languageCode string
 	state        string
-	//fsm          state_machine.UserStateMachine
 }
 
 func NewUser(tgId int64, firstName string, opts ...UserOpt) *User {
