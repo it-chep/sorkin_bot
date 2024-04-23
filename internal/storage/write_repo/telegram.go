@@ -24,14 +24,17 @@ func NewTelegramMessageStorage(client postgres.Client, logger *slog.Logger) Tele
 func (ws TelegramMessageStorage) CreateMessageLog(ctx context.Context, messageLog entity.MessageLog) (err error) {
 	op := "internal/storage/write_repo/CreateMessageLog"
 	q := `
-		insert into message_log (tg_message_id, system_message_id, user_tg_id, time) 
+		insert into message_log (tg_message_id, text, user_tg_id, time) 
 		values ($1, $2, $3, $4);
 	`
 	ws.logger.Info(op)
-	err = ws.client.QueryRow(
-		ctx, q, messageLog.GetTgMessageId(), messageLog.GetSystemMessageId(), messageLog.GetUserTgId(), time.Now(),
-	).Scan()
+
+	_, err = ws.client.Exec(
+		ctx, q, messageLog.GetTgMessageId(), messageLog.GetMessageText(), messageLog.GetUserTgId(), time.Now(),
+	)
+
 	if err != nil {
+		ws.logger.Error(fmt.Sprintf("%s", err))
 		return err
 	}
 

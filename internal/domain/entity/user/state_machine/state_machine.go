@@ -2,79 +2,60 @@ package state_machine
 
 import (
 	"context"
-	"fmt"
 	"github.com/looplab/fsm"
 	entity "sorkin_bot/internal/domain/entity/user"
 )
 
 type UserStateMachine struct {
-	To  string
 	FSM *fsm.FSM
 }
 
-func NewUserStateMachine(to string) *UserStateMachine {
-	machine := &UserStateMachine{
-		To: to,
-	}
+func NewUserStateMachine() *UserStateMachine {
+	machine := &UserStateMachine{}
 	machine.FSM = fsm.NewFSM(
-		"start",
+		"",
 		fsm.Events{
-			{Name: "chooseLanguage", Src: []string{"start"}, Dst: "chooseLanguage"},
-			{Name: "chooseSpeciallity", Src: []string{"chooseLanguage"}, Dst: "chooseSpeciallity"},
-			{Name: "chooseClosestDoctor", Src: []string{"chooseSpeciallity"}, Dst: "chooseClosestDoctor"},
-			{Name: "fastAppointment", Src: []string{"chooseClosestDoctor"}, Dst: "fastAppointment"},
-			{Name: "chooseDoctor", Src: []string{"fastAppointment"}, Dst: "chooseDoctor"},
-			{Name: "chooseSchedule", Src: []string{"chooseDoctor"}, Dst: "chooseSchedule"},
+			{Name: "chooseLanguage", Src: []string{""}, Dst: "chooseLanguage"},
+			{Name: "chooseSpeciality", Src: []string{"", "chooseLanguage"}, Dst: "chooseSpeciality"},
+			{Name: "chooseClosestDoctor", Src: []string{"", "chooseSpeciallity"}, Dst: "chooseClosestDoctor"},
+			{Name: "fastAppointment", Src: []string{"", "chooseClosestDoctor"}, Dst: "fastAppointment"},
+			{Name: "chooseDoctor", Src: []string{"", "fastAppointment"}, Dst: "chooseDoctor"},
+			{Name: "chooseSchedule", Src: []string{"", "chooseDoctor"}, Dst: "chooseSchedule"},
 			{Name: "getPhone", Src: []string{"chooseSchedule"}, Dst: "getPhone"},
 			{Name: "getName", Src: []string{"getPhone"}, Dst: "getName"},
 			{Name: "createAppointment", Src: []string{"getName"}, Dst: "createAppointment"},
 			{Name: "chooseMyAppointments", Src: []string{"chooseSpeciallity"}, Dst: "myAppointments"},
 			{Name: "detailMyAppointment", Src: []string{"myAppointments"}, Dst: "detailMyAppointment"},
+			{Name: "cancelAppointment", Src: []string{""}, Dst: "cancelAppointment"},
 		},
 		fsm.Callbacks{
-			"enter_chooseLanguage": func(ctx context.Context, e *fsm.Event) {
-				fmt.Println("Entered state: chooseLanguage")
-			},
-			"enter_chooseSpeciallity": func(_ context.Context, e *fsm.Event) {
-				fmt.Println("Entered state: chooseSpeciallity")
-			},
-			"enter_chooseClosestDoctor": func(_ context.Context, e *fsm.Event) {
-				fmt.Println("Entered state: chooseClosestDoctor")
-			},
-			"enter_fastAppointment": func(_ context.Context, e *fsm.Event) {
-				fmt.Println("Entered state: fastAppointment")
-			},
-			"enter_chooseDoctor": func(_ context.Context, e *fsm.Event) {
-				fmt.Println("Entered state: chooseDoctor")
-			},
-			"enter_chooseSchedule": func(_ context.Context, e *fsm.Event) {
-				fmt.Println("Entered state: chooseSchedule")
-			},
-			"enter_getPhone": func(_ context.Context, e *fsm.Event) {
-				fmt.Println("Entered state: getPhone")
-			},
-			"enter_getName": func(_ context.Context, e *fsm.Event) {
-				fmt.Println("Entered state: getName")
-			},
-			"enter_createAppointment": func(_ context.Context, e *fsm.Event) {
-				fmt.Println("Entered state: createAppointment")
-			},
-			"enter_myAppointments": func(_ context.Context, e *fsm.Event) {
-				fmt.Println("Entered state: myAppointments")
-			},
-			"enter_detailMyAppointment": func(_ context.Context, e *fsm.Event) {
-				fmt.Println("Entered state: detailMyAppointment")
-			},
+			"enter_chooseLanguage":      enterChooseLanguage,
+			"enter_chooseSpeciality":    enterChooseSpeciality,
+			"enter_chooseClosestDoctor": enterChooseClosestDoctor,
+			"enter_fastAppointment":     enterFastAppointment,
+			"enter_chooseDoctor":        enterChooseDoctor,
+			"enter_chooseSchedule":      enterChooseSchedule,
+			"enter_getPhone":            enterGetPhone,
+			"enter_getName":             enterGetName,
+			"enter_createAppointment":   enterCreateAppointment,
+			"enter_myAppointments":      enterMyAppointments,
+			"enter_detailMyAppointment": enterDetailMyAppointment,
+			"enter_cancelAppointment":   enterCancelAppointment,
 		},
 	)
 
 	return machine
 }
 
-func (machine *UserStateMachine) enterState(e *fsm.Event) {
-	fmt.Printf("The door to %s is %s\n", machine.To, e.Dst)
-}
-
-func (machine *UserStateMachine) SetState(user entity.User, to string) {
+func (machine *UserStateMachine) SetState(user entity.User, from, to string) {
 	user.SetState(to)
+
+	// todo проверить чтобы не брались чужие состояния
+
+	machine.FSM.SetState(from)
+	err := machine.FSM.Event(context.TODO(), to)
+	if err != nil {
+		return
+	}
+
 }

@@ -31,6 +31,7 @@ type StorageConfig struct {
 	User         string        `yaml:"user"`
 	Password     string        `yaml:"password"`
 	MaxRetry     int           `yaml:"max_retry"`
+	MaxConnects  int           `yaml:"max_connects"`
 	RetryTimeout time.Duration `yaml:"retry_timeout"`
 }
 

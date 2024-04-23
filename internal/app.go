@@ -8,9 +8,11 @@ import (
 	"os"
 	"sorkin_bot/internal/controller"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
+	"sorkin_bot/internal/domain/services/message"
 	"sorkin_bot/internal/domain/services/user"
-	"sorkin_bot/internal/domain/usecases/changeLanguage"
-	"sorkin_bot/internal/domain/usecases/create_user"
+	"sorkin_bot/internal/domain/usecases/bot /changeLanguage"
+	"sorkin_bot/internal/domain/usecases/bot /save_message_log"
+	"sorkin_bot/internal/domain/usecases/user/create_user"
 	"sorkin_bot/internal/storage/read_repo"
 	"sorkin_bot/internal/storage/write_repo"
 	"sorkin_bot/pkg/client/postgres"
@@ -36,13 +38,14 @@ func (app *App) InitPgxConn(ctx context.Context) *App {
 func (app *App) InitStorage(ctx context.Context) *App {
 	app.storages.writeUserStorage = write_repo.NewUserStorage(app.pgxClient, app.logger)
 	app.storages.readUserStorage = read_repo.NewUserStorage(app.pgxClient, app.logger)
-
+	app.storages.writeTelegramStorage = write_repo.NewTelegramMessageStorage(app.pgxClient, app.logger)
 	return app
 }
 
 func (app *App) InitUseCases(ctx context.Context) *App {
 	app.useCases.createUserUserCase = create_user.NewCreateUserUseCase(app.storages.writeUserStorage, app.logger)
 	app.useCases.changeLanguageUseCase = changeLanguage.NewChangeLanguageUseCase(app.storages.writeUserStorage, app.logger)
+	app.useCases.saveMessageUseCase = save_message_log.NewSaveMessageLogUseCase(app.storages.writeTelegramStorage, app.logger)
 	return app
 }
 
@@ -53,12 +56,16 @@ func (app *App) InitServices(ctx context.Context) *App {
 		app.storages.readUserStorage,
 		app.logger,
 	)
+	app.services.messageService = message.NewMessageService(
+		app.useCases.saveMessageUseCase,
+		app.logger,
+	)
 	return app
 
 }
 
-func (app *App) InitFSM(ctx context.Context) *App {
-	app.machine = state_machine.NewUserStateMachine("start")
+func (app *App) InitMachine(ctx context.Context) *App {
+	app.machine = state_machine.NewUserStateMachine()
 	return app
 }
 
@@ -68,7 +75,7 @@ func (app *App) InitTelegram(ctx context.Context) *App {
 }
 
 func (app *App) InitControllers(ctx context.Context) *App {
-	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot, app.machine, app.services.userService)
+	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot, app.machine, app.services.userService, app.services.messageService)
 	app.controller.telegramWebhookController.InitController(ctx)
 
 	app.server = &http.Server{

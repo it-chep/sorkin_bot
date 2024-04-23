@@ -3,18 +3,25 @@ package tg
 import "time"
 
 type MessageLog struct {
-	id              int64
-	tgMessageId     int64
-	systemMessageId int64
-	userId          int64
+	tgMessageId int64
+	messageText string
+	userId      int64
+}
+
+func NewMessageLog(tgMessageId, userId int64, messageText string) MessageLog {
+	return MessageLog{
+		tgMessageId: tgMessageId,
+		messageText: messageText,
+		userId:      userId,
+	}
 }
 
 func (ml *MessageLog) GetTgMessageId() int64 {
 	return ml.tgMessageId
 }
 
-func (ml *MessageLog) GetSystemMessageId() int64 {
-	return ml.systemMessageId
+func (ml *MessageLog) GetMessageText() string {
+	return ml.messageText
 }
 
 func (ml *MessageLog) GetUserTgId() int64 {

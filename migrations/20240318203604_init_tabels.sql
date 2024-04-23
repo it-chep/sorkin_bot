@@ -15,11 +15,11 @@ create table if not exists tg_users
 
 create table if not exists message_log
 (
-    id                bigserial,
-    tg_message_id     bigint,
-    system_message_id bigint,
-    user_tg_id        bigint,
-    time              timestamp
+    id            bigserial,
+    tg_message_id bigint,
+    text          text,
+    user_tg_id    bigint,
+    time          timestamp
 );
 
 create table if not exists message

@@ -6,6 +6,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
 	"sorkin_bot/internal/controller/dto/tg"
+	"sorkin_bot/internal/domain/services/message"
 	"sorkin_bot/internal/domain/services/user"
 	"sorkin_bot/pkg/client/telegram"
 )
@@ -16,18 +17,20 @@ var languagesMap = map[string]bool{
 }
 
 type CallbackBotMessage struct {
-	logger      *slog.Logger
-	bot         telegram.Bot
-	tgUser      tg.TgUserDTO
-	userService user.UserService
+	logger         *slog.Logger
+	bot            telegram.Bot
+	tgUser         tg.TgUserDTO
+	userService    user.UserService
+	messageService message.MessageService
 }
 
-func NewCallbackBot(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, userService user.UserService) CallbackBotMessage {
+func NewCallbackBot(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, userService user.UserService, messageService message.MessageService) CallbackBotMessage {
 	return CallbackBotMessage{
-		logger:      logger,
-		bot:         bot,
-		tgUser:      tgUser,
-		userService: userService,
+		logger:         logger,
+		bot:            bot,
+		tgUser:         tgUser,
+		userService:    userService,
+		messageService: messageService,
 	}
 }
 

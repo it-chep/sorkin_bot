@@ -7,9 +7,11 @@ import (
 	"sorkin_bot/internal/config"
 	"sorkin_bot/internal/controller"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
+	"sorkin_bot/internal/domain/services/message"
 	"sorkin_bot/internal/domain/services/user"
-	"sorkin_bot/internal/domain/usecases/changeLanguage"
-	"sorkin_bot/internal/domain/usecases/create_user"
+	"sorkin_bot/internal/domain/usecases/bot /changeLanguage"
+	"sorkin_bot/internal/domain/usecases/bot /save_message_log"
+	"sorkin_bot/internal/domain/usecases/user/create_user"
 	"sorkin_bot/internal/storage/read_repo"
 	"sorkin_bot/internal/storage/write_repo"
 	"sorkin_bot/pkg/client/postgres"
@@ -21,17 +23,20 @@ type controllers struct {
 }
 
 type services struct {
-	userService user.UserService
+	userService    user.UserService
+	messageService message.MessageService
 }
 
 type useCases struct {
 	createUserUserCase    create_user.CreateUserUseCase
 	changeLanguageUseCase changeLanguage.ChangeLanguageUseCase
+	saveMessageUseCase    save_message_log.SaveMessageLogUseCase
 }
 
 type storages struct {
-	readUserStorage  read_repo.UserStorage
-	writeUserStorage write_repo.UserStorage
+	readUserStorage      read_repo.UserStorage
+	writeUserStorage     write_repo.UserStorage
+	writeTelegramStorage write_repo.TelegramMessageStorage
 }
 
 type App struct {
@@ -57,7 +62,7 @@ func NewApp(ctx context.Context) *App {
 	app.InitLogger(ctx).
 		InitPgxConn(ctx).
 		InitStorage(ctx).
-		InitFSM(ctx).
+		InitMachine(ctx).
 		InitUseCases(ctx).
 		InitServices(ctx).
 		InitTelegram(ctx).

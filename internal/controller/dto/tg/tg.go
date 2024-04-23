@@ -81,7 +81,7 @@ type InlineKeyboardMarkup struct {
 }
 
 type MessageDTO struct {
-	MessageID         int                   `json:"message_id"`
+	MessageID         int64                 `json:"message_id"`
 	Date              int                   `json:"date"`
 	Chat              *Chat                 `json:"chat"`
 	ForwardDate       int                   `json:"forward_date,omitempty"`

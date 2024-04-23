@@ -12,21 +12,24 @@ import (
 	"net/http"
 	"sorkin_bot/internal/config"
 	start2 "sorkin_bot/internal/controller/bot/callback/callback_message"
+	"sorkin_bot/internal/controller/bot/commands/cancel_appointment"
 	"sorkin_bot/internal/controller/bot/commands/start"
 	"sorkin_bot/internal/controller/dto/tg"
 	entity "sorkin_bot/internal/domain/entity/user"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
+	"sorkin_bot/internal/domain/services/message"
 	"sorkin_bot/internal/domain/services/user"
 	"sorkin_bot/pkg/client/telegram"
 )
 
 type TelegramWebhookController struct {
-	router      *gin.Engine
-	cfg         config.Config
-	logger      *slog.Logger
-	bot         telegram.Bot
-	machine     *state_machine.UserStateMachine
-	userService user.UserService
+	router         *gin.Engine
+	cfg            config.Config
+	logger         *slog.Logger
+	bot            telegram.Bot
+	machine        *state_machine.UserStateMachine
+	userService    user.UserService
+	messageService message.MessageService
 }
 
 func NewTelegramWebhookController(
@@ -35,17 +38,19 @@ func NewTelegramWebhookController(
 	bot telegram.Bot,
 	machine *state_machine.UserStateMachine,
 	userService user.UserService,
+	messageService message.MessageService,
 ) TelegramWebhookController {
 	router := gin.New()
 	router.Use(gin.Recovery())
 
 	return TelegramWebhookController{
-		router:      router,
-		cfg:         cfg,
-		logger:      logger,
-		bot:         bot,
-		machine:     machine,
-		userService: userService,
+		router:         router,
+		cfg:            cfg,
+		logger:         logger,
+		bot:            bot,
+		machine:        machine,
+		userService:    userService,
+		messageService: messageService,
 	}
 }
 
@@ -65,9 +70,6 @@ func (t TelegramWebhookController) BotWebhookHandler(c *gin.Context) {
 	}
 
 	// Сначала проверяем на команду, потом на текстовое сообщение, потом callback
-	t.logger.Info("[+][+] CallbackQuery")
-	t.logger.Info(fmt.Sprintf("%s", update.CallbackQuery))
-
 	if update.Message != nil {
 		if update.Message.IsCommand() {
 			err := t.ForkCommands(update)
@@ -98,7 +100,7 @@ func (t TelegramWebhookController) ForkCommands(update tgbotapi.Update) error {
 	switch update.Message.Command() {
 	case "start":
 		t.logger.Info("start command was called")
-		command := start.NewStartBotCommand(t.logger, t.bot, tgUser, t.userService)
+		command := start.NewStartBotCommand(t.logger, t.bot, tgUser, t.userService, t.messageService)
 		command.Execute(ctx, tgMessage)
 	case "help":
 		// service по работе с help
@@ -135,10 +137,9 @@ func (t TelegramWebhookController) ForkCommands(update tgbotapi.Update) error {
 	case "cancel_appointment":
 		// service по работе с cancel_appointment
 
-		_, err := t.bot.Bot.Send(tgbotapi.NewMessage(update.FromChat().ID, "cancel_appointment"))
-		if err != nil {
-			return err
-		}
+		t.logger.Info("cancel_appointment command was called")
+		command := cancel_appointment.NewCancelAppointmentBotCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.messageService)
+		command.Execute(ctx, tgMessage)
 		return nil
 	case "reschedule_appointment":
 		// service по работе с reschedule_appointment
@@ -197,7 +198,7 @@ func (t TelegramWebhookController) ForkCallbacks(update tgbotapi.Update) error {
 	tgUser := t.getUserFromWebhook(update)
 	callbackData := update.CallbackData()
 	tgMessage := t.getMessageFromWebhook(update)
-	callback := start2.NewCallbackBot(t.logger, t.bot, tgUser, t.userService)
+	callback := start2.NewCallbackBot(t.logger, t.bot, tgUser, t.userService, t.messageService)
 	callback.Execute(ctx, tgMessage, callbackData)
 	return errors.New("no callbacks yet")
 }
@@ -245,5 +246,17 @@ func (t TelegramWebhookController) getMessageFromWebhook(update tgbotapi.Update)
 		t.logger.Error(fmt.Sprintf("Error decoding JSON: %s", err))
 		return tg.MessageDTO{}
 	}
+
+	go func() {
+		err := t.messageService.SaveMessageLog(context.TODO(), tgMessage)
+		if err != nil {
+			return
+		}
+	}()
+	if err != nil {
+		t.logger.Error(fmt.Sprintf("Error while saving message: %s", err))
+		return tg.MessageDTO{}
+	}
+
 	return tgMessage
 }

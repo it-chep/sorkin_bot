@@ -70,3 +70,8 @@ func (u UserService) ChangeLanguage(ctx context.Context, dto tg.TgUserDTO, langu
 	}
 	return user, nil
 }
+
+func (u UserService) CancelAppointment(ctx context.Context, dto tg.TgUserDTO) (user entity.User, err error) {
+	user, err = u.readRepo.GetUserByTgID(ctx, dto.TgID)
+	return user, nil
+}
