@@ -8,6 +8,7 @@ import (
 	"os"
 	"sorkin_bot/internal/controller"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
+	"sorkin_bot/internal/domain/services/appointment"
 	"sorkin_bot/internal/domain/services/message"
 	"sorkin_bot/internal/domain/services/user"
 	"sorkin_bot/internal/domain/usecases/bot/changeLanguage"
@@ -53,8 +54,14 @@ func (app *App) InitServices(ctx context.Context) *App {
 	app.services.userService = user.NewUserService(
 		app.useCases.createUserUserCase,
 		app.useCases.changeLanguageUseCase,
+		app.useCases.changeStatusUseCase,
 		app.storages.readUserStorage,
 		app.logger,
+	)
+	// todo исправить
+	app.services.appointmentService = appointment.NewAppointmentService(
+		app.logger,
+		http.Client{},
 	)
 	app.services.messageService = message.NewMessageService(
 		app.useCases.saveMessageUseCase,
@@ -65,7 +72,7 @@ func (app *App) InitServices(ctx context.Context) *App {
 }
 
 func (app *App) InitMachine(ctx context.Context) *App {
-	app.machine = state_machine.NewUserStateMachine()
+	app.machine = state_machine.NewUserStateMachine(app.services.userService)
 	return app
 }
 
@@ -75,7 +82,7 @@ func (app *App) InitTelegram(ctx context.Context) *App {
 }
 
 func (app *App) InitControllers(ctx context.Context) *App {
-	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot, app.machine, app.services.userService, app.services.messageService)
+	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot, app.machine, app.services.userService, app.services.appointmentService, app.services.messageService)
 	app.controller.telegramWebhookController.InitController(ctx)
 
 	app.server = &http.Server{

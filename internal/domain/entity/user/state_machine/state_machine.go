@@ -2,45 +2,69 @@ package state_machine
 
 import (
 	"context"
+	"fmt"
 	"github.com/looplab/fsm"
 	entity "sorkin_bot/internal/domain/entity/user"
+	"sorkin_bot/internal/domain/services/appointment"
+	"sorkin_bot/internal/domain/services/user"
+	"sorkin_bot/pkg/client/telegram"
 )
 
 type UserStateMachine struct {
-	FSM *fsm.FSM
+	FSM                *fsm.FSM
+	userService        user.UserService
+	appointmentService appointment.AppointmentService
+	bot                telegram.Bot
 }
 
-func NewUserStateMachine() *UserStateMachine {
-	machine := &UserStateMachine{}
+const (
+	ChooseLanguage      = "chooseLanguage"
+	ChooseSpeciality    = "chooseSpeciality"
+	FastAppointment     = "fastAppointment"
+	ChooseDoctor        = "chooseDoctor"
+	ChooseSchedule      = "chooseSchedule"
+	GetPhone            = "getPhone"
+	GetName             = "getName"
+	CreateAppointment   = "createAppointment"
+	MyAppointments      = "myAppointments"
+	DetailMyAppointment = "detailMyAppointment"
+	CancelAppointment   = "cancelAppointment"
+	ChooseAppointment   = "chooseAppointment"
+)
+
+func NewUserStateMachine(userService user.UserService) *UserStateMachine {
+	machine := &UserStateMachine{
+		userService: userService,
+	}
 	machine.FSM = fsm.NewFSM(
 		"",
 		fsm.Events{
-			{Name: "chooseLanguage", Src: []string{""}, Dst: "chooseLanguage"},
-			{Name: "chooseSpeciality", Src: []string{"", "chooseLanguage"}, Dst: "chooseSpeciality"},
-			{Name: "chooseClosestDoctor", Src: []string{"", "chooseSpeciallity"}, Dst: "chooseClosestDoctor"},
-			{Name: "fastAppointment", Src: []string{"", "chooseClosestDoctor"}, Dst: "fastAppointment"},
-			{Name: "chooseDoctor", Src: []string{"", "fastAppointment"}, Dst: "chooseDoctor"},
-			{Name: "chooseSchedule", Src: []string{"", "chooseDoctor"}, Dst: "chooseSchedule"},
-			{Name: "getPhone", Src: []string{"chooseSchedule"}, Dst: "getPhone"},
-			{Name: "getName", Src: []string{"getPhone"}, Dst: "getName"},
-			{Name: "createAppointment", Src: []string{"getName"}, Dst: "createAppointment"},
-			{Name: "chooseMyAppointments", Src: []string{"chooseSpeciallity"}, Dst: "myAppointments"},
-			{Name: "detailMyAppointment", Src: []string{"myAppointments"}, Dst: "detailMyAppointment"},
-			{Name: "cancelAppointment", Src: []string{""}, Dst: "cancelAppointment"},
+			{Name: ChooseLanguage, Src: []string{""}, Dst: ChooseLanguage},
+			{Name: ChooseSpeciality, Src: []string{"", ChooseLanguage}, Dst: ChooseSpeciality},
+			{Name: FastAppointment, Src: []string{""}, Dst: FastAppointment},
+			{Name: ChooseDoctor, Src: []string{"", FastAppointment}, Dst: ChooseDoctor},
+			{Name: ChooseSchedule, Src: []string{"", ChooseDoctor}, Dst: ChooseSchedule},
+			{Name: GetPhone, Src: []string{ChooseSchedule}, Dst: GetPhone},
+			{Name: GetName, Src: []string{GetPhone}, Dst: GetName},
+			{Name: CreateAppointment, Src: []string{GetName}, Dst: CreateAppointment},
+			{Name: MyAppointments, Src: []string{ChooseSpeciality}, Dst: MyAppointments},
+			{Name: DetailMyAppointment, Src: []string{MyAppointments}, Dst: DetailMyAppointment},
+			{Name: ChooseAppointment, Src: []string{""}, Dst: ChooseAppointment},
+			{Name: CancelAppointment, Src: []string{ChooseAppointment}, Dst: CancelAppointment},
 		},
 		fsm.Callbacks{
-			"enter_chooseLanguage":      enterChooseLanguage,
-			"enter_chooseSpeciality":    enterChooseSpeciality,
-			"enter_chooseClosestDoctor": enterChooseClosestDoctor,
-			"enter_fastAppointment":     enterFastAppointment,
-			"enter_chooseDoctor":        enterChooseDoctor,
-			"enter_chooseSchedule":      enterChooseSchedule,
-			"enter_getPhone":            enterGetPhone,
-			"enter_getName":             enterGetName,
-			"enter_createAppointment":   enterCreateAppointment,
-			"enter_myAppointments":      enterMyAppointments,
-			"enter_detailMyAppointment": enterDetailMyAppointment,
-			"enter_cancelAppointment":   enterCancelAppointment,
+			fmt.Sprintf("enter_%s", ChooseLanguage):      enterChooseLanguage,
+			fmt.Sprintf("enter_%s", ChooseSpeciality):    enterChooseSpeciality,
+			fmt.Sprintf("enter_%s", FastAppointment):     enterFastAppointment,
+			fmt.Sprintf("enter_%s", ChooseDoctor):        enterChooseDoctor,
+			fmt.Sprintf("enter_%s", ChooseSchedule):      enterChooseSchedule,
+			fmt.Sprintf("enter_%s", GetPhone):            enterGetPhone,
+			fmt.Sprintf("enter_%s", GetName):             enterGetName,
+			fmt.Sprintf("enter_%s", CreateAppointment):   enterCreateAppointment,
+			fmt.Sprintf("enter_%s", MyAppointments):      enterMyAppointments,
+			fmt.Sprintf("enter_%s", DetailMyAppointment): enterDetailMyAppointment,
+			fmt.Sprintf("enter_%s", CancelAppointment):   enterCancelAppointment,
+			fmt.Sprintf("enter_%s", ChooseAppointment):   enterChooseAppointment,
 		},
 	)
 

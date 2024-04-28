@@ -55,3 +55,7 @@ func enterDetailMyAppointment(ctx context.Context, e *fsm.Event) {
 func enterCancelAppointment(ctx context.Context, e *fsm.Event) {
 	fmt.Println("I have canceled your appointment")
 }
+
+func enterChooseAppointment(ctx context.Context, e *fsm.Event) {
+	fmt.Println("Please choose appointment")
+}

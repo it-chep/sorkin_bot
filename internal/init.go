@@ -7,10 +7,12 @@ import (
 	"sorkin_bot/internal/config"
 	"sorkin_bot/internal/controller"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
+	"sorkin_bot/internal/domain/services/appointment"
 	"sorkin_bot/internal/domain/services/message"
 	"sorkin_bot/internal/domain/services/user"
 	"sorkin_bot/internal/domain/usecases/bot/changeLanguage"
 	"sorkin_bot/internal/domain/usecases/bot/save_message_log"
+	"sorkin_bot/internal/domain/usecases/user/change_user_status"
 	"sorkin_bot/internal/domain/usecases/user/create_user"
 	"sorkin_bot/internal/storage/read_repo"
 	"sorkin_bot/internal/storage/write_repo"
@@ -23,13 +25,15 @@ type controllers struct {
 }
 
 type services struct {
-	userService    user.UserService
-	messageService message.MessageService
+	userService        user.UserService
+	appointmentService appointment.AppointmentService
+	messageService     message.MessageService
 }
 
 type useCases struct {
 	createUserUserCase    create_user.CreateUserUseCase
 	changeLanguageUseCase changeLanguage.ChangeLanguageUseCase
+	changeStatusUseCase   change_user_status.ChangeStatusUseCase
 	saveMessageUseCase    save_message_log.SaveMessageLogUseCase
 }
 

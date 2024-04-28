@@ -13,11 +13,13 @@ type UserService struct {
 	readRepo              ReadUserStorage
 	logger                *slog.Logger
 	changeLanguageUseCase ChangeLanguageUseCase
+	changeStateUseCase    ChangeStateUseCase
 }
 
 func NewUserService(
 	createUserUseCase CreateUserUseCase,
 	changeLanguageUseCase ChangeLanguageUseCase,
+	changeStateUseCase ChangeStateUseCase,
 	readRepo ReadUserStorage,
 	logger *slog.Logger,
 ) UserService {
@@ -25,16 +27,25 @@ func NewUserService(
 		createUserUseCase:     createUserUseCase,
 		readRepo:              readRepo,
 		logger:                logger,
+		changeStateUseCase:    changeStateUseCase,
 		changeLanguageUseCase: changeLanguageUseCase,
 	}
 }
 
-func (u UserService) RegisterNewUser(ctx context.Context, dto tg.TgUserDTO) (user entity.User, err error) {
-
+func (u UserService) GetUser(ctx context.Context, dto tg.TgUserDTO) (user entity.User, err error) {
 	user, err = u.readRepo.GetUserByTgID(ctx, dto.TgID)
 
 	if err != nil {
 		u.logger.Error(fmt.Sprintf("%s", err))
+		return entity.User{}, err
+	}
+	return user, nil
+}
+
+func (u UserService) RegisterNewUser(ctx context.Context, dto tg.TgUserDTO) (user entity.User, err error) {
+
+	user, err = u.GetUser(ctx, dto)
+	if err != nil {
 		return entity.User{}, err
 	}
 
@@ -71,7 +82,17 @@ func (u UserService) ChangeLanguage(ctx context.Context, dto tg.TgUserDTO, langu
 	return user, nil
 }
 
-func (u UserService) CancelAppointment(ctx context.Context, dto tg.TgUserDTO) (user entity.User, err error) {
+func (u UserService) ChangeState(ctx context.Context, dto tg.TgUserDTO, state string) (user entity.User, err error) {
 	user, err = u.readRepo.GetUserByTgID(ctx, dto.TgID)
+
+	if err != nil {
+		u.logger.Error(fmt.Sprintf("%s", err))
+		return entity.User{}, err
+	}
+
+	err = u.changeStateUseCase.Execute(ctx, user, state)
+	if err != nil {
+		return entity.User{}, err
+	}
 	return user, nil
 }

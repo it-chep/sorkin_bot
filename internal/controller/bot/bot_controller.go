@@ -13,23 +13,26 @@ import (
 	"sorkin_bot/internal/config"
 	start2 "sorkin_bot/internal/controller/bot/callback/callback_message"
 	"sorkin_bot/internal/controller/bot/commands/cancel_appointment"
+	"sorkin_bot/internal/controller/bot/commands/fast_appointment"
 	"sorkin_bot/internal/controller/bot/commands/start"
 	"sorkin_bot/internal/controller/dto/tg"
 	entity "sorkin_bot/internal/domain/entity/user"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
+	"sorkin_bot/internal/domain/services/appointment"
 	"sorkin_bot/internal/domain/services/message"
 	"sorkin_bot/internal/domain/services/user"
 	"sorkin_bot/pkg/client/telegram"
 )
 
 type TelegramWebhookController struct {
-	router         *gin.Engine
-	cfg            config.Config
-	logger         *slog.Logger
-	bot            telegram.Bot
-	machine        *state_machine.UserStateMachine
-	userService    user.UserService
-	messageService message.MessageService
+	router             *gin.Engine
+	cfg                config.Config
+	logger             *slog.Logger
+	bot                telegram.Bot
+	machine            *state_machine.UserStateMachine
+	userService        user.UserService
+	appointmentService appointment.AppointmentService
+	messageService     message.MessageService
 }
 
 func NewTelegramWebhookController(
@@ -38,19 +41,21 @@ func NewTelegramWebhookController(
 	bot telegram.Bot,
 	machine *state_machine.UserStateMachine,
 	userService user.UserService,
+	appointmentService appointment.AppointmentService,
 	messageService message.MessageService,
 ) TelegramWebhookController {
 	router := gin.New()
 	router.Use(gin.Recovery())
 
 	return TelegramWebhookController{
-		router:         router,
-		cfg:            cfg,
-		logger:         logger,
-		bot:            bot,
-		machine:        machine,
-		userService:    userService,
-		messageService: messageService,
+		router:             router,
+		cfg:                cfg,
+		logger:             logger,
+		bot:                bot,
+		machine:            machine,
+		userService:        userService,
+		appointmentService: appointmentService,
+		messageService:     messageService,
 	}
 }
 
@@ -121,10 +126,9 @@ func (t TelegramWebhookController) ForkCommands(update tgbotapi.Update) error {
 	case "fast_appointment":
 		// service по работе с fast appointment
 
-		_, err := t.bot.Bot.Send(tgbotapi.NewMessage(update.FromChat().ID, "really_fast"))
-		if err != nil {
-			return err
-		}
+		t.logger.Info("fast_appointment command was called")
+		command := fast_appointment.NewFastAppointmentBotCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.appointmentService, t.messageService)
+		command.Execute(ctx, tgMessage)
 		return nil
 	case "appointment":
 		// service по работе с appointment
@@ -138,7 +142,7 @@ func (t TelegramWebhookController) ForkCommands(update tgbotapi.Update) error {
 		// service по работе с cancel_appointment
 
 		t.logger.Info("cancel_appointment command was called")
-		command := cancel_appointment.NewCancelAppointmentBotCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.messageService)
+		command := cancel_appointment.NewCancelAppointmentBotCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.appointmentService, t.messageService)
 		command.Execute(ctx, tgMessage)
 		return nil
 	case "reschedule_appointment":

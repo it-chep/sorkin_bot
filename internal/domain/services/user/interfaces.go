@@ -17,6 +17,10 @@ type ChangeLanguageUseCase interface {
 	Execute(ctx context.Context, user entity.User, languageCode string) (err error)
 }
 
+type ChangeStateUseCase interface {
+	Execute(ctx context.Context, user entity.User, state string) (err error)
+}
+
 type UpdatePhoneLanguageUseCase interface {
 	Execute()
 }
