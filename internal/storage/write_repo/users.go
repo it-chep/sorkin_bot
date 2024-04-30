@@ -27,9 +27,12 @@ func (ws UserStorage) CreateUser(ctx context.Context, user entity.User) (userID 
 		insert into tg_users (tg_id, name, surname, username, registration_time) 
 		values ($1, $2, $3, $4, $5, $6, $7, $8) returning id;
 	`
+	currentTime := time.Now()
+	registrationTime := fmt.Sprintf("%02d.%02d.%d %02d:%02d", currentTime.Day(), currentTime.Month(), currentTime.Year(), currentTime.Hour(), currentTime.Minute())
+
 	ws.logger.Info(op)
 	err = ws.client.QueryRow(
-		ctx, q, user.GetTgId(), user.GetFirstName(), user.GetLastName(), user.GetUsername(), time.Now(),
+		ctx, q, user.GetTgId(), user.GetFirstName(), user.GetLastName(), user.GetUsername(), registrationTime,
 	).Scan(&userID)
 	if err != nil {
 		return -1, err

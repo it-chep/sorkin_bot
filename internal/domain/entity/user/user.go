@@ -1,16 +1,17 @@
 package entity
 
 type User struct {
-	firstName    string
-	lastName     string
-	tgID         int64
-	isBot        bool
-	username     string
-	languageCode string
-	state        string
-	phone        string
-	patientId    int
-	birtDate     string
+	firstName        string
+	lastName         string
+	tgID             int64
+	isBot            bool
+	registrationTime string
+	username         string
+	languageCode     string
+	state            string
+	phone            string
+	patientId        int
+	birtDate         string
 }
 
 func NewUser(tgId int64, firstName string, opts ...UserOpt) *User {
@@ -32,6 +33,10 @@ func (usr *User) GetBirthDate() string {
 
 func (usr *User) GetPhone() string {
 	return usr.phone
+}
+
+func (usr *User) GetRegistrationTime() string {
+	return usr.registrationTime
 }
 
 func (usr *User) GetPatientId() int {

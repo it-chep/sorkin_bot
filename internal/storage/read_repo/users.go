@@ -26,7 +26,7 @@ func NewUserStorage(client postgres.Client, logger *slog.Logger) UserStorage {
 
 func (rs UserStorage) GetUserByTgID(ctx context.Context, userID int64) (user entity.User, err error) {
 	op := "internal/storage/read_repo/users/GetUserByTgID"
-	q := "select tg_id, name, surname, username, last_state, phone, language_code, patient_id from tg_users where tg_id = $1"
+	q := "select tg_id, name, surname, username, last_state, phone, language_code, patient_id, registration_time from tg_users where tg_id = $1"
 
 	var userDAO dao.UserDAO
 	rs.logger.Info(op)

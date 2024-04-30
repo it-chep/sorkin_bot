@@ -13,6 +13,8 @@ import (
 	"os"
 	mis_dto "sorkin_bot/internal/clients/gateways/mis_reno/mis_dto"
 	"sorkin_bot/internal/domain/entity/appointment"
+	entity "sorkin_bot/internal/domain/entity/user"
+	"time"
 )
 
 type MisRenoGateway struct {
@@ -80,6 +82,7 @@ func (mg *MisRenoGateway) sendToMIS(ctx context.Context, method string, body io.
 		mg.logger.Error(fmt.Sprintf("error while reading response body, op: %s", op))
 		return responseBody
 	}
+	mg.logger.Info(fmt.Sprintf("RESPONSE BODY %s", responseBody))
 
 	// Базовая превалидация ответа, если 400 или 500
 	var baseResponse mis_dto.BaseResponse
@@ -169,25 +172,21 @@ func (mg *MisRenoGateway) ConfirmAppointment(ctx context.Context, appointmentId 
 	return nil, response.Data.True
 }
 
-func (mg *MisRenoGateway) RescheduleAppointment(ctx context.Context, movedTo string) (err error) {
-	err, _ = mg.DetailAppointment(ctx)
-	if err != nil {
-		return err
-	}
-
-	//err, _ = mg.CancelAppointment(ctx, movedTo, appointment.Data[0].Id)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	return nil
-}
-
-func (mg *MisRenoGateway) MyAppointments(ctx context.Context) (err error, appointments []appointment.Appointment) {
+func (mg *MisRenoGateway) MyAppointments(ctx context.Context, user entity.User) (err error, appointments []appointment.Appointment) {
 	// Полуаем записи по пользователю и отдаем ему только даты записей
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.MyAppointments"
 	var response mis_dto.GetAppointmentsResponse
-	var request = mis_dto.GetAppointmentsRequest{}
+	currentTime := time.Now()
+
+	// todo рассматриваем только записи из бота, то есть человек будет получать только доступ к тем записям, которые были созданы им из бота
+
+	var request = mis_dto.GetAppointmentsRequest{
+		DateCreatedFrom: user.GetRegistrationTime(),
+		DateCreatedTo:   fmt.Sprintf("%02d.%02d.%d %02d:%02d", currentTime.Day(), currentTime.Month(), currentTime.Year(), currentTime.Hour(), currentTime.Minute()),
+		PatientId:       user.GetPatientId(),
+		StatusId:        "1, 2, 4, 5",
+	}
+
 	jsonBody, err := json.Marshal(request)
 	if err != nil {
 		mg.logger.Error(fmt.Sprintf("error while marshalling json %s \nplace: %s", err, op))
@@ -207,11 +206,21 @@ func (mg *MisRenoGateway) MyAppointments(ctx context.Context) (err error, appoin
 	return nil, appointments
 }
 
-func (mg *MisRenoGateway) DetailAppointment(ctx context.Context) (err error, appointmentEntity appointment.Appointment) {
+func (mg *MisRenoGateway) DetailAppointment(ctx context.Context, user entity.User, appointmentId int) (err error, appointmentEntity appointment.Appointment) {
 	// Полуаем запись по id записи, отдаем данные о записи
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.DetailAppointment"
 	var response mis_dto.GetAppointmentsResponse
-	var request = mis_dto.GetAppointmentsRequest{}
+	currentTime := time.Now()
+
+	// todo мб сделать конструктор для GetAppointmentsRequest
+
+	var request = mis_dto.GetAppointmentsRequest{
+		AppointmentId:   appointmentId,
+		DateCreatedFrom: user.GetRegistrationTime(),
+		DateCreatedTo:   fmt.Sprintf("%02d.%02d.%d %02d:%02d", currentTime.Day(), currentTime.Month(), currentTime.Year(), currentTime.Hour(), currentTime.Minute()),
+		PatientId:       user.GetPatientId(),
+		StatusId:        "1, 2, 5",
+	}
 
 	jsonBody, err := json.Marshal(request)
 	if err != nil {
@@ -226,5 +235,8 @@ func (mg *MisRenoGateway) DetailAppointment(ctx context.Context) (err error, app
 		mg.logger.Error(fmt.Sprintf("error while unmarshalling data err: %s \nop: %s", err, op))
 		return err, appointmentEntity
 	}
+
+	appointmentEntity = response.Data[0].ToDomain()
+
 	return nil, appointmentEntity
 }

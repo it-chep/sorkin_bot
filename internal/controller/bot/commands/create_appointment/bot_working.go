@@ -36,44 +36,50 @@ func NewCreateAppointmentCommand(logger *slog.Logger, bot telegram.Bot, tgUser t
 	}
 }
 
-func (c CreateAppointmentCommand) Execute(ctx context.Context, message tg.MessageDTO) {
+func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.MessageDTO) {
 	var msg tgbotapi.MessageConfig
 	// так как мы не изменяем бизнес сущность, а бот меняет состояние, то нахождение сущность в слое controllers некритично
 	userEntity, _ := c.userService.GetUser(ctx, c.tgUser)
 	//c.appointmentService.GetSchedules(ctx, -1)
+
+	//todo возможно добавить сообщение, что я загружаю ваши записи, пожалуйста подождите
+	//msg = tgbotapi.NewMessage(c.tgUser.TgID)
+	//_, _ = c.bot.Bot.Send(msg)
+
+	// todo это для создания записи на прием
 	//if c.appointmentService.GetPatient(ctx, userEntity) {
 	//} else {
 	//	c.appointmentService.CreatePatient(ctx, userEntity)
 	//}
+	// todo это для создания записи на прием
 
 	////todo докрутить логику со специальностями
-	//if userEntity.GetState() == "" {
-	//	err, specialities := c.appointmentService.Mis.GetSpecialities(ctx)
-	//	if err != nil {
-	//		return
-	//	}
-	//	messageText, err := c.messageService.GetMessage(ctx, userEntity, "Choose speciality")
-	//	msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
-	//	if err != nil {
-	//		_, _ = c.bot.Bot.Send(msg)
-	//		return
-	//	}
-	//	keyboard := tgbotapi.NewInlineKeyboardMarkup()
-	//	translatedSpecialities, err := c.appointmentService.GetTranslatedSpecialities(ctx, userEntity, specialities)
-	//	if err != nil {
-	//		return
-	//	}
-	//	for specialityId, translatedSpeciality := range translatedSpecialities {
-	//		btn := tgbotapi.NewInlineKeyboardButtonData(translatedSpeciality, fmt.Sprintf("%d", specialityId))
-	//		row := tgbotapi.NewInlineKeyboardRow(btn)
-	//		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
-	//	}
-	//	msg.ReplyMarkup = keyboard
-	//
-	//} else {
-	//	return
-	//}
-	////todo докрутить логику со специальностями
+	switch userEntity.GetState() {
+	case "":
+		err, specialities := c.appointmentService.Mis.GetSpecialities(ctx)
+		if err != nil {
+			return
+		}
+		messageText, err := c.messageService.GetMessage(ctx, userEntity, "Choose speciality")
+		msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
+		if err != nil {
+			_, _ = c.bot.Bot.Send(msg)
+			return
+		}
+		keyboard := tgbotapi.NewInlineKeyboardMarkup()
+		translatedSpecialities, err := c.appointmentService.GetTranslatedSpecialities(ctx, userEntity, specialities)
+		if err != nil {
+			return
+		}
+		for specialityId, translatedSpeciality := range translatedSpecialities {
+			btn := tgbotapi.NewInlineKeyboardButtonData(translatedSpeciality, fmt.Sprintf("%d", specialityId))
+			row := tgbotapi.NewInlineKeyboardRow(btn)
+			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+		}
+		msg.ReplyMarkup = keyboard
+	}
+
+	//todo докрутить логику со специальностями
 
 	c.machine.SetState(userEntity, userEntity.GetState(), state_machine.ChooseSpeciality)
 
@@ -82,11 +88,11 @@ func (c CreateAppointmentCommand) Execute(ctx context.Context, message tg.Messag
 	if err != nil {
 		c.logger.Error(fmt.Sprintf("%s", err))
 	}
-	message.MessageID = int64(sentMessage.MessageID)
-	message.Text = sentMessage.Text
+	messageDTO.MessageID = int64(sentMessage.MessageID)
+	messageDTO.Text = sentMessage.Text
 
 	go func() {
-		err := c.messageService.SaveMessageLog(context.TODO(), message)
+		err := c.messageService.SaveMessageLog(context.TODO(), messageDTO)
 		if err != nil {
 			return
 		}

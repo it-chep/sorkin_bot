@@ -37,6 +37,13 @@ func WithUsrPhone(phone string) UserOpt {
 	}
 }
 
+func WithRegistrationTime(registrationTime string) UserOpt {
+	return func(usr *User) *User {
+		usr.registrationTime = registrationTime
+		return usr
+	}
+}
+
 func WithUsrPatientId(patientId int) UserOpt {
 	return func(usr *User) *User {
 

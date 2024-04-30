@@ -5,14 +5,15 @@ import (
 )
 
 type UserDAO struct {
-	TgId         int64  `db:"tg_id"`
-	FirstName    string `db:"name"`
-	LastName     string `db:"surname"`
-	Username     string `db:"username"`
-	LanguageCode string `db:"language_code"`
-	Phone        string `db:"phone"`
-	LastState    string `db:"last_state"`
-	PatientId    *int   `db:"patient_id"`
+	TgId             int64  `db:"tg_id"`
+	FirstName        string `db:"name"`
+	LastName         string `db:"surname"`
+	Username         string `db:"username"`
+	LanguageCode     string `db:"language_code"`
+	Phone            string `db:"phone"`
+	LastState        string `db:"last_state"`
+	PatientId        *int   `db:"patient_id"`
+	RegistrationTime string `db:"registration_time"`
 }
 
 func NewUserDAO() *UserDAO {
@@ -34,5 +35,6 @@ func (dao *UserDAO) ToDomain() *entity.User {
 		entity.WithUsrLastName(dao.LastName),
 		entity.WithUsrPhone(dao.Phone),
 		entity.WithUsrPatientId(patientID),
+		entity.WithRegistrationTime(dao.RegistrationTime),
 	)
 }

@@ -33,12 +33,12 @@ func (ms MessageService) GetMessage(ctx context.Context, user userEntity.User, n
 		ms.logger.Error(fmt.Sprintf("400 Message Not Found err: %s, place: %s", err, op))
 		return ServerError, err
 	}
-	translateMessage, err := ms.translateMessage(user, message)
+	translatedMessage, err := ms.translateMessage(user, message)
 	if err != nil {
 		ms.logger.Error(fmt.Sprintf("400 Message Not Found err: %s, place: %s", err, op))
 		return ServerError, err
 	}
-	return translateMessage, nil
+	return translatedMessage, nil
 }
 
 func (ms MessageService) translateMessage(user userEntity.User, message tgEntity.Message) (translatedMessage string, err error) {

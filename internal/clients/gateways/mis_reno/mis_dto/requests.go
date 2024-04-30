@@ -82,20 +82,9 @@ type ConfirmAppointmentRequest struct {
 type GetAppointmentsRequest struct {
 	DateCreatedFrom string `json:"date_created_from"` //dd.mm.yyyy hh:mm
 	DateCreatedTo   string `json:"date_created_to"`   //dd.mm.yyyy hh:mm
-	DateUpdatedFrom string `json:"date_updated_from"` //dd.mm.yyyy hh:mm
-	DateUpdatedTo   string `json:"date_updated_to"`   //dd.mm.yyyy hh:mm
-	DateFrom        string `json:"date_from"`         //dd.mm.yyyy hh:mm
-	DateTo          string `json:"date_to"`           //dd.mm.yyyy hh:mm
-	DateCancelFrom  string `json:"date_cancel_from"`  //dd.mm.yyyy hh:mm
-	DateCancelTo    string `json:"date_cancel_to"`    //dd.mm.yyyy hh:mm
-	AppointmentId   int    `json:"appointment_id"`
-	ClinicId        int    `json:"clinic_id"`
-	DoctorId        int    `json:"doctor_id"`
 	PatientId       int    `json:"patient_id"`
-	Source          string `json:"source"`
-	Status          string `json:"status"`
-	StatusId        int    `json:"status_id"`
-	ShowPatientData string `json:"show_patient_data"`
+	StatusId        string `json:"status_id"`
+	AppointmentId   int    `json:"id"`
 }
 
 type GetPatientRequest struct {

@@ -16,6 +16,7 @@ import (
 	"sorkin_bot/internal/controller/bot/commands/change_language"
 	"sorkin_bot/internal/controller/bot/commands/create_appointment"
 	"sorkin_bot/internal/controller/bot/commands/fast_appointment"
+	"sorkin_bot/internal/controller/bot/commands/my_appointment"
 	"sorkin_bot/internal/controller/bot/commands/start"
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
@@ -148,21 +149,11 @@ func (t TelegramWebhookController) ForkCommands(update tgbotapi.Update) error {
 		command := cancel_appointment.NewCancelAppointmentBotCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.appointmentService, t.messageService)
 		command.Execute(ctx, tgMessage)
 		return nil
-	case "reschedule_appointment":
-		// service по работе с reschedule_appointment
-
-		_, err := t.bot.Bot.Send(tgbotapi.NewMessage(update.FromChat().ID, "reschedule_appointment"))
-		if err != nil {
-			return err
-		}
-		return nil
 	case "my_appointments":
 		// service по работе с my_appointments
 
-		_, err := t.bot.Bot.Send(tgbotapi.NewMessage(update.FromChat().ID, "my_appointments"))
-		if err != nil {
-			return err
-		}
+		command := my_appointment.NewMyAppointmentsCommand(t.logger, t.bot, tgUser, t.machine, t.userService, t.appointmentService, t.messageService)
+		command.Execute(ctx, tgMessage)
 		return nil
 	case "change_language":
 		t.logger.Info("change_language command was called")
@@ -195,7 +186,7 @@ func (t TelegramWebhookController) ForkCallbacks(update tgbotapi.Update) error {
 	tgUser := t.getUserFromWebhook(update)
 	callbackData := update.CallbackData()
 	tgMessage := t.getMessageFromWebhook(update)
-	callback := start2.NewCallbackBot(t.logger, t.bot, tgUser, t.userService, t.messageService)
+	callback := start2.NewCallbackBot(t.logger, t.bot, tgUser, t.machine, t.userService, t.messageService, t.appointmentService)
 	callback.Execute(ctx, tgMessage, callbackData)
 	return errors.New("no callbacks yet")
 }

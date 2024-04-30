@@ -43,7 +43,7 @@ func (c *CancelAppointmentBotCommand) Execute(ctx context.Context, message tg.Me
 	userEntity, _ := c.userService.GetUser(ctx, c.tgUser)
 
 	if userEntity.GetState() != "" {
-		err, appointments := c.appointmentService.Mis.MyAppointments(ctx)
+		err, appointments := c.appointmentService.Mis.MyAppointments(ctx, userEntity)
 		if err != nil {
 			return
 		}

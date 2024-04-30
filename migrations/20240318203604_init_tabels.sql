@@ -8,7 +8,7 @@ create table if not exists tg_users
     name              varchar(255),
     surname           varchar(255),
     username          varchar(255),
-    registration_time timestamp,
+    registration_time varchar(16),
     last_state        varchar(255),
     phone             varchar(30),
     language_code     varchar(5)

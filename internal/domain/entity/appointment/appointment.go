@@ -20,13 +20,13 @@ type Appointment struct {
 	statusId         int
 	confirmStatus    string
 	source           string
-	movedTo          string
-	movedFrom        string
+	movedTo          int
+	movedFrom        int
 }
 
-func NewAppointment(id, clinicId, doctorId, patientId, statusId int,
+func NewAppointment(id, clinicId, doctorId, patientId, statusId, movedTo, movedFrom int,
 	timeStart, timeEnd, clinic, doctor, patientName, patientBirthDate, patientGender,
-	patientPhone, patientEmail, dateCreated, dateUpdated, status, confirmStatus, source, movedTo, movedFrom string,
+	patientPhone, patientEmail, dateCreated, dateUpdated, status, confirmStatus, source string,
 ) Appointment {
 	return Appointment{
 		id:               id,
@@ -59,4 +59,8 @@ func (a Appointment) GetAppointmentId() int {
 
 func (a Appointment) GetTimeStart() string {
 	return a.timeStart
+}
+
+func (a Appointment) GetTimeEnd() string {
+	return a.timeEnd
 }

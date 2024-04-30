@@ -34,6 +34,43 @@ func (as *AppointmentService) GetSchedules(ctx context.Context, doctorId int) {
 	}
 }
 
+func (as *AppointmentService) GetAppointments(ctx context.Context, user entity.User) (appointments []appointment.Appointment) {
+	op := "sorkin_bot.internal.domain.services.appointment.appointment.GetAppointments"
+
+	if user.GetPatientId() == 0 {
+		return
+	}
+
+	err, appointments := as.Mis.MyAppointments(ctx, user)
+
+	for _, appointmentEntity := range appointments {
+		as.logger.Info(fmt.Sprintf("%d %s %s", appointmentEntity.GetAppointmentId(), appointmentEntity.GetTimeStart(), op))
+	}
+
+	if err != nil {
+		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
+		return
+	}
+
+	return appointments
+}
+
+func (as *AppointmentService) GetAppointmentDetail(ctx context.Context, user entity.User, appointmentId int) (appointmentEntity appointment.Appointment) {
+	op := "sorkin_bot.internal.domain.services.appointment.appointment.GetAppointmentDetail"
+
+	if user.GetPatientId() == 0 {
+		return
+	}
+
+	err, appointmentEntity := as.Mis.DetailAppointment(ctx, user, appointmentId)
+	if err != nil {
+		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
+		return appointment.Appointment{}
+	}
+
+	return appointmentEntity
+}
+
 func (as *AppointmentService) GetPatient(ctx context.Context, user entity.User) (result bool) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.GetPatient"
 	err := as.Mis.GetPatientById(ctx, user.GetPatientId())
