@@ -1,6 +1,9 @@
 package mis_dto
 
-import "sorkin_bot/internal/domain/entity/appointment"
+import (
+	"encoding/json"
+	"sorkin_bot/internal/domain/entity/appointment"
+)
 
 type BaseResponse struct {
 	Error int `json:"error"`
@@ -90,6 +93,7 @@ func (s SpecialityDTO) ToDomain() appointment.Speciality {
 
 type ScheduleDTO struct {
 	ClinicId       int    `json:"clinic_id"`
+	DoctorId       int    `json:"user_id"`
 	Date           string `json:"date"`
 	TimeStart      string `json:"time_start"`       //dd.mm.yyyy hh:mm
 	TimeStartShort string `json:"time_start_short"` //dd.mm.yyyy hh:mm
@@ -103,16 +107,12 @@ type ScheduleDTO struct {
 }
 
 type GetScheduleResponse struct {
-	Error int `json:"error"`
-	Data  []struct {
-		ScheduleItem []struct {
-			ScheduleDTO
-		} // Массив объектов, где ключом является id сотрудника
-	} `json:"data"`
+	Error int                      `json:"error"`
+	Data  map[string][]ScheduleDTO `json:"data"`
 }
 
-func (sch ScheduleDTO) ToDomain() {
-
+func (sch ScheduleDTO) ToDomain() appointment.Schedule {
+	return appointment.NewSchedule()
 }
 
 type SchedulePeriodDTO struct {
@@ -226,48 +226,48 @@ type PatientAddress struct {
 }
 
 type GetPatientData struct {
-	Number         int            `json:"number"`
-	LastName       string         `json:"last_name"`
-	FirstName      string         `json:"first_name"`
-	ThirdName      string         `json:"third_name"`
-	BirthDate      string         `json:"birth_date"`
-	BirthPlace     string         `json:"birth_place"`
-	Age            string         `json:"age"`
-	Gender         string         `json:"gender"`
-	Mobile         string         `json:"mobile"`
-	Phone          string         `json:"phone"`
-	Email          string         `json:"email"`
-	CarNumber      string         `json:"car_number"`
-	ExternalID     string         `json:"external_id"`
-	ExternalNumber string         `json:"external_number"`
-	JobPlace       string         `json:"job_place"`
-	JobProfession  string         `json:"job_profession"`
-	JobPosition    string         `json:"job_position"`
-	Factory        string         `json:"factory"`
-	Unit           string         `json:"unit"`
-	Workshop       string         `json:"workshop"`
-	Area           string         `json:"area"`
-	ServiceNumber  string         `json:"service_number"`
-	JobAttitude    string         `json:"job_attitude"`
-	SendSMS        string         `json:"send_sms"`
-	SendEmail      string         `json:"send_email"`
-	SendSMSLab     string         `json:"send_sms_lab"`
-	SendEmailLab   string         `json:"send_email_lab"`
-	DateCreated    string         `json:"date_created"`
-	DateUpdated    string         `json:"date_updated"`
-	TimeCreated    string         `json:"time_created"`
-	TimeUpdated    string         `json:"time_updated"`
-	CategoryIDs    string         `json:"category_ids"`
-	ParentID       string         `json:"parent_id"`
-	Groups         string         `json:"groups"`
-	HasAccount     string         `json:"has_account"`
-	AdvChannelID   string         `json:"adv_channel_id"`
-	Desc           string         `json:"desc"`
-	Address        PatientAddress `json:"address"`
-	IsDeleted      bool           `json:"is_deleted"`
-	DateDeleted    string         `json:"date_deleted"`
-	PatientID      int            `json:"patient_id"`
-	Documents      string         `json:"documents"`
+	Number         int             `json:"number"`
+	LastName       string          `json:"last_name"`
+	FirstName      string          `json:"first_name"`
+	ThirdName      string          `json:"third_name"`
+	BirthDate      string          `json:"birth_date"`
+	BirthPlace     string          `json:"birth_place"`
+	Age            string          `json:"age"`
+	Gender         string          `json:"gender"`
+	Mobile         string          `json:"mobile"`
+	Phone          string          `json:"phone"`
+	Email          string          `json:"email"`
+	CarNumber      string          `json:"car_number"`
+	ExternalID     string          `json:"external_id"`
+	ExternalNumber string          `json:"external_number"`
+	JobPlace       string          `json:"job_place"`
+	JobProfession  string          `json:"job_profession"`
+	JobPosition    string          `json:"job_position"`
+	Factory        string          `json:"factory"`
+	Unit           string          `json:"unit"`
+	Workshop       string          `json:"workshop"`
+	Area           string          `json:"area"`
+	ServiceNumber  string          `json:"service_number"`
+	JobAttitude    string          `json:"job_attitude"`
+	SendSMS        string          `json:"send_sms"`
+	SendEmail      string          `json:"send_email"`
+	SendSMSLab     string          `json:"send_sms_lab"`
+	SendEmailLab   string          `json:"send_email_lab"`
+	DateCreated    string          `json:"date_created"`
+	DateUpdated    string          `json:"date_updated"`
+	TimeCreated    string          `json:"time_created"`
+	TimeUpdated    string          `json:"time_updated"`
+	CategoryIDs    string          `json:"category_ids"`
+	ParentID       string          `json:"parent_id"`
+	Groups         string          `json:"groups"`
+	HasAccount     string          `json:"has_account"`
+	AdvChannelID   string          `json:"adv_channel_id"`
+	Desc           string          `json:"desc"`
+	Address        PatientAddress  `json:"address"`
+	IsDeleted      bool            `json:"is_deleted"`
+	DateDeleted    string          `json:"date_deleted"`
+	PatientID      int             `json:"patient_id"`
+	Documents      json.RawMessage `json:"documents"`
 }
 
 type GetPatientResponse struct {

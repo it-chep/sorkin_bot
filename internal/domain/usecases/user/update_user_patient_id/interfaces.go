@@ -6,5 +6,5 @@ import (
 )
 
 type WriteRepo interface {
-	UpdateUserPatientId(ctx context.Context, user entity.User, patientId int64) (err error)
+	UpdateUserPatientId(ctx context.Context, user entity.User, patientId int) (err error)
 }

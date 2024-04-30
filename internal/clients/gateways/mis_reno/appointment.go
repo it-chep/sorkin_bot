@@ -52,9 +52,10 @@ func (mg *MisRenoGateway) sendToMIS(ctx context.Context, method string, body io.
 		strValue := fmt.Sprintf("%v", value)
 		formValues.Add(key, strValue)
 	}
+	mg.logger.Info(fmt.Sprintf("formValues %s. Data: %s", formValues, data))
 
 	requestBody := bytes.NewBufferString(formValues.Encode())
-
+	mg.logger.Info(fmt.Sprintf("REQUEST BODY %s", requestBody))
 	request, err := http.NewRequest(http.MethodPost, urlWithParams, requestBody)
 	if err != nil {
 		// Обработка ошибки создания запроса

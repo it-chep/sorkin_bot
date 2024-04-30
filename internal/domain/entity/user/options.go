@@ -37,8 +37,13 @@ func WithUsrPhone(phone string) UserOpt {
 	}
 }
 
-func WithUsrPatientId(patientId int64) UserOpt {
+func WithUsrPatientId(patientId int) UserOpt {
 	return func(usr *User) *User {
+
+		if patientId == -1 {
+			return usr
+		}
+
 		usr.patientId = patientId
 		return usr
 	}

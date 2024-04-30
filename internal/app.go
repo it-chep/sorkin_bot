@@ -84,8 +84,8 @@ func (app *App) InitServices(ctx context.Context) *App {
 		&app.gateways.MisRenoGateway,
 		app.storages.readTranslationStorage,
 		app.logger,
+		app.services.userService,
 	)
-
 	app.services.messageService = message.NewMessageService(
 		app.useCases.saveMessageUseCase,
 		app.storages.readMessageStorage,

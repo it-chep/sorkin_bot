@@ -38,7 +38,7 @@ func (ws UserStorage) CreateUser(ctx context.Context, user entity.User) (userID 
 	return userID, nil
 }
 
-func (ws UserStorage) UpdateUserPatientId(ctx context.Context, user entity.User, patientId int64) (err error) {
+func (ws UserStorage) UpdateUserPatientId(ctx context.Context, user entity.User, patientId int) (err error) {
 	op := "internal/storage/write_repo/UpdateUserPatientId"
 	q := `
 		update tg_users set patient_id = $1 where tg_id = $2;

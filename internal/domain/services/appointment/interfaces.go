@@ -3,6 +3,7 @@ package appointment
 import (
 	"context"
 	"sorkin_bot/internal/domain/entity/appointment"
+	userEntity "sorkin_bot/internal/domain/entity/user"
 )
 
 type Appointment interface {
@@ -13,9 +14,11 @@ type Appointment interface {
 	RescheduleAppointment(ctx context.Context, movedTo string) (err error)
 	MyAppointments(ctx context.Context) (err error, appointments []appointment.Appointment)
 	DetailAppointment(ctx context.Context) (err error, appointmentEntity appointment.Appointment)
-	GetDoctors(ctx context.Context) (err error, doctors []appointment.Doctor)
+	GetDoctors(ctx context.Context, specialityId int) (err error, doctors []appointment.Doctor)
 	GetSpecialities(ctx context.Context) (err error, specialities []appointment.Speciality)
-	//GetSchedules(ctx context.Context) (err error, response mis_dto.GetSpecialityResponse)
+	GetPatientById(ctx context.Context, patientId int) (err error)
+	CreatePatient(ctx context.Context, user userEntity.User) (err error, patientId int)
+	GetSchedules(ctx context.Context, doctorId int) (err error, schedules []appointment.Schedule)
 }
 
 type ReadRepo interface {

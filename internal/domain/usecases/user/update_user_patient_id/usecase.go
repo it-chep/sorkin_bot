@@ -18,6 +18,6 @@ func NewUpdateUserPatientIdUseCase(writeRepo WriteRepo, logger *slog.Logger) Upd
 	}
 }
 
-func (uc UpdateUserPatientIdUseCase) Execute(ctx context.Context, user entity.User, patientId int64) (err error) {
+func (uc UpdateUserPatientIdUseCase) Execute(ctx context.Context, user entity.User, patientId int) (err error) {
 	return uc.writeRepo.UpdateUserPatientId(ctx, user, patientId)
 }

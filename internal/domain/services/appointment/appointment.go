@@ -6,20 +6,56 @@ import (
 	"log/slog"
 	"sorkin_bot/internal/domain/entity/appointment"
 	entity "sorkin_bot/internal/domain/entity/user"
+	"sorkin_bot/internal/domain/services/user"
 )
 
 type AppointmentService struct {
-	Mis      Appointment
-	readRepo ReadRepo
-	logger   *slog.Logger
+	Mis         Appointment
+	userService user.UserService
+	readRepo    ReadRepo
+	logger      *slog.Logger
 }
 
-func NewAppointmentService(mis Appointment, readRepo ReadRepo, logger *slog.Logger) AppointmentService {
+func NewAppointmentService(mis Appointment, readRepo ReadRepo, logger *slog.Logger, userService user.UserService) AppointmentService {
 	return AppointmentService{
-		Mis:      mis,
-		readRepo: readRepo,
-		logger:   logger,
+		Mis:         mis,
+		userService: userService,
+		readRepo:    readRepo,
+		logger:      logger,
 	}
+}
+
+func (as *AppointmentService) GetSchedules(ctx context.Context, doctorId int) {
+	op := "sorkin_bot.internal.domain.services.appointment.appointment.GetPatient"
+	err, _ := as.Mis.GetSchedules(ctx, doctorId)
+	if err != nil {
+		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
+		return
+	}
+}
+
+func (as *AppointmentService) GetPatient(ctx context.Context, user entity.User) (result bool) {
+	op := "sorkin_bot.internal.domain.services.appointment.appointment.GetPatient"
+	err := as.Mis.GetPatientById(ctx, user.GetPatientId())
+	if err != nil {
+		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
+		return false
+	}
+	return true
+}
+
+func (as *AppointmentService) CreatePatient(ctx context.Context, user entity.User) (result bool) {
+	op := "sorkin_bot.internal.domain.services.appointment.appointment.CreatePatient"
+
+	err, patientId := as.Mis.CreatePatient(ctx, user)
+	err = as.userService.UpdatePatientId(ctx, user, patientId)
+
+	if err != nil {
+		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
+		return false
+	}
+
+	return true
 }
 
 func (as *AppointmentService) GetTranslatedSpecialities(

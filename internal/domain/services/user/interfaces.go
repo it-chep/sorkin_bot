@@ -26,7 +26,7 @@ type UpdateUserPhoneUseCase interface {
 }
 
 type UpdateUserPatientIdUseCase interface {
-	Execute(ctx context.Context, user entity.User, patientId int64) (err error)
+	Execute(ctx context.Context, user entity.User, patientId int) (err error)
 }
 
 type UpdatePhoneLanguageUseCase interface {

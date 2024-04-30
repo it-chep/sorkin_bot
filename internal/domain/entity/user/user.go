@@ -9,7 +9,8 @@ type User struct {
 	languageCode string
 	state        string
 	phone        string
-	patientId    int64
+	patientId    int
+	birtDate     string
 }
 
 func NewUser(tgId int64, firstName string, opts ...UserOpt) *User {
@@ -25,7 +26,15 @@ func NewUser(tgId int64, firstName string, opts ...UserOpt) *User {
 	return u
 }
 
-func (usr *User) GetPatientId() int64 {
+func (usr *User) GetBirthDate() string {
+	return usr.birtDate
+}
+
+func (usr *User) GetPhone() string {
+	return usr.phone
+}
+
+func (usr *User) GetPatientId() int {
 	return usr.patientId
 }
 
@@ -59,7 +68,7 @@ func (usr *User) SetState(newState string) {
 }
 
 // SetPatientId обновляет id пользователя в мис
-func (usr *User) SetPatientId(patientId int64) {
+func (usr *User) SetPatientId(patientId int) {
 	usr.patientId = patientId
 }
 

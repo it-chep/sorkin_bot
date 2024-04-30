@@ -92,6 +92,16 @@ func (u UserService) ChangeLanguage(ctx context.Context, dto tg.TgUserDTO, langu
 	return user, nil
 }
 
+func (u UserService) UpdatePatientId(ctx context.Context, user entity.User, patientId int) (err error) {
+	op := "sorkin_bot.internal.domain.services.user.users.UpdatePatientId"
+	err = u.updateUserPatientIdUseCase.Execute(ctx, user, patientId)
+	if err != nil {
+		u.logger.Error(fmt.Sprintf("%s %s", err, op))
+		return err
+	}
+	return err
+}
+
 func (u UserService) ChangeState(ctx context.Context, dto tg.TgUserDTO, state string) (user entity.User, err error) {
 	op := "sorkin_bot.internal.domain.services.user.users.ChangeState"
 	user, err = u.readRepo.GetUserByTgID(ctx, dto.TgID)

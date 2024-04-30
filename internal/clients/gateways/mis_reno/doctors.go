@@ -9,10 +9,12 @@ import (
 	"sorkin_bot/internal/domain/entity/appointment"
 )
 
-func (mg *MisRenoGateway) GetDoctors(ctx context.Context) (err error, doctors []appointment.Doctor) {
+func (mg *MisRenoGateway) GetDoctors(ctx context.Context, specialityId int) (err error, doctors []appointment.Doctor) {
 	op := "sorkin_bot.internal.domain.services.appointment.doctors.GetDoctors"
 	var response mis_dto.GetUsersResponse
-	var request = mis_dto.GetUserRequest{}
+	var request = mis_dto.GetUserRequest{
+		SpecialityId: specialityId,
+	}
 
 	jsonBody, err := json.Marshal(request)
 	if err != nil {
