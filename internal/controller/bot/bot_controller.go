@@ -13,12 +13,14 @@ import (
 	"sorkin_bot/internal/config"
 	start2 "sorkin_bot/internal/controller/bot/callback/callback_message"
 	"sorkin_bot/internal/controller/bot/commands/cancel_appointment"
+	"sorkin_bot/internal/controller/bot/commands/change_language"
+	"sorkin_bot/internal/controller/bot/commands/create_appointment"
 	"sorkin_bot/internal/controller/bot/commands/fast_appointment"
 	"sorkin_bot/internal/controller/bot/commands/start"
 	"sorkin_bot/internal/controller/dto/tg"
-	entity "sorkin_bot/internal/domain/entity/user"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
 	"sorkin_bot/internal/domain/services/appointment"
+	"sorkin_bot/internal/domain/services/bot"
 	"sorkin_bot/internal/domain/services/message"
 	"sorkin_bot/internal/domain/services/user"
 	"sorkin_bot/pkg/client/telegram"
@@ -33,6 +35,7 @@ type TelegramWebhookController struct {
 	userService        user.UserService
 	appointmentService appointment.AppointmentService
 	messageService     message.MessageService
+	botService         bot.BotService
 }
 
 func NewTelegramWebhookController(
@@ -43,6 +46,7 @@ func NewTelegramWebhookController(
 	userService user.UserService,
 	appointmentService appointment.AppointmentService,
 	messageService message.MessageService,
+	botService bot.BotService,
 ) TelegramWebhookController {
 	router := gin.New()
 	router.Use(gin.Recovery())
@@ -56,6 +60,7 @@ func NewTelegramWebhookController(
 		userService:        userService,
 		appointmentService: appointmentService,
 		messageService:     messageService,
+		botService:         botService,
 	}
 }
 
@@ -105,7 +110,7 @@ func (t TelegramWebhookController) ForkCommands(update tgbotapi.Update) error {
 	switch update.Message.Command() {
 	case "start":
 		t.logger.Info("start command was called")
-		command := start.NewStartBotCommand(t.logger, t.bot, tgUser, t.userService, t.messageService)
+		command := start.NewStartBotCommand(t.logger, t.bot, tgUser, t.userService, t.messageService, t.botService)
 		command.Execute(ctx, tgMessage)
 	case "help":
 		// service по работе с help
@@ -132,12 +137,10 @@ func (t TelegramWebhookController) ForkCommands(update tgbotapi.Update) error {
 		return nil
 	case "appointment":
 		// service по работе с appointment
+		t.logger.Info("create_appointment command was called")
 
-		_, err := t.bot.Bot.Send(tgbotapi.NewMessage(update.FromChat().ID, "appointment"))
-		if err != nil {
-			return err
-		}
-		return nil
+		command := create_appointment.NewCreateAppointmentCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.appointmentService, t.messageService)
+		command.Execute(ctx, tgMessage)
 	case "cancel_appointment":
 		// service по работе с cancel_appointment
 
@@ -162,20 +165,10 @@ func (t TelegramWebhookController) ForkCommands(update tgbotapi.Update) error {
 		}
 		return nil
 	case "change_language":
-		user := entity.NewUser(tgUser.TgID, tgUser.FirstName, entity.WithUsrState("chooseLanguage"))
-		if user.GetState() == "chooseLanguage" {
-			if err := t.machine.FSM.Event(ctx, "chooseLanguage"); err != nil {
-				_, errMsg := t.bot.Bot.Send(tgbotapi.NewMessage(update.FromChat().ID, "Cannot change language at this time."))
-				return errMsg
-			}
-			t.logger.Info(fmt.Sprintf("USER STATE %s", user.GetState()))
-		}
+		t.logger.Info("change_language command was called")
 
-		_, err := t.bot.Bot.Send(tgbotapi.NewMessage(update.FromChat().ID, "Language changed."))
-		if err != nil {
-			return err
-		}
-		return nil
+		command := change_language.NewChangeLanguageCommand(t.logger, t.bot, tgUser, t.userService, t.messageService, t.botService)
+		command.Execute(ctx)
 	case "menu":
 		// service по работе с menu
 

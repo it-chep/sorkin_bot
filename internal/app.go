@@ -10,17 +10,26 @@ import (
 	"sorkin_bot/internal/controller"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
 	"sorkin_bot/internal/domain/services/appointment"
+	"sorkin_bot/internal/domain/services/bot"
 	"sorkin_bot/internal/domain/services/message"
 	"sorkin_bot/internal/domain/services/user"
 	"sorkin_bot/internal/domain/usecases/bot/changeLanguage"
 	"sorkin_bot/internal/domain/usecases/bot/save_message_log"
 	"sorkin_bot/internal/domain/usecases/user/create_user"
+	"sorkin_bot/internal/domain/usecases/user/update_user_patient_id"
+	"sorkin_bot/internal/domain/usecases/user/update_user_phone"
 	"sorkin_bot/internal/storage/read_repo"
 	"sorkin_bot/internal/storage/write_repo"
 	"sorkin_bot/pkg/client/postgres"
 	"sorkin_bot/pkg/client/telegram"
 	"time"
 )
+
+//const (
+//	RU    = "RU"
+//	PT_BR = "PT_BR"
+//	EN    = "EN"
+//)
 
 func (app *App) InitLogger(ctx context.Context) *App {
 	app.logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
@@ -55,6 +64,8 @@ func (app *App) InitUseCases(ctx context.Context) *App {
 	app.useCases.createUserUserCase = create_user.NewCreateUserUseCase(app.storages.writeUserStorage, app.logger)
 	app.useCases.changeLanguageUseCase = changeLanguage.NewChangeLanguageUseCase(app.storages.writeUserStorage, app.logger)
 	app.useCases.saveMessageUseCase = save_message_log.NewSaveMessageLogUseCase(app.storages.writeTelegramStorage, app.logger)
+	app.useCases.updateUserPhoneUseCase = update_user_phone.NewUpdateUserPhoneUseCase(app.storages.writeUserStorage, app.logger)
+	app.useCases.updateUserPatientIdUseCase = update_user_patient_id.NewUpdateUserPatientIdUseCase(app.storages.writeUserStorage, app.logger)
 	return app
 }
 
@@ -63,6 +74,8 @@ func (app *App) InitServices(ctx context.Context) *App {
 		app.useCases.createUserUserCase,
 		app.useCases.changeLanguageUseCase,
 		app.useCases.changeStatusUseCase,
+		app.useCases.updateUserPhoneUseCase,
+		app.useCases.updateUserPatientIdUseCase,
 		app.storages.readUserStorage,
 		app.logger,
 	)
@@ -72,11 +85,17 @@ func (app *App) InitServices(ctx context.Context) *App {
 		app.storages.readTranslationStorage,
 		app.logger,
 	)
+
 	app.services.messageService = message.NewMessageService(
 		app.useCases.saveMessageUseCase,
 		app.storages.readMessageStorage,
 		app.logger,
 	)
+	app.services.botService = bot.NewBotService(
+		app.logger,
+		app.services.messageService,
+	)
+
 	return app
 
 }
@@ -92,7 +111,7 @@ func (app *App) InitTelegram(ctx context.Context) *App {
 }
 
 func (app *App) InitControllers(ctx context.Context) *App {
-	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot, app.machine, app.services.userService, app.services.appointmentService, app.services.messageService)
+	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot, app.machine, app.services.userService, app.services.appointmentService, app.services.messageService, app.services.botService)
 	app.controller.telegramWebhookController.InitController(ctx)
 
 	app.server = &http.Server{

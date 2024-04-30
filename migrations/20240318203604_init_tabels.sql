@@ -4,6 +4,7 @@ create table if not exists tg_users
 (
     id                bigserial,
     tg_id             bigint,
+    patient_id        bigint,
     name              varchar(255),
     surname           varchar(255),
     username          varchar(255),
@@ -24,10 +25,10 @@ create table if not exists message_log
 
 create table if not exists translations
 (
-    id bigserial,
-    slug text unique,
-    ru_text text,
-    eng_text text,
+    id         bigserial,
+    slug       text unique,
+    ru_text    text,
+    eng_text   text,
     pt_Br_text text
 );
 

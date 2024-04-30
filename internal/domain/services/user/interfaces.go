@@ -21,6 +21,14 @@ type ChangeStateUseCase interface {
 	Execute(ctx context.Context, user entity.User, state string) (err error)
 }
 
+type UpdateUserPhoneUseCase interface {
+	Execute(ctx context.Context, user entity.User, phone string) (err error)
+}
+
+type UpdateUserPatientIdUseCase interface {
+	Execute(ctx context.Context, user entity.User, patientId int64) (err error)
+}
+
 type UpdatePhoneLanguageUseCase interface {
 	Execute()
 }

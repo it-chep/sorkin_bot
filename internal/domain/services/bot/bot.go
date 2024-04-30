@@ -1,20 +1,27 @@
 package bot
 
-import "log/slog"
+import (
+	"context"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"log/slog"
+	entity "sorkin_bot/internal/domain/entity/user"
+	"sorkin_bot/internal/domain/services/message"
+)
 
 type BotService struct {
-	readRepo                 ReadMessagesRepo
-	administratorHelpUseCase AdministratorHelpUseCase
-	// MORE usecases
-	logger *slog.Logger
+	//readRepo                 ReadMessagesRepo
+	//administratorHelpUseCase AdministratorHelpUseCase
+	logger         *slog.Logger
+	messageService message.MessageService
 }
 
-func NewBotService(readRepo ReadMessagesRepo, administratorHelpUseCase AdministratorHelpUseCase, logger *slog.Logger) BotService {
+func NewBotService(logger *slog.Logger, messageService message.MessageService) BotService {
 	return BotService{
-		readRepo:                 readRepo,
-		administratorHelpUseCase: administratorHelpUseCase,
+		//readRepo:                 readRepo,
+		//administratorHelpUseCase: administratorHelpUseCase,
 		// MORE usecases
-		logger: logger,
+		logger:         logger,
+		messageService: messageService,
 	}
 }
 
@@ -35,4 +42,16 @@ func (bs BotService) CancelAppointment() {
 	//  return message
 
 	//	TODO create response message_log may be go send_message() {} - controller or adapter mb
+}
+
+func (bs BotService) ConfigureChangeLanguageMessage(ctx context.Context, user entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup) {
+	keyboard = tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("🇬🇧 EN", "EN"),
+			tgbotapi.NewInlineKeyboardButtonData("🇷🇺 RU", "RU"),
+			tgbotapi.NewInlineKeyboardButtonData("🇵🇹 PT", "PT"),
+		),
+	)
+	msgText, _ = bs.messageService.GetMessage(ctx, user, "change_language")
+	return msgText, keyboard
 }

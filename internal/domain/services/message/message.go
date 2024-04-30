@@ -48,7 +48,7 @@ func (ms MessageService) translateMessage(user userEntity.User, message tgEntity
 		return message.GetRuText(), nil
 	case "EN":
 		return message.GetEngText(), nil
-	case "PtBR":
+	case "PT":
 		return message.GetRtBRText(), nil
 	}
 	return ServerError, errors.New(ServerError)

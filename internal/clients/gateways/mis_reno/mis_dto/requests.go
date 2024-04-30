@@ -8,7 +8,9 @@ const (
 	GetScheduleMethod        = "getSchedule"
 	GetSchedulePeriodsMethod = "getSchedulePeriods"
 	GetAppointmentsMethod    = "getAppointments"
-	GetAppointmentsV2Method  = "getAppointments/v2"
+	GetAppointmentsV2Method  = "V2/getAppointments"
+	GetPatientMethod         = "getPatient"
+	CreatePatientMethod      = "createPatient"
 	CreateAppointmentMethod  = "createAppointment"
 	CancelAppointmentMethod  = "cancelAppointment"
 	ConfirmAppointmentMethod = "confirmAppointment"
@@ -94,4 +96,33 @@ type GetAppointmentsRequest struct {
 	Status          string `json:"status"`
 	StatusId        int    `json:"status_id"`
 	ShowPatientData string `json:"show_patient_data"`
+}
+
+type GetPatientRequest struct {
+	Id              int    `json:"id"`
+	LastName        string `json:"last_name"`
+	FirstName       string `json:"first_name"`
+	ThirdName       string `json:"third_name"`
+	BirthDate       string `json:"birth_date"`
+	BirthDay        string `json:"birth_day"`
+	Mobile          string `json:"mobile"`
+	Email           string `json:"email"`
+	CarNumber       string `json:"car_number"`
+	CategoryID      string `json:"category_id"`
+	WithDocuments   bool   `json:"with_documents"`
+	DateCreatedFrom string `json:"date_created_from"` //dd.mm.yyyy hh:mm
+	DateCreatedTo   string `json:"date_created_to"`   //dd.mm.yyyy hh:mm
+	DateUpdatedFrom string `json:"date_updated_from"` //dd.mm.yyyy hh:mm
+	DateUpdatedTo   string `json:"date_updated_to"`   //dd.mm.yyyy hh:mm
+}
+
+type CreatePatientRequest struct {
+	LastName  string `json:"last_name"`
+	FirstName string `json:"first_name"`
+	ThirdName string `json:"third_name"`
+	BirthDate string `json:"birth_date"`
+	Gender    string `json:"gender"`
+	Mobile    string `json:"mobile"`
+	Phone     string `json:"phone"`
+	Email     string `json:"email"`
 }

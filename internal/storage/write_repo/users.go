@@ -38,6 +38,20 @@ func (ws UserStorage) CreateUser(ctx context.Context, user entity.User) (userID 
 	return userID, nil
 }
 
+func (ws UserStorage) UpdateUserPatientId(ctx context.Context, user entity.User, patientId int64) (err error) {
+	op := "internal/storage/write_repo/UpdateUserPatientId"
+	q := `
+		update tg_users set patient_id = $1 where tg_id = $2;
+	`
+	ws.logger.Info(op)
+	_, err = ws.client.Exec(ctx, q, patientId, user.GetTgId())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (ws UserStorage) UpdateUserLanguageCode(ctx context.Context, user entity.User, languageCode string) (err error) {
 	op := "internal/storage/write_repo/UpdateUserLanguageCode"
 	q := `
@@ -53,7 +67,7 @@ func (ws UserStorage) UpdateUserLanguageCode(ctx context.Context, user entity.Us
 }
 
 func (ws UserStorage) UpdateUserState(ctx context.Context, user entity.User) (err error) {
-	op := "internal/storage/write_repo/UpdateUserState"
+	op := "internal.storage.write_repo.UpdateUserState"
 	q := `
 		update tg_users set last_state = $1 where tg_id = $2;
 	`

@@ -1,15 +1,19 @@
 package dao
 
-import entity "sorkin_bot/internal/domain/entity/user"
+import (
+	"database/sql"
+	entity "sorkin_bot/internal/domain/entity/user"
+)
 
 type UserDAO struct {
-	TgId         int64  `db:"tg_id"`
-	FirstName    string `db:"name"`
-	LastName     string `db:"surname"`
-	Username     string `db:"username"`
-	LanguageCode string `db:"language_code"`
-	Phone        string `db:"phone"`
-	LastState    string `db:"last_state"`
+	TgId         int64         `db:"tg_id"`
+	FirstName    string        `db:"name"`
+	LastName     string        `db:"surname"`
+	Username     string        `db:"username"`
+	LanguageCode string        `db:"language_code"`
+	Phone        string        `db:"phone"`
+	LastState    string        `db:"last_state"`
+	PatientId    sql.NullInt64 `db:"patient_id"`
 }
 
 func NewUserDAO() *UserDAO {

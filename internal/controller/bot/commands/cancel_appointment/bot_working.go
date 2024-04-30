@@ -65,34 +65,6 @@ func (c *CancelAppointmentBotCommand) Execute(ctx context.Context, message tg.Me
 	} else {
 		return
 	}
-	//todo докрутить логику со специальностями
-	if userEntity.GetState() == state_machine.ChooseSpeciality {
-		err, specialities := c.appointmentService.Mis.GetSpecialities(ctx)
-		if err != nil {
-			return
-		}
-		messageText, err := c.messageService.GetMessage(ctx, userEntity, "Choose speciality")
-		msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
-		if err != nil {
-			_, _ = c.bot.Bot.Send(msg)
-			return
-		}
-		keyboard := tgbotapi.NewInlineKeyboardMarkup()
-		translatedSpecialities, err := c.appointmentService.GetTranslatedSpecialities(ctx, userEntity, specialities)
-		if err != nil {
-			return
-		}
-		for speciallityId, translatedSpeciality := range translatedSpecialities {
-			btn := tgbotapi.NewInlineKeyboardButtonData(translatedSpeciality, fmt.Sprintf("%d", speciallityId))
-			row := tgbotapi.NewInlineKeyboardRow(btn)
-			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
-		}
-		msg.ReplyMarkup = keyboard
-
-	} else {
-		return
-	}
-	//todo докрутить логику со специальностями
 
 	c.machine.SetState(userEntity, userEntity.GetState(), state_machine.ChooseAppointment)
 

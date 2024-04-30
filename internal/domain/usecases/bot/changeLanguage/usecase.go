@@ -2,6 +2,7 @@ package changeLanguage
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	entity "sorkin_bot/internal/domain/entity/user"
 )
@@ -20,13 +21,16 @@ func NewChangeLanguageUseCase(writeRepo WriteRepo, logger *slog.Logger) ChangeLa
 
 func (uc ChangeLanguageUseCase) Execute(ctx context.Context, user entity.User, languageCode string) (err error) {
 	// TODO менеджер транзакций от авито
+	op := "sorkin_bot.internal.domain.usecases.bot.changeLanguage.usecase.Execute"
 	err = uc.writeRepo.UpdateUserLanguageCode(ctx, user, languageCode)
 	if err != nil {
+		uc.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
 		return err
 	}
 	err = uc.writeRepo.UpdateUserState(ctx, user)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

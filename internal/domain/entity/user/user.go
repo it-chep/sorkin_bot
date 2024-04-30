@@ -9,11 +9,13 @@ type User struct {
 	languageCode string
 	state        string
 	phone        string
+	patientId    int64
 }
 
 func NewUser(tgId int64, firstName string, opts ...UserOpt) *User {
 	u := &User{
-		tgID: tgId,
+		tgID:      tgId,
+		firstName: firstName,
 	}
 
 	for _, opt := range opts {
@@ -21,6 +23,10 @@ func NewUser(tgId int64, firstName string, opts ...UserOpt) *User {
 	}
 
 	return u
+}
+
+func (usr *User) GetPatientId() int64 {
+	return usr.patientId
 }
 
 func (usr *User) GetFirstName() string {
@@ -50,6 +56,15 @@ func (usr *User) GetState() string {
 // SetState обновляет текущее состояние пользователя.
 func (usr *User) SetState(newState string) {
 	usr.state = newState
+}
+
+// SetPatientId обновляет id пользователя в мис
+func (usr *User) SetPatientId(patientId int64) {
+	usr.patientId = patientId
+}
+
+func (usr *User) SetLanguageCode(languageCode string) {
+	usr.languageCode = languageCode
 }
 
 type Appointment struct {

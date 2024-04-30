@@ -40,12 +40,28 @@ func (mg *MisRenoGateway) sendToMIS(ctx context.Context, method string, body io.
 	urlWithMethod, _ := url.JoinPath(os.Getenv("MIS_API_URL"), method)
 	urlWithParams := fmt.Sprintf("%s?%s", urlWithMethod, queryParams.Encode())
 
-	request, err := http.NewRequest(http.MethodPost, urlWithParams, body)
+	var data map[string]interface{}
+	err := json.NewDecoder(body).Decode(&data)
+	if err != nil {
+		mg.logger.Error(fmt.Sprintf("error while decoding JSON: %s \nplace: %s", err, op))
+		return responseBody
+	}
+
+	formValues := url.Values{}
+	for key, value := range data {
+		strValue := fmt.Sprintf("%v", value)
+		formValues.Add(key, strValue)
+	}
+
+	requestBody := bytes.NewBufferString(formValues.Encode())
+
+	request, err := http.NewRequest(http.MethodPost, urlWithParams, requestBody)
 	if err != nil {
 		// Обработка ошибки создания запроса
 		mg.logger.Error(fmt.Sprintf("error while create request entity, op: %s", op))
 		return responseBody
 	}
+	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	// Выполнение запроса
 	result, err := mg.client.Do(request)

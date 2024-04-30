@@ -14,6 +14,7 @@ import (
 var languagesMap = map[string]bool{
 	"RU": true,
 	"EN": true,
+	"PT": true,
 }
 
 type CallbackBotMessage struct {
@@ -35,18 +36,25 @@ func NewCallbackBot(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, 
 }
 
 // Execute место связи telegram и бизнес логи
-func (c *CallbackBotMessage) Execute(ctx context.Context, message tg.MessageDTO, callbackData string) {
+func (c *CallbackBotMessage) Execute(ctx context.Context, messageDTO tg.MessageDTO, callbackData string) {
+	op := "sorkin_bot.internal.controller.bot.callback.callback_message.bot_working.Execute"
 	var msg tgbotapi.MessageConfig
+	var msgText string
+
 	if _, ok := languagesMap[callbackData]; ok {
-		_, err := c.userService.ChangeLanguage(ctx, c.tgUser, callbackData)
+		userEntity, err := c.userService.ChangeLanguage(ctx, c.tgUser, callbackData)
 		if err != nil {
 			return
 		}
-		msg = tgbotapi.NewMessage(c.tgUser.TgID, "Язык поставлен")
-
-	} else {
-		msg = tgbotapi.NewMessage(c.tgUser.TgID, fmt.Sprintf("Chosen language %s", callbackData))
+		userEntity.SetLanguageCode(callbackData)
+		msgText, err = c.messageService.GetMessage(ctx, userEntity, "successfully changed language")
+		if err != nil {
+			c.logger.Error(fmt.Sprintf("error: %s,  place: %s", err, op))
+			msgText = message.ServerError
+		}
 	}
+	msg = tgbotapi.NewMessage(c.tgUser.TgID, msgText)
+
 	_, err := c.bot.Bot.Send(msg)
 	if err != nil {
 		c.logger.Error(fmt.Sprintf("%s", err))

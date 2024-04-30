@@ -36,3 +36,10 @@ func WithUsrPhone(phone string) UserOpt {
 		return usr
 	}
 }
+
+func WithUsrPatientId(patientId int64) UserOpt {
+	return func(usr *User) *User {
+		usr.patientId = patientId
+		return usr
+	}
+}

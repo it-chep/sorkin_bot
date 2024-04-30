@@ -191,3 +191,88 @@ func (a AppointmentDTO) ToDomain() appointment.Appointment {
 		a.Status, a.ConfirmStatus, a.Source, a.MovedTo, a.MovedFrom,
 	)
 }
+
+type CreatePatientData struct {
+	PatientID int    `json:"patient_id"`
+	Number    int    `json:"number"`
+	LastName  string `json:"last_name"`
+	FirstName string `json:"first_name"`
+	ThirdName string `json:"third_name"`
+	BirthDate string `json:"birth_date"`
+	Age       string `json:"age"`
+	Gender    string `json:"gender"`
+	Mobile    string `json:"mobile"`
+	Phone     string `json:"phone"`
+	Email     string `json:"email"`
+}
+
+type CreatePatientResponse struct {
+	Error int `json:"error"`
+	Data  struct {
+		CreatePatientData
+	} `json:"data"`
+}
+
+type PatientAddress struct {
+	City        string `json:"city"`
+	Street      string `json:"street"`
+	House       string `json:"house"`
+	Building    string `json:"building"`
+	Flat        string `json:"flat"`
+	District    string `json:"district"`
+	ZipCode     string `json:"zip_code"`
+	Metro       string `json:"metro"`
+	FullAddress string `json:"fullAddress"`
+}
+
+type GetPatientData struct {
+	Number         int            `json:"number"`
+	LastName       string         `json:"last_name"`
+	FirstName      string         `json:"first_name"`
+	ThirdName      string         `json:"third_name"`
+	BirthDate      string         `json:"birth_date"`
+	BirthPlace     string         `json:"birth_place"`
+	Age            string         `json:"age"`
+	Gender         string         `json:"gender"`
+	Mobile         string         `json:"mobile"`
+	Phone          string         `json:"phone"`
+	Email          string         `json:"email"`
+	CarNumber      string         `json:"car_number"`
+	ExternalID     string         `json:"external_id"`
+	ExternalNumber string         `json:"external_number"`
+	JobPlace       string         `json:"job_place"`
+	JobProfession  string         `json:"job_profession"`
+	JobPosition    string         `json:"job_position"`
+	Factory        string         `json:"factory"`
+	Unit           string         `json:"unit"`
+	Workshop       string         `json:"workshop"`
+	Area           string         `json:"area"`
+	ServiceNumber  string         `json:"service_number"`
+	JobAttitude    string         `json:"job_attitude"`
+	SendSMS        string         `json:"send_sms"`
+	SendEmail      string         `json:"send_email"`
+	SendSMSLab     string         `json:"send_sms_lab"`
+	SendEmailLab   string         `json:"send_email_lab"`
+	DateCreated    string         `json:"date_created"`
+	DateUpdated    string         `json:"date_updated"`
+	TimeCreated    string         `json:"time_created"`
+	TimeUpdated    string         `json:"time_updated"`
+	CategoryIDs    string         `json:"category_ids"`
+	ParentID       string         `json:"parent_id"`
+	Groups         string         `json:"groups"`
+	HasAccount     string         `json:"has_account"`
+	AdvChannelID   string         `json:"adv_channel_id"`
+	Desc           string         `json:"desc"`
+	Address        PatientAddress `json:"address"`
+	IsDeleted      bool           `json:"is_deleted"`
+	DateDeleted    string         `json:"date_deleted"`
+	PatientID      int            `json:"patient_id"`
+	Documents      string         `json:"documents"`
+}
+
+type GetPatientResponse struct {
+	Error int `json:"error"`
+	Data  struct {
+		GetPatientData
+	} `json:"data"`
+}

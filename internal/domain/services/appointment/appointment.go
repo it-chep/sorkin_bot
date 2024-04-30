@@ -50,7 +50,7 @@ func (as *AppointmentService) GetTranslatedSpecialities(
 			translatedSpeciality = translationEntity.GetRuText()
 		case "EN":
 			translatedSpeciality = translationEntity.GetEngText()
-		case "PT_BR":
+		case "PT":
 			translatedSpeciality = translationEntity.GetPtBrText()
 		}
 
