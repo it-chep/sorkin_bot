@@ -184,7 +184,7 @@ func (mg *MisRenoGateway) MyAppointments(ctx context.Context, user entity.User) 
 		DateCreatedFrom: user.GetRegistrationTime(),
 		DateCreatedTo:   fmt.Sprintf("%02d.%02d.%d %02d:%02d", currentTime.Day(), currentTime.Month(), currentTime.Year(), currentTime.Hour(), currentTime.Minute()),
 		PatientId:       user.GetPatientId(),
-		StatusId:        "1, 2, 4, 5",
+		StatusId:        "1, 2",
 	}
 
 	jsonBody, err := json.Marshal(request)
@@ -219,7 +219,7 @@ func (mg *MisRenoGateway) DetailAppointment(ctx context.Context, user entity.Use
 		DateCreatedFrom: user.GetRegistrationTime(),
 		DateCreatedTo:   fmt.Sprintf("%02d.%02d.%d %02d:%02d", currentTime.Day(), currentTime.Month(), currentTime.Year(), currentTime.Hour(), currentTime.Minute()),
 		PatientId:       user.GetPatientId(),
-		StatusId:        "1, 2, 5",
+		StatusId:        "1, 2",
 	}
 
 	jsonBody, err := json.Marshal(request)
