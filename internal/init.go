@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"sorkin_bot/internal/clients/gateways/mis_reno"
 	"sorkin_bot/internal/config"
 	"sorkin_bot/internal/controller"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
@@ -38,9 +39,15 @@ type useCases struct {
 }
 
 type storages struct {
-	readUserStorage      read_repo.UserStorage
-	writeUserStorage     write_repo.UserStorage
-	writeTelegramStorage write_repo.TelegramMessageStorage
+	readUserStorage        read_repo.UserStorage
+	readTranslationStorage read_repo.TranslationStorage
+	readMessageStorage     read_repo.MessageStorage
+	writeUserStorage       write_repo.UserStorage
+	writeTelegramStorage   write_repo.TelegramMessageStorage
+}
+
+type gateways struct {
+	MisRenoGateway mis_reno.MisRenoGateway
 }
 
 type App struct {
@@ -51,6 +58,7 @@ type App struct {
 	services   services
 	storages   storages
 	useCases   useCases
+	gateways   gateways
 	bot        telegram.Bot
 	pgxClient  postgres.Client
 	server     *http.Server
@@ -67,6 +75,7 @@ func NewApp(ctx context.Context) *App {
 		InitPgxConn(ctx).
 		InitStorage(ctx).
 		InitMachine(ctx).
+		InitGateways(ctx).
 		InitUseCases(ctx).
 		InitServices(ctx).
 		InitTelegram(ctx).

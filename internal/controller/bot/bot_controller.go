@@ -162,7 +162,7 @@ func (t TelegramWebhookController) ForkCommands(update tgbotapi.Update) error {
 		}
 		return nil
 	case "change_language":
-		user := entity.NewUser(tgUser.TgID, tgUser.FirstName, entity.WithState("chooseLanguage"))
+		user := entity.NewUser(tgUser.TgID, tgUser.FirstName, entity.WithUsrState("chooseLanguage"))
 		if user.GetState() == "chooseLanguage" {
 			if err := t.machine.FSM.Event(ctx, "chooseLanguage"); err != nil {
 				_, errMsg := t.bot.Bot.Send(tgbotapi.NewMessage(update.FromChat().ID, "Cannot change language at this time."))

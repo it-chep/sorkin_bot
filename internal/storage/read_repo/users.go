@@ -38,5 +38,6 @@ func (rs UserStorage) GetUserByTgID(ctx context.Context, userID int64) (user ent
 
 	// Create and return a new User entity
 	user = *userDAO.ToDomain()
+	rs.logger.Info(fmt.Sprintf("%s, %s", userDAO, user))
 	return user, nil
 }

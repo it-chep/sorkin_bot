@@ -22,6 +22,15 @@ create table if not exists message_log
     time          timestamp
 );
 
+create table if not exists translations
+(
+    id bigserial,
+    slug text unique,
+    ru_text text,
+    eng_text text,
+    pt_Br_text text
+);
+
 create table if not exists message
 (
     id         bigserial,

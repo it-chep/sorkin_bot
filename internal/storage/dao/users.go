@@ -20,5 +20,10 @@ func (dao *UserDAO) ToDomain() *entity.User {
 	return entity.NewUser(
 		dao.TgId,
 		dao.FirstName,
+		entity.WithUsrLanguageCode(dao.LanguageCode),
+		entity.WithUsrState(dao.LastState),
+		entity.WithUsrUsername(dao.Username),
+		entity.WithUsrUsername(dao.LastName),
+		entity.WithUsrPhone(dao.Phone),
 	)
 }

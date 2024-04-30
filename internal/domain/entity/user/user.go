@@ -8,6 +8,7 @@ type User struct {
 	username     string
 	languageCode string
 	state        string
+	phone        string
 }
 
 func NewUser(tgId int64, firstName string, opts ...UserOpt) *User {

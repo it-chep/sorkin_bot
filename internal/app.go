@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"sorkin_bot/internal/clients/gateways/mis_reno"
 	"sorkin_bot/internal/controller"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
 	"sorkin_bot/internal/domain/services/appointment"
@@ -39,7 +40,14 @@ func (app *App) InitPgxConn(ctx context.Context) *App {
 func (app *App) InitStorage(ctx context.Context) *App {
 	app.storages.writeUserStorage = write_repo.NewUserStorage(app.pgxClient, app.logger)
 	app.storages.readUserStorage = read_repo.NewUserStorage(app.pgxClient, app.logger)
+	app.storages.readTranslationStorage = read_repo.NewTranslationRepo(app.pgxClient, app.logger)
+	app.storages.readMessageStorage = read_repo.NewReadMessageStorage(app.pgxClient, app.logger)
 	app.storages.writeTelegramStorage = write_repo.NewTelegramMessageStorage(app.pgxClient, app.logger)
+	return app
+}
+
+func (app *App) InitGateways(ctx context.Context) *App {
+	app.gateways.MisRenoGateway = mis_reno.NewMisRenoGateway(app.logger, http.Client{})
 	return app
 }
 
@@ -60,11 +68,13 @@ func (app *App) InitServices(ctx context.Context) *App {
 	)
 	// todo исправить
 	app.services.appointmentService = appointment.NewAppointmentService(
+		&app.gateways.MisRenoGateway,
+		app.storages.readTranslationStorage,
 		app.logger,
-		http.Client{},
 	)
 	app.services.messageService = message.NewMessageService(
 		app.useCases.saveMessageUseCase,
+		app.storages.readMessageStorage,
 		app.logger,
 	)
 	return app

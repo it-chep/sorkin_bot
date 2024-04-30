@@ -33,7 +33,31 @@ type MessageCondition struct {
 }
 
 type Message struct {
-	id int64
+	id       int64
+	ruText   string
+	engText  string
+	ptBrText string
+}
+
+func NewMessage(id int64, ruText, engText, ptBrText string) Message {
+	return Message{
+		id:       id,
+		ruText:   ruText,
+		engText:  engText,
+		ptBrText: ptBrText,
+	}
+}
+
+func (m Message) GetRuText() string {
+	return m.ruText
+}
+
+func (m Message) GetEngText() string {
+	return m.engText
+}
+
+func (m Message) GetRtBRText() string {
+	return m.ptBrText
 }
 
 type TgUser struct {

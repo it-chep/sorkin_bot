@@ -2,7 +2,6 @@ package fast_appointment
 
 import (
 	"context"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
@@ -43,8 +42,8 @@ func NewFastAppointmentBotCommand(
 }
 
 func (c *FastAppointmentBotCommand) Execute(ctx context.Context, message tg.MessageDTO) {
-	c.appointmentService.FastAppointment(ctx)
-	var _ tgbotapi.MessageConfig
+	//c.appointmentService.Mis.FastAppointment(ctx)
+	//var _ tgbotapi.MessageConfig
 	//if err != nil {
 	//	return
 	//}
