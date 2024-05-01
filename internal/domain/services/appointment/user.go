@@ -6,7 +6,7 @@ import (
 	entity "sorkin_bot/internal/domain/entity/user"
 )
 
-func (as *AppointmentService) GetPatient(ctx context.Context, user entity.User) (result bool) {
+func (as AppointmentService) GetPatient(ctx context.Context, user entity.User) (result bool) {
 	op := "sorkin_bot.internal.domain.services.appointment.user.GetPatient"
 	err := as.mis.GetPatientById(ctx, user.GetPatientId())
 	if err != nil {
@@ -16,7 +16,7 @@ func (as *AppointmentService) GetPatient(ctx context.Context, user entity.User) 
 	return true
 }
 
-func (as *AppointmentService) CreatePatient(ctx context.Context, user entity.User) (result bool) {
+func (as AppointmentService) CreatePatient(ctx context.Context, user entity.User) (result bool) {
 	op := "sorkin_bot.internal.domain.services.appointment.user.CreatePatient"
 
 	err, patientId := as.mis.CreatePatient(ctx, user)

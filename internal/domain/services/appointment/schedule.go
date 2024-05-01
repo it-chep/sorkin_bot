@@ -6,7 +6,7 @@ import (
 	"sorkin_bot/internal/domain/entity/appointment"
 )
 
-func (as *AppointmentService) GetFastAppointmentSchedules(ctx context.Context) (schedulesMap map[int][]appointment.Schedule) {
+func (as AppointmentService) GetFastAppointmentSchedules(ctx context.Context) (schedulesMap map[int][]appointment.Schedule) {
 	op := "sorkin_bot.internal.domain.services.appointment.schedule.GetFastAppointmentSchedules"
 	err, schedulesMap := as.mis.FastAppointment(ctx)
 	if err != nil {
@@ -17,7 +17,7 @@ func (as *AppointmentService) GetFastAppointmentSchedules(ctx context.Context) (
 	return schedulesMap
 }
 
-func (as *AppointmentService) GetSchedules(ctx context.Context, doctorId int) {
+func (as AppointmentService) GetSchedules(ctx context.Context, doctorId int) {
 	op := "sorkin_bot.internal.domain.services.appointment.schedule.GetSchedules	"
 	err, schedules := as.mis.GetSchedules(ctx, doctorId, "")
 	as.logger.Info(fmt.Sprintf("schedules[doctorId] %s", schedules[doctorId]))

@@ -27,7 +27,7 @@ func NewAppointmentService(mis Appointment, readRepo ReadRepo, logger *slog.Logg
 	}
 }
 
-func (as *AppointmentService) GetAppointments(ctx context.Context, user entity.User) (appointments []appointment.Appointment) {
+func (as AppointmentService) GetAppointments(ctx context.Context, user entity.User) (appointments []appointment.Appointment) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.GetAppointments"
 
 	if user.GetPatientId() == 0 {
@@ -48,7 +48,7 @@ func (as *AppointmentService) GetAppointments(ctx context.Context, user entity.U
 	return appointments
 }
 
-func (as *AppointmentService) GetAppointmentDetail(ctx context.Context, user entity.User, appointmentId int) (appointmentEntity appointment.Appointment) {
+func (as AppointmentService) GetAppointmentDetail(ctx context.Context, user entity.User, appointmentId int) (appointmentEntity appointment.Appointment) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.GetAppointmentDetail"
 
 	if user.GetPatientId() == 0 {
@@ -64,7 +64,7 @@ func (as *AppointmentService) GetAppointmentDetail(ctx context.Context, user ent
 	return appointmentEntity
 }
 
-func (as *AppointmentService) CreateAppointment(ctx context.Context, user entity.User, callbackData string) (appointmentId int) {
+func (as AppointmentService) CreateAppointment(ctx context.Context, user entity.User, callbackData string) (appointmentId int) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.CreateAppointment"
 	if user.GetPatientId() == 0 {
 		return
@@ -85,7 +85,7 @@ func (as *AppointmentService) CreateAppointment(ctx context.Context, user entity
 	return appointmentId
 }
 
-func (as *AppointmentService) ConfirmAppointment(ctx context.Context, appointmentId int) (result bool) {
+func (as AppointmentService) ConfirmAppointment(ctx context.Context, appointmentId int) (result bool) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.ConfirmAppointment"
 
 	err, result := as.mis.ConfirmAppointment(ctx, appointmentId)
@@ -96,7 +96,7 @@ func (as *AppointmentService) ConfirmAppointment(ctx context.Context, appointmen
 	return true
 }
 
-func (as *AppointmentService) CancelAppointment(ctx context.Context, appointmentId int) (result bool) {
+func (as AppointmentService) CancelAppointment(ctx context.Context, appointmentId int) (result bool) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.CancelAppointment"
 
 	err, result := as.mis.CancelAppointment(ctx, "", appointmentId)
@@ -107,7 +107,7 @@ func (as *AppointmentService) CancelAppointment(ctx context.Context, appointment
 	return true
 }
 
-func (as *AppointmentService) RescheduleAppointment(ctx context.Context, appointmentId int, movedTo string) (result bool) {
+func (as AppointmentService) RescheduleAppointment(ctx context.Context, appointmentId int, movedTo string) (result bool) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.RescheduleAppointment"
 
 	err, result := as.mis.CancelAppointment(ctx, movedTo, appointmentId)

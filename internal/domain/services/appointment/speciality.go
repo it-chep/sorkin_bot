@@ -7,7 +7,7 @@ import (
 	entity "sorkin_bot/internal/domain/entity/user"
 )
 
-func (as *AppointmentService) GetTranslatedSpecialities(
+func (as AppointmentService) GetTranslatedSpecialities(
 	ctx context.Context,
 	user entity.User,
 	specialities []appointment.Speciality,

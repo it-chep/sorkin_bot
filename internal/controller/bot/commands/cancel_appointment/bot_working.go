@@ -5,7 +5,7 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
-	"sorkin_bot/internal/controller/bot"
+	"sorkin_bot/internal/controller/bot/bot_interfaces"
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
 	"sorkin_bot/pkg/client/telegram"
@@ -15,13 +15,13 @@ type CancelAppointmentBotCommand struct {
 	logger             *slog.Logger
 	bot                telegram.Bot
 	tgUser             tg.TgUserDTO
-	userService        bot.UserService
+	userService        bot_interfaces.UserService
 	machine            *state_machine.UserStateMachine
-	appointmentService bot.AppointmentService
-	messageService     bot.MessageService
+	appointmentService bot_interfaces.AppointmentService
+	messageService     bot_interfaces.MessageService
 }
 
-func NewCancelAppointmentBotCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, userService bot.UserService, machine *state_machine.UserStateMachine, appointmentService bot.AppointmentService, messageService bot.MessageService,
+func NewCancelAppointmentBotCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, userService bot_interfaces.UserService, machine *state_machine.UserStateMachine, appointmentService bot_interfaces.AppointmentService, messageService bot_interfaces.MessageService,
 ) CancelAppointmentBotCommand {
 	return CancelAppointmentBotCommand{
 		logger:             logger,

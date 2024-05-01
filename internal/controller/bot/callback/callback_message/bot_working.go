@@ -5,7 +5,7 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
-	"sorkin_bot/internal/controller/bot"
+	"sorkin_bot/internal/controller/bot/bot_interfaces"
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
 	"sorkin_bot/internal/domain/services/message"
@@ -23,12 +23,12 @@ type CallbackBotMessage struct {
 	bot                telegram.Bot
 	tgUser             tg.TgUserDTO
 	machine            *state_machine.UserStateMachine
-	userService        bot.UserService
-	messageService     bot.MessageService
-	appointmentService bot.AppointmentService
+	userService        bot_interfaces.UserService
+	messageService     bot_interfaces.MessageService
+	appointmentService bot_interfaces.AppointmentService
 }
 
-func NewCallbackBot(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, machine *state_machine.UserStateMachine, userService bot.UserService, messageService bot.MessageService, appointmentService bot.AppointmentService) CallbackBotMessage {
+func NewCallbackBot(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, machine *state_machine.UserStateMachine, userService bot_interfaces.UserService, messageService bot_interfaces.MessageService, appointmentService bot_interfaces.AppointmentService) CallbackBotMessage {
 	return CallbackBotMessage{
 		logger:             logger,
 		bot:                bot,

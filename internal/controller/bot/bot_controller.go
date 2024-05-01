@@ -11,6 +11,7 @@ import (
 	"log/slog"
 	"net/http"
 	"sorkin_bot/internal/config"
+	"sorkin_bot/internal/controller/bot/bot_interfaces"
 	callback "sorkin_bot/internal/controller/bot/callback/callback_message"
 
 	"sorkin_bot/internal/controller/bot/commands/cancel_appointment"
@@ -30,10 +31,10 @@ type TelegramWebhookController struct {
 	logger             *slog.Logger
 	bot                telegram.Bot
 	machine            *state_machine.UserStateMachine
-	userService        UserService
-	appointmentService AppointmentService
-	messageService     MessageService
-	botService         BotService
+	userService        bot_interfaces.UserService
+	appointmentService bot_interfaces.AppointmentService
+	messageService     bot_interfaces.MessageService
+	botService         bot_interfaces.BotService
 }
 
 func NewTelegramWebhookController(
@@ -41,10 +42,10 @@ func NewTelegramWebhookController(
 	logger *slog.Logger,
 	bot telegram.Bot,
 	machine *state_machine.UserStateMachine,
-	userService UserService,
-	appointmentService AppointmentService,
-	messageService MessageService,
-	botService BotService,
+	userService bot_interfaces.UserService,
+	appointmentService bot_interfaces.AppointmentService,
+	messageService bot_interfaces.MessageService,
+	botService bot_interfaces.BotService,
 ) TelegramWebhookController {
 	router := gin.New()
 	router.Use(gin.Recovery())

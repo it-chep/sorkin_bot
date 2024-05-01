@@ -1,4 +1,4 @@
-package bot
+package bot_interfaces
 
 import (
 	"context"
