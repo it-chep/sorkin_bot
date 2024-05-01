@@ -19,5 +19,5 @@ func NewUpdateUserPhoneUseCase(writeRepo WriteRepo, logger *slog.Logger) UpdateU
 }
 
 func (uc UpdateUserPhoneUseCase) Execute(ctx context.Context, user entity.User, phone string) (err error) {
-	return uc.writeRepo.UpdateUserPhone(ctx, user, phone)
+	return uc.writeRepo.UpdateUserVarcharField(ctx, user, "phone", phone)
 }

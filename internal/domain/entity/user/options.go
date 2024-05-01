@@ -44,6 +44,13 @@ func WithRegistrationTime(registrationTime string) UserOpt {
 	}
 }
 
+func WithBirthDate(birthDate string) UserOpt {
+	return func(usr *User) *User {
+		usr.birthDate = birthDate
+		return usr
+	}
+}
+
 func WithUsrPatientId(patientId int) UserOpt {
 	return func(usr *User) *User {
 

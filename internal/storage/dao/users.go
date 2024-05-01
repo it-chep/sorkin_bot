@@ -1,19 +1,21 @@
 package dao
 
 import (
+	"database/sql"
 	entity "sorkin_bot/internal/domain/entity/user"
 )
 
 type UserDAO struct {
-	TgId             int64  `db:"tg_id"`
-	FirstName        string `db:"name"`
-	LastName         string `db:"surname"`
-	Username         string `db:"username"`
-	LanguageCode     string `db:"language_code"`
-	Phone            string `db:"phone"`
-	LastState        string `db:"last_state"`
-	PatientId        *int   `db:"patient_id"`
-	RegistrationTime string `db:"registration_time"`
+	TgId             int64          `db:"tg_id"`
+	FirstName        string         `db:"name"`
+	LastName         string         `db:"surname"`
+	Username         string         `db:"username"`
+	LanguageCode     string         `db:"language_code"`
+	Phone            string         `db:"phone"`
+	LastState        string         `db:"last_state"`
+	PatientId        *int           `db:"patient_id"`
+	RegistrationTime string         `db:"registration_time"`
+	BirthDate        sql.NullString `db:"birth_date"`
 }
 
 func NewUserDAO() *UserDAO {
@@ -36,5 +38,6 @@ func (dao *UserDAO) ToDomain() *entity.User {
 		entity.WithUsrPhone(dao.Phone),
 		entity.WithUsrPatientId(patientID),
 		entity.WithRegistrationTime(dao.RegistrationTime),
+		entity.WithBirthDate(dao.BirthDate.String),
 	)
 }

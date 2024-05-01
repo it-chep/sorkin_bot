@@ -6,12 +6,13 @@ type User struct {
 	tgID             int64
 	isBot            bool
 	registrationTime string
+	birthDate        string
 	username         string
 	languageCode     string
 	state            string
 	phone            string
 	patientId        int
-	birtDate         string
+	thirdName        string
 }
 
 func NewUser(tgId int64, firstName string, opts ...UserOpt) *User {
@@ -28,8 +29,10 @@ func NewUser(tgId int64, firstName string, opts ...UserOpt) *User {
 }
 
 func (usr *User) GetBirthDate() string {
-	return usr.birtDate
+	return usr.birthDate
 }
+
+func (usr *User) GetThirdName() string { return usr.thirdName }
 
 func (usr *User) GetPhone() string {
 	return usr.phone

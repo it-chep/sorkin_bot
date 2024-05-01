@@ -17,7 +17,6 @@ func NewBotService(logger *slog.Logger, messageService message.MessageService) B
 	return BotService{
 		//readRepo:                 readRepo,
 		//administratorHelpUseCase: administratorHelpUseCase,
-		// MORE usecases
 		logger:         logger,
 		messageService: messageService,
 	}
@@ -31,17 +30,6 @@ func (bs BotService) AdministratorHelp() {
 	//	TODO create response message_log may be go send_message() {} - controller or adapter mb
 }
 
-func (bs BotService) CancelAppointment() {
-	// 	TODO create request message_log - controller or adapter mb
-
-	//  TODO POST TO cancel_appointment
-	//  TODO get language
-	//	TODO get cancel_appointment message by language and by status
-	//  return message
-
-	//	TODO create response message_log may be go send_message() {} - controller or adapter mb
-}
-
 func (bs BotService) ConfigureChangeLanguageMessage(ctx context.Context, user entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup) {
 	keyboard = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
@@ -51,5 +39,16 @@ func (bs BotService) ConfigureChangeLanguageMessage(ctx context.Context, user en
 		),
 	)
 	msgText, _ = bs.messageService.GetMessage(ctx, user, "change_language")
+	return msgText, keyboard
+}
+
+func (bs BotService) ConfigureGetPhoneMessage(ctx context.Context, user entity.User) (msgText string, keyboard tgbotapi.ReplyKeyboardMarkup) {
+	buttonText, _ := bs.messageService.GetMessage(ctx, user, "send phone button")
+	keyboard = tgbotapi.NewOneTimeReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButtonContact(buttonText),
+		),
+	)
+	msgText, _ = bs.messageService.GetMessage(ctx, user, "send phone message")
 	return msgText, keyboard
 }

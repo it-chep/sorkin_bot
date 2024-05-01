@@ -24,6 +24,7 @@ const (
 	ChooseDoctor        = "chooseDoctor"
 	ChooseSchedule      = "chooseSchedule"
 	GetPhone            = "getPhone"
+	GetBirthDate        = "getBirthDate"
 	GetName             = "getName"
 	CreateAppointment   = "createAppointment"
 	MyAppointments      = "myAppointments"

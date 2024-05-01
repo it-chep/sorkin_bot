@@ -13,11 +13,13 @@ import (
 	"sorkin_bot/internal/domain/services/bot"
 	"sorkin_bot/internal/domain/services/message"
 	"sorkin_bot/internal/domain/services/user"
-	"sorkin_bot/internal/domain/usecases/bot/changeLanguage"
 	"sorkin_bot/internal/domain/usecases/bot/save_message_log"
+	"sorkin_bot/internal/domain/usecases/user/change_language"
 	"sorkin_bot/internal/domain/usecases/user/create_user"
+	"sorkin_bot/internal/domain/usecases/user/update_user_birth_date"
 	"sorkin_bot/internal/domain/usecases/user/update_user_patient_id"
 	"sorkin_bot/internal/domain/usecases/user/update_user_phone"
+	"sorkin_bot/internal/domain/usecases/user/update_user_third_name"
 	"sorkin_bot/internal/storage/read_repo"
 	"sorkin_bot/internal/storage/write_repo"
 	"sorkin_bot/pkg/client/postgres"
@@ -62,10 +64,12 @@ func (app *App) InitGateways(ctx context.Context) *App {
 
 func (app *App) InitUseCases(ctx context.Context) *App {
 	app.useCases.createUserUserCase = create_user.NewCreateUserUseCase(app.storages.writeUserStorage, app.logger)
-	app.useCases.changeLanguageUseCase = changeLanguage.NewChangeLanguageUseCase(app.storages.writeUserStorage, app.logger)
+	app.useCases.changeLanguageUseCase = change_language.NewChangeLanguageUseCase(app.storages.writeUserStorage, app.logger)
 	app.useCases.saveMessageUseCase = save_message_log.NewSaveMessageLogUseCase(app.storages.writeTelegramStorage, app.logger)
 	app.useCases.updateUserPhoneUseCase = update_user_phone.NewUpdateUserPhoneUseCase(app.storages.writeUserStorage, app.logger)
 	app.useCases.updateUserPatientIdUseCase = update_user_patient_id.NewUpdateUserPatientIdUseCase(app.storages.writeUserStorage, app.logger)
+	app.useCases.updateUserBirthDateUseCase = update_user_birth_date.NewUpdateUserBirthDateUseCase(app.storages.writeUserStorage, app.logger)
+	app.useCases.updateUserThirdNameUseCase = update_user_third_name.NewUpdateUserThirdNameUseCase(app.storages.writeUserStorage, app.logger)
 	return app
 }
 
@@ -76,6 +80,8 @@ func (app *App) InitServices(ctx context.Context) *App {
 		app.useCases.changeStatusUseCase,
 		app.useCases.updateUserPhoneUseCase,
 		app.useCases.updateUserPatientIdUseCase,
+		app.useCases.updateUserBirthDateUseCase,
+		app.useCases.updateUserThirdNameUseCase,
 		app.storages.readUserStorage,
 		app.logger,
 	)
@@ -112,7 +118,7 @@ func (app *App) InitTelegram(ctx context.Context) *App {
 
 func (app *App) InitControllers(ctx context.Context) *App {
 	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot, app.machine, app.services.userService, app.services.appointmentService, app.services.messageService, app.services.botService)
-	app.controller.telegramWebhookController.InitController(ctx)
+	app.controller.telegramWebhookController.InitController()
 
 	app.server = &http.Server{
 		Addr:         app.config.HTTPServer.Address,

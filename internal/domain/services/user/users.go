@@ -16,6 +16,8 @@ type UserService struct {
 	changeStateUseCase         ChangeStateUseCase
 	updateUserPhoneUseCase     UpdateUserPhoneUseCase
 	updateUserPatientIdUseCase UpdateUserPatientIdUseCase
+	updateUserBirthDateUseCase UpdateUserBirthDateUseCase
+	updateUserThirdNameUseCase UpdateUserThirdNameUseCase
 }
 
 func NewUserService(
@@ -24,6 +26,8 @@ func NewUserService(
 	changeStateUseCase ChangeStateUseCase,
 	updateUserPhoneUseCase UpdateUserPhoneUseCase,
 	updateUserPatientIdUseCase UpdateUserPatientIdUseCase,
+	updateUserBirthDateUseCase UpdateUserBirthDateUseCase,
+	updateUserThirdNameUseCase UpdateUserThirdNameUseCase,
 	readRepo ReadUserStorage,
 	logger *slog.Logger,
 ) UserService {
@@ -35,6 +39,8 @@ func NewUserService(
 		changeLanguageUseCase:      changeLanguageUseCase,
 		updateUserPhoneUseCase:     updateUserPhoneUseCase,
 		updateUserPatientIdUseCase: updateUserPatientIdUseCase,
+		updateUserBirthDateUseCase: updateUserBirthDateUseCase,
+		updateUserThirdNameUseCase: updateUserThirdNameUseCase,
 	}
 }
 
@@ -112,6 +118,57 @@ func (u UserService) ChangeState(ctx context.Context, dto tg.TgUserDTO, state st
 	}
 
 	err = u.changeStateUseCase.Execute(ctx, user, state)
+	if err != nil {
+		u.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
+		return entity.User{}, err
+	}
+	return user, nil
+}
+
+func (u UserService) UpdatePhone(ctx context.Context, dto tg.TgUserDTO, phone string) (user entity.User, err error) {
+	op := "sorkin_bot.internal.domain.services.user.users.UpdatePhone"
+	user, err = u.readRepo.GetUserByTgID(ctx, dto.TgID)
+
+	if err != nil {
+		u.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
+		return entity.User{}, err
+	}
+
+	err = u.updateUserPhoneUseCase.Execute(ctx, user, phone)
+	if err != nil {
+		u.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
+		return entity.User{}, err
+	}
+	return user, nil
+}
+
+func (u UserService) UpdateThirdName(ctx context.Context, dto tg.TgUserDTO, thirdName string) (user entity.User, err error) {
+	op := "sorkin_bot.internal.domain.services.user.users.UpdateThirdName"
+	user, err = u.readRepo.GetUserByTgID(ctx, dto.TgID)
+
+	if err != nil {
+		u.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
+		return entity.User{}, err
+	}
+
+	err = u.updateUserThirdNameUseCase.Execute(ctx, user, thirdName)
+	if err != nil {
+		u.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
+		return entity.User{}, err
+	}
+	return user, nil
+}
+
+func (u UserService) UpdateBirthDate(ctx context.Context, dto tg.TgUserDTO, birthDate string) (user entity.User, err error) {
+	op := "sorkin_bot.internal.domain.services.user.users.UpdateBirthDate"
+	user, err = u.readRepo.GetUserByTgID(ctx, dto.TgID)
+
+	if err != nil {
+		u.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
+		return entity.User{}, err
+	}
+
+	err = u.updateUserBirthDateUseCase.Execute(ctx, user, birthDate)
 	if err != nil {
 		u.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
 		return entity.User{}, err

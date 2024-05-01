@@ -30,12 +30,12 @@ func (ms MessageService) GetMessage(ctx context.Context, user userEntity.User, n
 	op := "sorkin_bot.internal.domain.services.message.message.GetMessage"
 	err, message := ms.readRepo.GetMessageByName(ctx, name)
 	if err != nil {
-		ms.logger.Error(fmt.Sprintf("400 Message Not Found err: %s, place: %s", err, op))
+		ms.logger.Error(fmt.Sprintf("400 Message Not Found err: %s, place: %s, message_name: %s", err, op, name))
 		return ServerError, err
 	}
 	translatedMessage, err := ms.translateMessage(user, message)
 	if err != nil {
-		ms.logger.Error(fmt.Sprintf("400 Message Not Found err: %s, place: %s", err, op))
+		ms.logger.Error(fmt.Sprintf("400 Message Not Found err: %s, place: %s, message_name: %s", err, op, name))
 		return ServerError, err
 	}
 	return translatedMessage, nil

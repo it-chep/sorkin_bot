@@ -1,4 +1,4 @@
-package changeLanguage
+package change_language
 
 import (
 	"context"
@@ -21,8 +21,8 @@ func NewChangeLanguageUseCase(writeRepo WriteRepo, logger *slog.Logger) ChangeLa
 
 func (uc ChangeLanguageUseCase) Execute(ctx context.Context, user entity.User, languageCode string) (err error) {
 	// TODO менеджер транзакций от авито
-	op := "sorkin_bot.internal.domain.usecases.bot.changeLanguage.usecase.Execute"
-	err = uc.writeRepo.UpdateUserLanguageCode(ctx, user, languageCode)
+	op := "sorkin_bot.internal.domain.usecases.bot.change_language.usecase.Execute"
+	err = uc.writeRepo.UpdateUserVarcharField(ctx, user, "language_code", languageCode)
 	if err != nil {
 		uc.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
 		return err

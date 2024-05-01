@@ -56,7 +56,7 @@ func (c *CallbackBotMessage) GetAppointmentDetail(ctx context.Context, messageDT
 		msg = tgbotapi.NewMessage(c.tgUser.TgID, emptyMessageText)
 	}
 
-	c.machine.SetState(userEntity, userEntity.GetState(), state_machine.ChooseSpeciality)
+	c.machine.SetState(userEntity, userEntity.GetState(), state_machine.DetailMyAppointment)
 
 	sentMessage, err := c.bot.Bot.Send(msg)
 	// todo мб вынести в отдельный метод

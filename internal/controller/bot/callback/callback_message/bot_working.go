@@ -45,9 +45,11 @@ func (c *CallbackBotMessage) Execute(ctx context.Context, messageDTO tg.MessageD
 	op := "sorkin_bot.internal.controller.bot.callback.callback_message.bot_working.Execute"
 	var msg tgbotapi.MessageConfig
 	var msgText string
+	var err error
+
 	userEntity, _ := c.userService.GetUser(ctx, c.tgUser)
 	if _, ok := languagesMap[callbackData]; ok {
-		userEntity, err := c.userService.ChangeLanguage(ctx, c.tgUser, callbackData)
+		userEntity, err = c.userService.ChangeLanguage(ctx, c.tgUser, callbackData)
 		if err != nil {
 			return
 		}
@@ -62,15 +64,17 @@ func (c *CallbackBotMessage) Execute(ctx context.Context, messageDTO tg.MessageD
 	switch userEntity.GetState() {
 	case state_machine.ChooseAppointment:
 		c.GetAppointmentDetail(ctx, messageDTO, callbackData)
-	case state_machine.ChooseSchedule:
-		fmt.Println(1212)
 	case state_machine.ChooseDoctor:
-		fmt.Println(232323)
+		c.GetDoctors(ctx, messageDTO, callbackData)
+	case state_machine.ChooseSchedule:
+		c.GetSchedules(ctx, messageDTO, callbackData)
+	case state_machine.DetailMyAppointment:
+		c.DetailMyAppointment(ctx, messageDTO, callbackData)
 	}
 
 	msg = tgbotapi.NewMessage(c.tgUser.TgID, msgText)
 
-	_, err := c.bot.Bot.Send(msg)
+	_, err = c.bot.Bot.Send(msg)
 	if err != nil {
 		c.logger.Error(fmt.Sprintf("%s", err))
 	}

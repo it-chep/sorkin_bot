@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"context"
 	"github.com/gin-gonic/gin"
 	botapi "sorkin_bot/internal/controller/bot"
 	"sorkin_bot/internal/controller/bot/bot_interfaces"
@@ -37,7 +36,7 @@ func NewRestController(cfg config.Config, logger *slog.Logger, bot telegram.Bot,
 	}
 }
 
-func (r RestController) InitController(ctx context.Context) {
+func (r RestController) InitController() {
 	r.router.POST("/"+r.cfg.Bot.Token+"/", r.botApiController.BotWebhookHandler)
 }
 

@@ -9,6 +9,8 @@ create table if not exists tg_users
     surname           varchar(255),
     username          varchar(255),
     registration_time varchar(16),
+    birt_date         varchar(10),
+    third_name        varchar(255),
     last_state        varchar(255),
     phone             varchar(30),
     language_code     varchar(5)

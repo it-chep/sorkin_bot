@@ -1,4 +1,4 @@
-package update_user_phone
+package update_user_birth_date
 
 import (
 	"context"

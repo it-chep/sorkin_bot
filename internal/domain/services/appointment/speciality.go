@@ -7,6 +7,14 @@ import (
 	entity "sorkin_bot/internal/domain/entity/user"
 )
 
+func (as AppointmentService) GetSpecialities(ctx context.Context) (err error, specialities []appointment.Speciality) {
+	err, specialities = as.mis.GetSpecialities(ctx)
+	if err != nil {
+		return err, nil
+	}
+	return nil, specialities
+}
+
 func (as AppointmentService) GetTranslatedSpecialities(
 	ctx context.Context,
 	user entity.User,

@@ -1,4 +1,4 @@
-package changeLanguage
+package change_language
 
 import (
 	"context"
@@ -6,6 +6,6 @@ import (
 )
 
 type WriteRepo interface {
-	UpdateUserLanguageCode(ctx context.Context, user entity.User, languageCode string) (err error)
 	UpdateUserState(ctx context.Context, user entity.User) (err error)
+	UpdateUserVarcharField(ctx context.Context, user entity.User, field, value string) (err error)
 }

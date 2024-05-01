@@ -20,7 +20,14 @@ func (as AppointmentService) GetFastAppointmentSchedules(ctx context.Context) (s
 func (as AppointmentService) GetSchedules(ctx context.Context, doctorId int) {
 	op := "sorkin_bot.internal.domain.services.appointment.schedule.GetSchedules	"
 	err, schedules := as.mis.GetSchedules(ctx, doctorId, "")
-	as.logger.Info(fmt.Sprintf("schedules[doctorId] %s", schedules[doctorId]))
+	// +- такая логика
+	if doctorId == 0 {
+		for doctorId, doctorSchedules := range schedules {
+			as.logger.Info(fmt.Sprintf("schedules[doctorId] %d %s", doctorId, doctorSchedules))
+		}
+	} else {
+		as.logger.Info(fmt.Sprintf("schedules[doctorId] %d %s", doctorId, schedules[doctorId]))
+	}
 
 	if err != nil {
 		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))

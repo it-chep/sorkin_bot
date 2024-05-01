@@ -55,20 +55,6 @@ func (ws UserStorage) UpdateUserPatientId(ctx context.Context, user entity.User,
 	return nil
 }
 
-func (ws UserStorage) UpdateUserLanguageCode(ctx context.Context, user entity.User, languageCode string) (err error) {
-	op := "internal/storage/write_repo/UpdateUserLanguageCode"
-	q := `
-		update tg_users set language_code = $1 where tg_id = $2;
-	`
-	ws.logger.Info(op)
-	_, err = ws.client.Exec(ctx, q, languageCode, user.GetTgId())
-	if err != nil {
-		ws.logger.Error(fmt.Sprintf("%s op %s", err, op))
-		return err
-	}
-	return nil
-}
-
 func (ws UserStorage) UpdateUserState(ctx context.Context, user entity.User) (err error) {
 	op := "internal.storage.write_repo.UpdateUserState"
 	q := `
@@ -85,13 +71,13 @@ func (ws UserStorage) UpdateUserState(ctx context.Context, user entity.User) (er
 	return nil
 }
 
-func (ws UserStorage) UpdateUserPhone(ctx context.Context, user entity.User, phone string) (err error) {
-	op := "internal/storage/write_repo/UpdateUserPhone"
-	q := `
-		update tg_users set phone = $1 where tg_id = $2;
-	`
+func (ws UserStorage) UpdateUserVarcharField(ctx context.Context, user entity.User, field, value string) (err error) {
+	op := "internal.storage.write_repo.UpdateUserVarcharField"
+	q := fmt.Sprintf(`
+		update tg_users set %s = $1 where tg_id = $2;
+	`, field)
 	ws.logger.Info(op)
-	_, err = ws.client.Exec(ctx, q, phone, user.GetTgId())
+	_, err = ws.client.Exec(ctx, q, value, user.GetTgId())
 	if err != nil {
 		ws.logger.Error(fmt.Sprintf("%s op %s", err, op))
 		return err

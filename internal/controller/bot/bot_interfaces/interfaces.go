@@ -25,6 +25,7 @@ type AppointmentService interface {
 	GetFastAppointmentSchedules(ctx context.Context) (schedulesMap map[int][]appointment.Schedule)
 
 	// speciality interfaces in service and gateway
+	GetSpecialities(ctx context.Context) (err error, specialities []appointment.Speciality)
 	GetTranslatedSpecialities(
 		ctx context.Context,
 		user entity.User,
@@ -40,8 +41,11 @@ type UserService interface {
 	GetUser(ctx context.Context, dto tg.TgUserDTO) (user entity.User, err error)
 	RegisterNewUser(ctx context.Context, dto tg.TgUserDTO) (user entity.User, err error)
 	ChangeLanguage(ctx context.Context, dto tg.TgUserDTO, languageCode string) (user entity.User, err error)
-	UpdatePatientId(ctx context.Context, user entity.User, patientId int) (err error)
 	ChangeState(ctx context.Context, dto tg.TgUserDTO, state string) (user entity.User, err error)
+	UpdatePatientId(ctx context.Context, user entity.User, patientId int) (err error)
+	UpdateBirthDate(ctx context.Context, dto tg.TgUserDTO, birthDate string) (user entity.User, err error)
+	UpdateThirdName(ctx context.Context, dto tg.TgUserDTO, thirdName string) (user entity.User, err error)
+	UpdatePhone(ctx context.Context, dto tg.TgUserDTO, phone string) (user entity.User, err error)
 }
 
 type MessageService interface {
