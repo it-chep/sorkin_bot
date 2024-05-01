@@ -28,7 +28,7 @@ type CreateAppointmentRequest struct {
 	TimeStart string `json:"time_start"` //dd.mm.yyyy hh:mm
 	TimeEnd   string `json:"time_end"`   //dd.mm.yyyy hh:mm
 	ClinicId  int    `json:"clinic_id"`
-	Source    string `json:"source"`
+	PatientId int    `json:"patient_id"`
 }
 
 type GetScheduleRequest struct {

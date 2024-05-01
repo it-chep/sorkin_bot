@@ -5,11 +5,9 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
+	"sorkin_bot/internal/controller/bot"
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
-	"sorkin_bot/internal/domain/services/appointment"
-	"sorkin_bot/internal/domain/services/message"
-	"sorkin_bot/internal/domain/services/user"
 	"sorkin_bot/pkg/client/telegram"
 )
 
@@ -17,13 +15,13 @@ type CancelAppointmentBotCommand struct {
 	logger             *slog.Logger
 	bot                telegram.Bot
 	tgUser             tg.TgUserDTO
-	userService        user.UserService
+	userService        bot.UserService
 	machine            *state_machine.UserStateMachine
-	appointmentService appointment.AppointmentService
-	messageService     message.MessageService
+	appointmentService bot.AppointmentService
+	messageService     bot.MessageService
 }
 
-func NewCancelAppointmentBotCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, userService user.UserService, machine *state_machine.UserStateMachine, appointmentService appointment.AppointmentService, messageService message.MessageService,
+func NewCancelAppointmentBotCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, userService bot.UserService, machine *state_machine.UserStateMachine, appointmentService bot.AppointmentService, messageService bot.MessageService,
 ) CancelAppointmentBotCommand {
 	return CancelAppointmentBotCommand{
 		logger:             logger,
@@ -43,10 +41,7 @@ func (c *CancelAppointmentBotCommand) Execute(ctx context.Context, message tg.Me
 	userEntity, _ := c.userService.GetUser(ctx, c.tgUser)
 
 	if userEntity.GetState() != "" {
-		err, appointments := c.appointmentService.Mis.MyAppointments(ctx, userEntity)
-		if err != nil {
-			return
-		}
+		appointments := c.appointmentService.GetAppointments(ctx, userEntity)
 		messageText, err := c.messageService.GetMessage(ctx, userEntity, "Select appointment")
 		msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
 		if err != nil {

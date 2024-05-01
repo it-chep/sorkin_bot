@@ -101,6 +101,7 @@ type ScheduleDTO struct {
 	TimeEndShort   string `json:"time_end_short"`   //dd.mm.yyyy hh:mm
 	Category       string `json:"category"`
 	CategoryId     int    `json:"category_id"`
+	Profession     string `json:"profession"`
 	Room           string `json:"room"`
 	IsBusy         bool   `json:"is_busy"`
 	IsPast         bool   `json:"is_past"`
@@ -112,7 +113,10 @@ type GetScheduleResponse struct {
 }
 
 func (sch ScheduleDTO) ToDomain() appointment.Schedule {
-	return appointment.NewSchedule()
+	return appointment.NewSchedule(
+		sch.ClinicId, sch.DoctorId, sch.CategoryId, sch.Date, sch.TimeStart, sch.TimeStartShort, sch.TimeEnd,
+		sch.TimeEndShort, sch.Category, sch.Profession, sch.Room, sch.IsBusy, sch.IsPast,
+	)
 }
 
 type SchedulePeriodDTO struct {

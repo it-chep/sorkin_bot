@@ -11,7 +11,8 @@ import (
 	"log/slog"
 	"net/http"
 	"sorkin_bot/internal/config"
-	start2 "sorkin_bot/internal/controller/bot/callback/callback_message"
+	callback "sorkin_bot/internal/controller/bot/callback/callback_message"
+
 	"sorkin_bot/internal/controller/bot/commands/cancel_appointment"
 	"sorkin_bot/internal/controller/bot/commands/change_language"
 	"sorkin_bot/internal/controller/bot/commands/create_appointment"
@@ -20,10 +21,6 @@ import (
 	"sorkin_bot/internal/controller/bot/commands/start"
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
-	"sorkin_bot/internal/domain/services/appointment"
-	"sorkin_bot/internal/domain/services/bot"
-	"sorkin_bot/internal/domain/services/message"
-	"sorkin_bot/internal/domain/services/user"
 	"sorkin_bot/pkg/client/telegram"
 )
 
@@ -33,10 +30,10 @@ type TelegramWebhookController struct {
 	logger             *slog.Logger
 	bot                telegram.Bot
 	machine            *state_machine.UserStateMachine
-	userService        user.UserService
-	appointmentService appointment.AppointmentService
-	messageService     message.MessageService
-	botService         bot.BotService
+	userService        UserService
+	appointmentService AppointmentService
+	messageService     MessageService
+	botService         BotService
 }
 
 func NewTelegramWebhookController(
@@ -44,10 +41,10 @@ func NewTelegramWebhookController(
 	logger *slog.Logger,
 	bot telegram.Bot,
 	machine *state_machine.UserStateMachine,
-	userService user.UserService,
-	appointmentService appointment.AppointmentService,
-	messageService message.MessageService,
-	botService bot.BotService,
+	userService UserService,
+	appointmentService AppointmentService,
+	messageService MessageService,
+	botService BotService,
 ) TelegramWebhookController {
 	router := gin.New()
 	router.Use(gin.Recovery())
@@ -186,8 +183,8 @@ func (t TelegramWebhookController) ForkCallbacks(update tgbotapi.Update) error {
 	tgUser := t.getUserFromWebhook(update)
 	callbackData := update.CallbackData()
 	tgMessage := t.getMessageFromWebhook(update)
-	callback := start2.NewCallbackBot(t.logger, t.bot, tgUser, t.machine, t.userService, t.messageService, t.appointmentService)
-	callback.Execute(ctx, tgMessage, callbackData)
+	callbackBot := callback.NewCallbackBot(t.logger, t.bot, tgUser, t.machine, t.userService, t.messageService, t.appointmentService)
+	callbackBot.Execute(ctx, tgMessage, callbackData)
 	return errors.New("no callbacks yet")
 }
 

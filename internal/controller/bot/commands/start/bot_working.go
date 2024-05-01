@@ -5,10 +5,8 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
+	"sorkin_bot/internal/controller/bot"
 	"sorkin_bot/internal/controller/dto/tg"
-	"sorkin_bot/internal/domain/services/bot"
-	"sorkin_bot/internal/domain/services/message"
-	"sorkin_bot/internal/domain/services/user"
 	"sorkin_bot/pkg/client/telegram"
 )
 
@@ -16,12 +14,12 @@ type StartBotCommand struct {
 	logger         *slog.Logger
 	bot            telegram.Bot
 	tgUser         tg.TgUserDTO
-	userService    user.UserService
-	messageService message.MessageService
+	userService    bot.UserService
+	messageService bot.MessageService
 	botService     bot.BotService
 }
 
-func NewStartBotCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, userService user.UserService, messageService message.MessageService, botService bot.BotService) StartBotCommand {
+func NewStartBotCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, userService bot.UserService, messageService bot.MessageService, botService bot.BotService) StartBotCommand {
 	return StartBotCommand{
 		logger:         logger,
 		bot:            bot,

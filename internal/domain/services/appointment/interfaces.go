@@ -7,18 +7,17 @@ import (
 )
 
 type Appointment interface {
-	FastAppointment(ctx context.Context)
-	CreateAppointment(ctx context.Context) (err error, appointmentId int)
+	FastAppointment(ctx context.Context) (err error, schedulesMap map[int][]appointment.Schedule)
+	CreateAppointment(ctx context.Context, userEntity userEntity.User, doctorId int, timeStart, timeEnd string) (err error, appointmentId int)
 	CancelAppointment(ctx context.Context, movedTo string, appointmentId int) (err error, result bool)
 	ConfirmAppointment(ctx context.Context, appointmentId int) (err error, result bool)
-	//RescheduleAppointment(ctx context.Context, movedTo string) (err error)
 	MyAppointments(ctx context.Context, user userEntity.User) (err error, appointments []appointment.Appointment)
 	DetailAppointment(ctx context.Context, user userEntity.User, appointmentId int) (err error, appointmentEntity appointment.Appointment)
 	GetDoctors(ctx context.Context, specialityId int) (err error, doctors []appointment.Doctor)
 	GetSpecialities(ctx context.Context) (err error, specialities []appointment.Speciality)
 	GetPatientById(ctx context.Context, patientId int) (err error)
 	CreatePatient(ctx context.Context, user userEntity.User) (err error, patientId int)
-	GetSchedules(ctx context.Context, doctorId int) (err error, schedules []appointment.Schedule)
+	GetSchedules(ctx context.Context, doctorId int, timeStart string) (err error, schedulesMap map[int][]appointment.Schedule)
 }
 
 type ReadRepo interface {

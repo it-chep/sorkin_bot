@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log/slog"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -96,14 +97,61 @@ func (mg *MisRenoGateway) sendToMIS(ctx context.Context, method string, body io.
 
 }
 
-func (mg *MisRenoGateway) FastAppointment(ctx context.Context) {
+// FastAppointment возвращает 3 ближайших окна на запись к врачу
+func (mg *MisRenoGateway) FastAppointment(ctx context.Context) (err error, schedulesMap map[int][]appointment.Schedule) {
+	currentTime := time.Now()
+	filteredSchedulesMap := make(map[int][]appointment.Schedule)
+	// Время начала приемов - завтра
+	timeStart := fmt.Sprintf("%02d.%02d.%d %02d:%02d", currentTime.Day()+1, currentTime.Month(), currentTime.Year(), currentTime.Hour(), currentTime.Minute())
 
+	err, schedulesMap = mg.GetSchedules(ctx, 0, timeStart)
+	if err != nil {
+		return err, schedulesMap
+	}
+	// todo нам необходимо 3-4 окна -> 3 врача с минимальной timeStart
+	// todo расписание доктора нам приходит по возрастанию
+	for doctorId, schedule := range schedulesMap {
+		filteredSchedulesMap[doctorId] = schedule
+		mg.logger.Info(fmt.Sprintf("DoctorID %d, shedules %s", doctorId, schedule))
+		continue
+	}
+
+	// todo докрутить рандомный выбор окон врачей
+	rand.Seed(time.Now().UnixNano())
+
+	randomDoctors := make(map[int][]appointment.Schedule)
+	var doctorIDs []int
+	for doctorID := range schedulesMap {
+		doctorIDs = append(doctorIDs, doctorID)
+	}
+
+	rand.Shuffle(len(doctorIDs), func(i, j int) {
+		doctorIDs[i], doctorIDs[j] = doctorIDs[j], doctorIDs[i]
+	})
+
+	numDoctorsToSelect := 4
+	if len(doctorIDs) < 4 {
+		numDoctorsToSelect = len(doctorIDs)
+	}
+
+	for i := 0; i < numDoctorsToSelect; i++ {
+		doctorID := doctorIDs[i]
+		randomDoctors[doctorID] = schedulesMap[doctorID]
+	}
+
+	return nil, randomDoctors
 }
 
-func (mg *MisRenoGateway) CreateAppointment(ctx context.Context) (err error, appointmentId int) {
+func (mg *MisRenoGateway) CreateAppointment(ctx context.Context, userEntity entity.User, doctorId int, timeStart, timeEnd string) (err error, appointmentId int) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.CreateAppointment"
 	var response mis_dto.CreateAppointmentResponse
-	var request = mis_dto.CreateAppointmentRequest{}
+	var request = mis_dto.CreateAppointmentRequest{
+		PatientId: userEntity.GetPatientId(),
+		ClinicId:  1,
+		DoctorId:  doctorId,
+		TimeStart: timeStart,
+		TimeEnd:   timeEnd,
+	}
 
 	jsonBody, err := json.Marshal(request)
 	if err != nil {

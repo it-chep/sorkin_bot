@@ -9,8 +9,6 @@ import (
 )
 
 type BotService struct {
-	//readRepo                 ReadMessagesRepo
-	//administratorHelpUseCase AdministratorHelpUseCase
 	logger         *slog.Logger
 	messageService message.MessageService
 }

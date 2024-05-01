@@ -7,10 +7,12 @@ import (
 	"sorkin_bot/internal/domain/entity/appointment"
 	entity "sorkin_bot/internal/domain/entity/user"
 	"sorkin_bot/internal/domain/services/user"
+	"strconv"
+	"strings"
 )
 
 type AppointmentService struct {
-	Mis         Appointment
+	mis         Appointment
 	userService user.UserService
 	readRepo    ReadRepo
 	logger      *slog.Logger
@@ -18,19 +20,10 @@ type AppointmentService struct {
 
 func NewAppointmentService(mis Appointment, readRepo ReadRepo, logger *slog.Logger, userService user.UserService) AppointmentService {
 	return AppointmentService{
-		Mis:         mis,
+		mis:         mis,
 		userService: userService,
 		readRepo:    readRepo,
 		logger:      logger,
-	}
-}
-
-func (as *AppointmentService) GetSchedules(ctx context.Context, doctorId int) {
-	op := "sorkin_bot.internal.domain.services.appointment.appointment.GetPatient"
-	err, _ := as.Mis.GetSchedules(ctx, doctorId)
-	if err != nil {
-		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
-		return
 	}
 }
 
@@ -41,7 +34,7 @@ func (as *AppointmentService) GetAppointments(ctx context.Context, user entity.U
 		return
 	}
 
-	err, appointments := as.Mis.MyAppointments(ctx, user)
+	err, appointments := as.mis.MyAppointments(ctx, user)
 
 	for _, appointmentEntity := range appointments {
 		as.logger.Info(fmt.Sprintf("%d %s %s", appointmentEntity.GetAppointmentId(), appointmentEntity.GetTimeStart(), op))
@@ -62,7 +55,7 @@ func (as *AppointmentService) GetAppointmentDetail(ctx context.Context, user ent
 		return
 	}
 
-	err, appointmentEntity := as.Mis.DetailAppointment(ctx, user, appointmentId)
+	err, appointmentEntity := as.mis.DetailAppointment(ctx, user, appointmentId)
 	if err != nil {
 		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
 		return appointment.Appointment{}
@@ -71,63 +64,56 @@ func (as *AppointmentService) GetAppointmentDetail(ctx context.Context, user ent
 	return appointmentEntity
 }
 
-func (as *AppointmentService) GetPatient(ctx context.Context, user entity.User) (result bool) {
-	op := "sorkin_bot.internal.domain.services.appointment.appointment.GetPatient"
-	err := as.Mis.GetPatientById(ctx, user.GetPatientId())
+func (as *AppointmentService) CreateAppointment(ctx context.Context, user entity.User, callbackData string) (appointmentId int) {
+	op := "sorkin_bot.internal.domain.services.appointment.appointment.CreateAppointment"
+	if user.GetPatientId() == 0 {
+		return
+	}
+	// example: callbackData = doctorId_8__timeStart_'11.05.2004 12:00'__timeEnd_'11.05.2004 12:30'
+	elements := strings.Split(callbackData, "__")
+
+	doctorId, _ := strconv.Atoi(strings.Split(elements[0], "_")[1])
+	timeStart := strings.Split(elements[1], "_")[1]
+	timeEnd := strings.Split(elements[2], "_")[1]
+
+	err, appointmentId := as.mis.CreateAppointment(ctx, user, doctorId, timeStart, timeEnd)
 	if err != nil {
 		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
+		return -1
+	}
+
+	return appointmentId
+}
+
+func (as *AppointmentService) ConfirmAppointment(ctx context.Context, appointmentId int) (result bool) {
+	op := "sorkin_bot.internal.domain.services.appointment.appointment.ConfirmAppointment"
+
+	err, result := as.mis.ConfirmAppointment(ctx, appointmentId)
+	if err != nil {
+		as.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
 		return false
 	}
 	return true
 }
 
-func (as *AppointmentService) CreatePatient(ctx context.Context, user entity.User) (result bool) {
-	op := "sorkin_bot.internal.domain.services.appointment.appointment.CreatePatient"
+func (as *AppointmentService) CancelAppointment(ctx context.Context, appointmentId int) (result bool) {
+	op := "sorkin_bot.internal.domain.services.appointment.appointment.CancelAppointment"
 
-	err, patientId := as.Mis.CreatePatient(ctx, user)
-	err = as.userService.UpdatePatientId(ctx, user, patientId)
-
+	err, result := as.mis.CancelAppointment(ctx, "", appointmentId)
 	if err != nil {
-		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
+		as.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
 		return false
 	}
-
 	return true
 }
 
-func (as *AppointmentService) GetTranslatedSpecialities(
-	ctx context.Context,
-	user entity.User,
-	specialities []appointment.Speciality,
-) (translatedSpecialities map[int]string, err error) {
-	var translatedSpeciality string
-	op := "sorkin_bot.internal.domain.services.appointment.appointment.GetTranslatedSpecialities"
-	translations, err := as.readRepo.GetTranslationsBySlug(ctx, "doctor")
-	translatedSpecialities = make(map[int]string)
+func (as *AppointmentService) RescheduleAppointment(ctx context.Context, appointmentId int, movedTo string) (result bool) {
+	op := "sorkin_bot.internal.domain.services.appointment.appointment.RescheduleAppointment"
 
+	err, result := as.mis.CancelAppointment(ctx, movedTo, appointmentId)
 	if err != nil {
-		return translatedSpecialities, err
+		as.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
+		return false
 	}
-	langCode := user.GetLanguageCode()
-
-	for _, speciality := range specialities {
-		translationEntity, ok := translations[speciality.GetDoctorName()]
-
-		if !ok {
-			as.logger.Error(fmt.Sprintf("untranslated speciality: %s, please translate this in priority. Place %s", speciality.GetDoctorName(), op))
-			translatedSpeciality = speciality.GetDoctorName()
-		}
-
-		switch langCode {
-		case "RU":
-			translatedSpeciality = translationEntity.GetRuText()
-		case "EN":
-			translatedSpeciality = translationEntity.GetEngText()
-		case "PT":
-			translatedSpeciality = translationEntity.GetPtBrText()
-		}
-
-		translatedSpecialities[speciality.GetId()] = translatedSpeciality
-	}
-	return translatedSpecialities, err
+	return true
 }
