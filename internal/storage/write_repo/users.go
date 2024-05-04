@@ -25,7 +25,7 @@ func (ws UserStorage) CreateUser(ctx context.Context, user entity.User) (userID 
 	op := "internal/storage/write_repo/CreateUser"
 	q := `
 		insert into tg_users (tg_id, name, surname, username, registration_time) 
-		values ($1, $2, $3, $4, $5, $6, $7, $8) returning id;
+		values ($1, $2, $3, $4, $5) returning id;
 	`
 	currentTime := time.Now()
 	registrationTime := fmt.Sprintf("%02d.%02d.%d %02d:%02d", currentTime.Day(), currentTime.Month(), currentTime.Year(), currentTime.Hour(), currentTime.Minute())

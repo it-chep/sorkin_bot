@@ -1,8 +1,8 @@
 package mis_dto
 
 const (
-	DefaultClinic            = 1
-	Source                   = "sorkin_telegram_bot"
+	DefaultClinicId          = 1
+	ActiveStatusIDs          = "1, 2"
 	GetUsersMethod           = "getUsers"
 	GetSpecialityMethod      = "getProfessions"
 	GetScheduleMethod        = "getSchedule"

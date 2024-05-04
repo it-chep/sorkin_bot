@@ -9,7 +9,7 @@ import (
 func (as AppointmentService) GetDoctors(ctx context.Context, specialityId int) (doctors []appointment.Doctor) {
 	op := "sorkin_bot.internal.domain.services.appointment.doctor.GetDoctors"
 
-	err, doctors := as.mis.GetDoctors(ctx, specialityId)
+	doctors = as.misAdapter.GetDoctors(ctx, specialityId)
 	if err != nil {
 		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
 		return doctors

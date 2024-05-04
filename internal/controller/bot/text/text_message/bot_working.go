@@ -4,7 +4,6 @@ import (
 	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
-	"sorkin_bot/internal/controller/bot/bot_interfaces"
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
 	"sorkin_bot/pkg/client/telegram"
@@ -15,13 +14,13 @@ type TextBotMessage struct {
 	bot                telegram.Bot
 	tgUser             tg.TgUserDTO
 	machine            *state_machine.UserStateMachine
-	userService        bot_interfaces.UserService
-	messageService     bot_interfaces.MessageService
-	appointmentService bot_interfaces.AppointmentService
-	botService         bot_interfaces.BotService
+	userService        UserService
+	messageService     MessageService
+	appointmentService AppointmentService
+	botService         BotService
 }
 
-func NewTextBotMessage(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, machine *state_machine.UserStateMachine, userService bot_interfaces.UserService, messageService bot_interfaces.MessageService, appointmentService bot_interfaces.AppointmentService, botService bot_interfaces.BotService) TextBotMessage {
+func NewTextBotMessage(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, machine *state_machine.UserStateMachine, userService UserService, messageService MessageService, appointmentService AppointmentService, botService BotService) TextBotMessage {
 	return TextBotMessage{
 		logger:             logger,
 		bot:                bot,
@@ -42,15 +41,15 @@ func (c TextBotMessage) Execute(ctx context.Context, messageDTO tg.MessageDTO) {
 	case "":
 	//	todo administrationHelp or start
 	case state_machine.GetPhone:
-		if userEntity.GetPatientId() != 0 {
+		if userEntity.GetPatientId() != nil {
 			c.GetPhone(ctx, userEntity, messageDTO)
 		}
 	case state_machine.GetName:
-		if userEntity.GetPatientId() != 0 {
+		if userEntity.GetPatientId() != nil {
 			c.GetName(ctx, userEntity, messageDTO)
 		}
 	case state_machine.GetBirthDate:
-		if userEntity.GetPatientId() != 0 {
+		if userEntity.GetPatientId() != nil {
 			c.GetBirthDate(ctx, userEntity, messageDTO)
 		}
 	}

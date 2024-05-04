@@ -23,11 +23,6 @@ func NewUserDAO() *UserDAO {
 }
 
 func (dao *UserDAO) ToDomain() *entity.User {
-	patientID := -1
-	if dao.PatientId != nil {
-		patientID = *dao.PatientId
-	}
-
 	return entity.NewUser(
 		dao.TgId,
 		dao.FirstName,
@@ -36,7 +31,7 @@ func (dao *UserDAO) ToDomain() *entity.User {
 		entity.WithUsrUsername(dao.Username),
 		entity.WithUsrLastName(dao.LastName),
 		entity.WithUsrPhone(dao.Phone),
-		entity.WithUsrPatientId(patientID),
+		entity.WithUsrPatientId(dao.PatientId),
 		entity.WithRegistrationTime(dao.RegistrationTime),
 		entity.WithBirthDate(dao.BirthDate.String),
 	)

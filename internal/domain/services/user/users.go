@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"reflect"
 	"sorkin_bot/internal/controller/dto/tg"
 	entity "sorkin_bot/internal/domain/entity/user"
 )
@@ -63,8 +64,8 @@ func (u UserService) RegisterNewUser(ctx context.Context, dto tg.TgUserDTO) (use
 	if err != nil {
 		return entity.User{}, err
 	}
-
-	if user != (entity.User{}) {
+	//todo add pointer
+	if reflect.ValueOf(user).IsZero() {
 		u.logger.Warn("user has registered")
 		return user, nil
 	}

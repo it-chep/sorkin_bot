@@ -11,7 +11,7 @@ type User struct {
 	languageCode     string
 	state            string
 	phone            string
-	patientId        int
+	patientId        *int
 	thirdName        string
 }
 
@@ -42,7 +42,7 @@ func (usr *User) GetRegistrationTime() string {
 	return usr.registrationTime
 }
 
-func (usr *User) GetPatientId() int {
+func (usr *User) GetPatientId() *int {
 	return usr.patientId
 }
 
@@ -76,7 +76,7 @@ func (usr *User) SetState(newState string) {
 }
 
 // SetPatientId обновляет id пользователя в мис
-func (usr *User) SetPatientId(patientId int) {
+func (usr *User) SetPatientId(patientId *int) {
 	usr.patientId = patientId
 }
 

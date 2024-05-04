@@ -8,7 +8,7 @@ import (
 )
 
 func (as AppointmentService) GetSpecialities(ctx context.Context) (err error, specialities []appointment.Speciality) {
-	err, specialities = as.mis.GetSpecialities(ctx)
+	specialities = as.misAdapter.GetSpecialities(ctx)
 	if err != nil {
 		return err, nil
 	}

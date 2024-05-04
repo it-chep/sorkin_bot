@@ -1,63 +1,46 @@
 package mis_reno
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
+	"sorkin_bot/internal/clients/gateways/dto"
 	"sorkin_bot/internal/clients/gateways/mis_reno/mis_dto"
-	entity "sorkin_bot/internal/domain/entity/user"
 )
 
-func (mg *MisRenoGateway) GetPatientById(ctx context.Context, patientId int) (err error) {
+func (mg *MisRenoGateway) GetPatientById(ctx context.Context, patientId int) (patientDTO dto.CreatedPatientDTO, err error) {
 	op := "sorkin_bot.internal.domain.services.appointment.users.GetPatientById"
-	var response mis_dto.GetPatientResponse
+	var response mis_dto.MisGetPatientResponse
 	var request = mis_dto.GetPatientRequest{
 		Id: patientId,
 	}
 
-	jsonBody, err := json.Marshal(request)
-	if err != nil {
-		mg.logger.Error(fmt.Sprintf("error while marshalling json %s \nplace: %s", err, op))
-		return err
-	}
-	body := bytes.NewReader(jsonBody)
-	responseBody := mg.sendToMIS(ctx, mis_dto.GetPatientMethod, body)
+	responseBody := mg.sendToMIS(ctx, mis_dto.GetPatientMethod, JsonMarshaller(request, op, mg.logger))
 
-	err = json.Unmarshal(responseBody, &response)
+	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)
 	if err != nil {
-		mg.logger.Error(fmt.Sprintf("error while unmarshalling json %s \nplace: %s", err, op))
-		return err
+		return patientDTO, err
 	}
 
-	return nil
+	return response.Data.ToDTO(), nil
 }
 
-func (mg *MisRenoGateway) CreatePatient(ctx context.Context, user entity.User) (err error, patientId int) {
+func (mg *MisRenoGateway) CreatePatient(ctx context.Context, userDTO dto.PatientDTO) (patientId *int, err error) {
 	op := "sorkin_bot.internal.domain.services.appointment.users.CreatePatient"
 	var response mis_dto.CreatePatientResponse
 	//todo обязательно продебажить CreatePatientRequest
 	var request = mis_dto.CreatePatientRequest{
-		LastName:  user.GetLastName(),
-		ThirdName: user.GetThirdName(),
-		FirstName: user.GetFirstName(),
-		Phone:     user.GetPhone(),
-		BirthDate: user.GetBirthDate(),
+		LastName:  userDTO.LastName,
+		ThirdName: userDTO.ThirdName,
+		FirstName: userDTO.FirstName,
+		Phone:     userDTO.Phone,
+		BirthDate: userDTO.BirthDate,
 	}
 
-	jsonBody, err := json.Marshal(request)
+	responseBody := mg.sendToMIS(ctx, mis_dto.CreatePatientMethod, JsonMarshaller(request, op, mg.logger))
+
+	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)
 	if err != nil {
-		mg.logger.Error(fmt.Sprintf("error while marshalling json %s \nplace: %s", err, op))
-		return err, -1
-	}
-	body := bytes.NewReader(jsonBody)
-	responseBody := mg.sendToMIS(ctx, mis_dto.CreatePatientMethod, body)
-
-	err = json.Unmarshal(responseBody, &response)
-	if err != nil {
-		mg.logger.Info(fmt.Sprintf("error while unmarshalling json %s \nplace: %s", err, op))
-		return err, -1
+		return &response.Data.PatientID, err
 	}
 
-	return nil, response.Data.PatientID
+	return &response.Data.PatientID, nil
 }

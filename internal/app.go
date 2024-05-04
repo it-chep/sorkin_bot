@@ -58,7 +58,7 @@ func (app *App) InitStorage(ctx context.Context) *App {
 }
 
 func (app *App) InitGateways(ctx context.Context) *App {
-	app.gateways.MisRenoGateway = mis_reno.NewMisRenoGateway(app.logger, http.Client{})
+	app.gateways.MisRenoGateway = mis_reno.NewMisRenoGateway(app.logger, http.Client{Timeout: time.Second * 10})
 	return app
 }
 

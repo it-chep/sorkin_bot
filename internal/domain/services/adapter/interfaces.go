@@ -1,10 +1,17 @@
-package appointment
+package adapter
 
 import (
 	"context"
 	"sorkin_bot/internal/clients/gateways/dto"
-	"sorkin_bot/internal/domain/entity/appointment"
 )
+
+type Gateway interface {
+	SchedulesActions
+	AppointmentsActions
+	DoctorsActions
+	PatientActions
+	SpecialityActions
+}
 
 type SchedulesActions interface {
 	GetSchedules(ctx context.Context, doctorId int, timeStart string) (schedulesMap map[int][]dto.ScheduleDTO, err error)
@@ -30,8 +37,4 @@ type PatientActions interface {
 
 type SpecialityActions interface {
 	GetSpecialities(ctx context.Context) (specialities []dto.SpecialityDTO, err error)
-}
-
-type ReadRepo interface {
-	GetTranslationsBySlug(ctx context.Context, slug string) (translations map[string]appointment.TranslationEntity, err error)
 }

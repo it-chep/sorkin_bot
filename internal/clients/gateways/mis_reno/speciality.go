@@ -1,15 +1,12 @@
 package mis_reno
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
-	mis_dto "sorkin_bot/internal/clients/gateways/mis_reno/mis_dto"
-	"sorkin_bot/internal/domain/entity/appointment"
+	"sorkin_bot/internal/clients/gateways/dto"
+	"sorkin_bot/internal/clients/gateways/mis_reno/mis_dto"
 )
 
-func (mg *MisRenoGateway) GetSpecialities(ctx context.Context) (err error, specialities []appointment.Speciality) {
+func (mg *MisRenoGateway) GetSpecialities(ctx context.Context) (specialities []dto.SpecialityDTO, err error) {
 	op := "sorkin_bot.internal.domain.services.appointment.speciality.GetSpecialities"
 	var response mis_dto.GetSpecialityResponse
 	var request = mis_dto.GetSpecialityRequest{
@@ -18,25 +15,18 @@ func (mg *MisRenoGateway) GetSpecialities(ctx context.Context) (err error, speci
 		WithoutDoctors: false,
 	}
 
-	jsonBody, err := json.Marshal(request)
+	responseBody := mg.sendToMIS(ctx, mis_dto.GetSpecialityMethod, JsonMarshaller(request, op, mg.logger))
+
+	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)
 	if err != nil {
-		mg.logger.Error(fmt.Sprintf("error while marshalling json %s \nplace: %s", err, op))
-		return err, specialities
-	}
-	body := bytes.NewReader(jsonBody)
-	responseBody := mg.sendToMIS(ctx, mis_dto.GetSpecialityMethod, body)
-
-	err = json.Unmarshal(responseBody, &response)
-	if err != nil {
-		mg.logger.Info(fmt.Sprintf("error while unmarshalling json %s \nplace: %s", err, op))
-		return err, specialities
+		return specialities, err
 	}
 
-	for _, specialityDTO := range response.Data {
-		specialities = append(specialities, specialityDTO.ToDomain())
+	for _, specialityMis := range response.Data {
+		specialities = append(specialities, specialityMis.ToDTO())
 	}
 
-	return nil, specialities
+	return specialities, nil
 }
 
 func (mg *MisRenoGateway) ChooseSpecialities(ctx context.Context) {

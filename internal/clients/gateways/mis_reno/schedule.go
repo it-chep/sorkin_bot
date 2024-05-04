@@ -1,68 +1,59 @@
 package mis_reno
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	mis_dto "sorkin_bot/internal/clients/gateways/mis_reno/mis_dto"
-	"sorkin_bot/internal/domain/entity/appointment"
+	"sorkin_bot/internal/clients/gateways/dto"
+	"sorkin_bot/internal/clients/gateways/mis_reno/mis_dto"
 	"strconv"
 )
 
-func (mg *MisRenoGateway) GetSchedules(ctx context.Context, doctorId int, timeStart string) (err error, schedulesMap map[int][]appointment.Schedule) {
+func (mg *MisRenoGateway) GetSchedules(ctx context.Context, doctorId int, timeStart string) (schedulesMap map[int][]dto.ScheduleDTO, err error) {
 	op := "sorkin_bot.internal.domain.services.appointment.schedule.GetSchedules"
-	var response mis_dto.GetScheduleResponse
-	var schedules []appointment.Schedule
-	var request = mis_dto.GetScheduleRequest{
-		DoctorId:   doctorId,
-		ShowBusy:   false,
-		ShowPast:   false,
-		ShowAll:    false,
-		AllClinics: false,
-	}
+	var (
+		request = mis_dto.GetScheduleRequest{
+			DoctorId:   doctorId,
+			ShowBusy:   false,
+			ShowPast:   false,
+			ShowAll:    false,
+			AllClinics: false,
+		}
+		response  mis_dto.GetScheduleResponse
+		schedules []dto.ScheduleDTO
+	)
 
 	// Если мы хотим получить по конкретному дню, то добавляем параметр timeStart
 	if timeStart != "" {
 		request.TimeStart = timeStart
 	}
 
-	schedulesMap = make(map[int][]appointment.Schedule)
+	schedulesMap = make(map[int][]dto.ScheduleDTO)
 
-	jsonBody, err := json.Marshal(request)
-	if err != nil {
-		mg.logger.Error(fmt.Sprintf("error while marshalling json %s \nplace: %s", err, op))
-		return err, schedulesMap
-	}
-	body := bytes.NewReader(jsonBody)
-	responseBody := mg.sendToMIS(ctx, mis_dto.GetScheduleMethod, body)
+	responseBody := mg.sendToMIS(ctx, mis_dto.GetScheduleMethod, JsonMarshaller(request, op, mg.logger))
 
-	err = json.Unmarshal(responseBody, &response)
+	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)
 	if err != nil {
-		mg.logger.Info(fmt.Sprintf("error while unmarshalling json %s \nplace: %s", err, op))
-		return err, schedulesMap
+		return schedulesMap, err
 	}
 
+	// todo move to service
 	if doctorId != 0 {
 		// Если мы берем расписание у конкретного доктора
 		for _, schedule := range response.Data[fmt.Sprintf("%d", doctorId)] {
-			schedules = append(schedules, schedule.ToDomain())
+			schedules = append(schedules, schedule.ToDTO())
 		}
 		schedulesMap[doctorId] = schedules
-	} else {
-		// Если мы берем расписание у всех докторов
-		for strResponseDoctorId, doctorSchedule := range response.Data {
-			for _, schedule := range doctorSchedule {
-				schedules = append(schedules, schedule.ToDomain())
-			}
-			responseDoctorId, _ := strconv.Atoi(strResponseDoctorId)
-			schedulesMap[responseDoctorId] = schedules
-		}
+		return schedulesMap, nil
 	}
 
-	return nil, schedulesMap
-}
+	// Если мы берем расписание у всех докторов
+	for strResponseDoctorId, doctorSchedule := range response.Data {
+		for _, schedule := range doctorSchedule {
+			schedules = append(schedules, schedule.ToDTO())
+		}
+		responseDoctorId, _ := strconv.Atoi(strResponseDoctorId)
+		schedulesMap[responseDoctorId] = schedules
+	}
 
-func (mg *MisRenoGateway) ChooseSchedules(ctx context.Context) {
-
+	return schedulesMap, nil
 }

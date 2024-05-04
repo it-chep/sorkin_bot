@@ -5,25 +5,39 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log/slog"
 	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
-	mis_dto "sorkin_bot/internal/clients/gateways/mis_reno/mis_dto"
-	"sorkin_bot/internal/domain/entity/appointment"
-	entity "sorkin_bot/internal/domain/entity/user"
+	"sorkin_bot/internal/clients/gateways/dto"
+	"sorkin_bot/internal/clients/gateways/mis_reno/mis_dto"
 	"time"
 )
+
+func JsonMarshaller[T any](req T, op string, logger *slog.Logger) []byte {
+	jsonBody, err := json.Marshal(req)
+	if err != nil {
+		logger.Error(fmt.Sprintf("error while marshalling json %s \nplace: %s", err, op))
+		return nil
+	}
+	return jsonBody
+}
+
+func JsonUnMarshaller[T any](resp T, respBody []byte, op string, logger *slog.Logger) (T, error) {
+	err := json.Unmarshal(respBody, &resp)
+	if err != nil {
+		logger.Error(fmt.Sprintf("error while unmarshalling json %s \nplace: %s", err, op))
+		return resp, err
+	}
+	return resp, nil
+}
 
 type MisRenoGateway struct {
 	logger *slog.Logger
 	client http.Client
 }
-
-//todo добавить кеш, потому что запрос долго идет
 
 func NewMisRenoGateway(logger *slog.Logger, client http.Client) MisRenoGateway {
 	return MisRenoGateway{
@@ -32,7 +46,7 @@ func NewMisRenoGateway(logger *slog.Logger, client http.Client) MisRenoGateway {
 	}
 }
 
-func (mg *MisRenoGateway) sendToMIS(ctx context.Context, method string, body io.Reader) []byte {
+func (mg *MisRenoGateway) sendToMIS(ctx context.Context, method string, body []byte) []byte {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.sendToMIS"
 
 	// Создание запроса с учетом API_KEY в QueryParams
@@ -44,7 +58,7 @@ func (mg *MisRenoGateway) sendToMIS(ctx context.Context, method string, body io.
 	urlWithParams := fmt.Sprintf("%s?%s", urlWithMethod, queryParams.Encode())
 
 	var data map[string]interface{}
-	err := json.NewDecoder(body).Decode(&data)
+	err := json.NewDecoder(bytes.NewReader(body)).Decode(&data)
 	if err != nil {
 		mg.logger.Error(fmt.Sprintf("error while decoding JSON: %s \nplace: %s", err, op))
 		return responseBody
@@ -55,11 +69,9 @@ func (mg *MisRenoGateway) sendToMIS(ctx context.Context, method string, body io.
 		strValue := fmt.Sprintf("%v", value)
 		formValues.Add(key, strValue)
 	}
-	mg.logger.Info(fmt.Sprintf("formValues %s. Data: %s", formValues, data))
 
 	requestBody := bytes.NewBufferString(formValues.Encode())
-	mg.logger.Info(fmt.Sprintf("REQUEST BODY %s", requestBody))
-	request, err := http.NewRequest(http.MethodPost, urlWithParams, requestBody)
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, urlWithParams, requestBody)
 	if err != nil {
 		// Обработка ошибки создания запроса
 		mg.logger.Error(fmt.Sprintf("error while create request entity, op: %s", op))
@@ -83,7 +95,6 @@ func (mg *MisRenoGateway) sendToMIS(ctx context.Context, method string, body io.
 		mg.logger.Error(fmt.Sprintf("error while reading response body, op: %s", op))
 		return responseBody
 	}
-	mg.logger.Info(fmt.Sprintf("RESPONSE BODY %s", responseBody))
 
 	// Базовая превалидация ответа, если 400 или 500
 	var baseResponse mis_dto.BaseResponse
@@ -98,15 +109,15 @@ func (mg *MisRenoGateway) sendToMIS(ctx context.Context, method string, body io.
 }
 
 // FastAppointment возвращает 3 ближайших окна на запись к врачу
-func (mg *MisRenoGateway) FastAppointment(ctx context.Context) (err error, schedulesMap map[int][]appointment.Schedule) {
+func (mg *MisRenoGateway) FastAppointment(ctx context.Context) (schedulesMap map[int][]dto.ScheduleDTO, err error) {
 	currentTime := time.Now()
-	filteredSchedulesMap := make(map[int][]appointment.Schedule)
+	filteredSchedulesMap := make(map[int][]dto.ScheduleDTO)
 	// Время начала приемов - завтра
 	timeStart := fmt.Sprintf("%02d.%02d.%d %02d:%02d", currentTime.Day()+1, currentTime.Month(), currentTime.Year(), currentTime.Hour(), currentTime.Minute())
 
-	err, schedulesMap = mg.GetSchedules(ctx, 0, timeStart)
+	schedulesMap, err = mg.GetSchedules(ctx, 0, timeStart)
 	if err != nil {
-		return err, schedulesMap
+		return schedulesMap, err
 	}
 	// todo нам необходимо 3-4 окна -> 3 врача с минимальной timeStart
 	// todo расписание доктора нам приходит по возрастанию
@@ -116,10 +127,10 @@ func (mg *MisRenoGateway) FastAppointment(ctx context.Context) (err error, sched
 		continue
 	}
 
-	// todo докрутить рандомный выбор окон врачей
+	// todo докрутить рандомный выбор окон врачей and move to service
 	rand.Seed(time.Now().UnixNano())
 
-	randomDoctors := make(map[int][]appointment.Schedule)
+	randomDoctors := make(map[int][]dto.ScheduleDTO)
 	var doctorIDs []int
 	for doctorID := range schedulesMap {
 		doctorIDs = append(doctorIDs, doctorID)
@@ -139,152 +150,113 @@ func (mg *MisRenoGateway) FastAppointment(ctx context.Context) (err error, sched
 		randomDoctors[doctorID] = schedulesMap[doctorID]
 	}
 
-	return nil, randomDoctors
+	return randomDoctors, nil
 }
 
-func (mg *MisRenoGateway) CreateAppointment(ctx context.Context, userEntity entity.User, doctorId int, timeStart, timeEnd string) (err error, appointmentId int) {
+func (mg *MisRenoGateway) CreateAppointment(ctx context.Context, patientId, doctorId int, timeStart, timeEnd string) (appointmentId *int, err error) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.CreateAppointment"
 	var response mis_dto.CreateAppointmentResponse
 	var request = mis_dto.CreateAppointmentRequest{
-		PatientId: userEntity.GetPatientId(),
-		ClinicId:  1,
+		PatientId: patientId,
+		ClinicId:  mis_dto.DefaultClinicId,
 		DoctorId:  doctorId,
 		TimeStart: timeStart,
 		TimeEnd:   timeEnd,
 	}
 
-	jsonBody, err := json.Marshal(request)
-	if err != nil {
-		mg.logger.Error(fmt.Sprintf("error while marshalling json %s \nplace: %s", err, op))
-		return err, -1
-	}
-	body := bytes.NewReader(jsonBody)
-	responseBody := mg.sendToMIS(ctx, mis_dto.CreateAppointmentMethod, body)
+	responseBody := mg.sendToMIS(ctx, mis_dto.CreateAppointmentMethod, JsonMarshaller(request, op, mg.logger))
 
-	err = json.Unmarshal(responseBody, &response)
+	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)
 	if err != nil {
-		mg.logger.Error(fmt.Sprintf("error while marshaling data to BaseResponse struct, op: %s", op))
-		return err, -1
+		return nil, err
 	}
 
-	return nil, response.Data.ID
+	return response.Data.ID, nil
 }
 
-func (mg *MisRenoGateway) CancelAppointment(ctx context.Context, movedTo string, appointmentId int) (err error, result bool) {
+func (mg *MisRenoGateway) CancelAppointment(ctx context.Context, movedTo string, appointmentId int) (result bool, err error) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.CancelAppointment"
 	var request = mis_dto.CancelAppointmentRequest{
 		AppointmentId: appointmentId,
-		Source:        mis_dto.Source,
 		MovedTo:       movedTo,
 	}
 	var response mis_dto.ConfirmAndCancelAppointmentResponse
 
-	jsonBody, err := json.Marshal(request)
-	if err != nil {
-		mg.logger.Error(fmt.Sprintf("error while marshalling json %s \nplace: %s", err, op))
-		return err, false
-	}
-	body := bytes.NewReader(jsonBody)
-	responseBody := mg.sendToMIS(ctx, mis_dto.CancelAppointmentMethod, body)
+	responseBody := mg.sendToMIS(ctx, mis_dto.CancelAppointmentMethod, JsonMarshaller(request, op, mg.logger))
 
-	err = json.Unmarshal(responseBody, &response)
+	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)
 	if err != nil {
-		mg.logger.Error(fmt.Sprintf("error while unmarshalling data err: %s \nop: %s", err, op))
-		return err, response.Data.True
+		return false, err
 	}
-
-	return nil, response.Data.True
+	return response.Data.True, err
 }
 
-func (mg *MisRenoGateway) ConfirmAppointment(ctx context.Context, appointmentId int) (err error, result bool) {
+func (mg *MisRenoGateway) ConfirmAppointment(ctx context.Context, appointmentId int) (result bool, err error) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.ConfirmAppointment"
 	var request = mis_dto.ConfirmAppointmentRequest{
 		AppointmentId: appointmentId,
-		Source:        mis_dto.Source,
 	}
 	var response mis_dto.ConfirmAndCancelAppointmentResponse
 
-	jsonBody, err := json.Marshal(request)
-	if err != nil {
-		mg.logger.Error(fmt.Sprintf("error while marshalling json %s \nplace: %s", err, op))
-		return err, false
-	}
-	body := bytes.NewReader(jsonBody)
-	responseBody := mg.sendToMIS(ctx, mis_dto.ConfirmAppointmentMethod, body)
+	responseBody := mg.sendToMIS(ctx, mis_dto.ConfirmAppointmentMethod, JsonMarshaller(request, op, mg.logger))
 
-	err = json.Unmarshal(responseBody, &response)
+	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)
 	if err != nil {
-		mg.logger.Error(fmt.Sprintf("error while unmarshalling data err: %s \nop: %s", err, op))
-		return err, response.Data.True
+		return false, err
 	}
-	return nil, response.Data.True
+
+	return response.Data.True, nil
 }
 
-func (mg *MisRenoGateway) MyAppointments(ctx context.Context, user entity.User) (err error, appointments []appointment.Appointment) {
+func (mg *MisRenoGateway) MyAppointments(ctx context.Context, patientId int, registrationTime string) (appointments []dto.AppointmentDTO, err error) {
 	// Полуаем записи по пользователю и отдаем ему только даты записей
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.MyAppointments"
 	var response mis_dto.GetAppointmentsResponse
 	currentTime := time.Now()
 
 	// todo рассматриваем только записи из бота, то есть человек будет получать только доступ к тем записям, которые были созданы им из бота
-
 	var request = mis_dto.GetAppointmentsRequest{
-		DateCreatedFrom: user.GetRegistrationTime(),
+		DateCreatedFrom: registrationTime,
 		DateCreatedTo:   fmt.Sprintf("%02d.%02d.%d %02d:%02d", currentTime.Day(), currentTime.Month(), currentTime.Year(), currentTime.Hour(), currentTime.Minute()),
-		PatientId:       user.GetPatientId(),
-		StatusId:        "1, 2",
+		PatientId:       patientId,
+		StatusId:        mis_dto.ActiveStatusIDs,
 	}
 
-	jsonBody, err := json.Marshal(request)
-	if err != nil {
-		mg.logger.Error(fmt.Sprintf("error while marshalling json %s \nplace: %s", err, op))
-		return err, appointments
-	}
-	body := bytes.NewReader(jsonBody)
-	responseBody := mg.sendToMIS(ctx, mis_dto.GetAppointmentsMethod, body)
+	responseBody := mg.sendToMIS(ctx, mis_dto.GetAppointmentsMethod, JsonMarshaller(request, op, mg.logger))
 
-	err = json.Unmarshal(responseBody, &response)
+	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)
 	if err != nil {
-		mg.logger.Error(fmt.Sprintf("error while unmarshalling data err: %s \nop: %s", err, op))
-		return err, appointments
+		return appointments, err
 	}
-	for _, appointmentDTO := range response.Data {
-		appointments = append(appointments, appointmentDTO.ToDomain())
+
+	for _, appointment := range response.Data {
+		appointments = append(appointments, appointment.ToDTO())
 	}
-	return nil, appointments
+
+	return appointments, nil
 }
 
-func (mg *MisRenoGateway) DetailAppointment(ctx context.Context, user entity.User, appointmentId int) (err error, appointmentEntity appointment.Appointment) {
+func (mg *MisRenoGateway) DetailAppointment(ctx context.Context, patientId, appointmentId int, registrationTime string) (appointmentDTO dto.AppointmentDTO, err error) {
 	// Полуаем запись по id записи, отдаем данные о записи
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.DetailAppointment"
-	var response mis_dto.GetAppointmentsResponse
 	currentTime := time.Now()
-
-	// todo мб сделать конструктор для GetAppointmentsRequest
-
+	var response mis_dto.GetAppointmentsResponse
 	var request = mis_dto.GetAppointmentsRequest{
 		AppointmentId:   appointmentId,
-		DateCreatedFrom: user.GetRegistrationTime(),
+		DateCreatedFrom: registrationTime,
 		DateCreatedTo:   fmt.Sprintf("%02d.%02d.%d %02d:%02d", currentTime.Day(), currentTime.Month(), currentTime.Year(), currentTime.Hour(), currentTime.Minute()),
-		PatientId:       user.GetPatientId(),
-		StatusId:        "1, 2",
+		PatientId:       patientId,
+		StatusId:        mis_dto.ActiveStatusIDs,
 	}
 
-	jsonBody, err := json.Marshal(request)
+	responseBody := mg.sendToMIS(ctx, mis_dto.GetAppointmentsMethod, JsonMarshaller(request, op, mg.logger))
+
+	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)
 	if err != nil {
-		mg.logger.Error(fmt.Sprintf("error while marshalling json %s \nplace: %s", err, op))
-		return err, appointmentEntity
-	}
-	body := bytes.NewReader(jsonBody)
-	responseBody := mg.sendToMIS(ctx, mis_dto.GetAppointmentsMethod, body)
-
-	err = json.Unmarshal(responseBody, &response)
-	if err != nil {
-		mg.logger.Error(fmt.Sprintf("error while unmarshalling data err: %s \nop: %s", err, op))
-		return err, appointmentEntity
+		return appointmentDTO, err
 	}
 
-	appointmentEntity = response.Data[0].ToDomain()
+	appointmentDTO = response.Data[0].ToDTO()
 
-	return nil, appointmentEntity
+	return appointmentDTO, nil
 }

@@ -2,7 +2,7 @@ package mis_dto
 
 import (
 	"encoding/json"
-	"sorkin_bot/internal/domain/entity/appointment"
+	"sorkin_bot/internal/clients/gateways/dto"
 )
 
 type BaseResponse struct {
@@ -13,7 +13,7 @@ type BaseResponse struct {
 	} `json:"data"`
 }
 
-type MisUserDTO struct {
+type MisUser struct {
 	ID                     int      `json:"id"`
 	Avatar                 string   `json:"avatar"`
 	AvatarSmall            string   `json:"avatar_small"`
@@ -61,17 +61,17 @@ type MisUserDTO struct {
 type GetUsersResponse struct {
 	Error int `json:"error"`
 	Data  []struct {
-		MisUserDTO
+		MisUser
 	} `json:"data"`
 }
 
-func (u MisUserDTO) ToDomain() appointment.Doctor {
-	return appointment.NewDoctor(
+func (u MisUser) ToDTO() dto.DoctorDTO {
+	return dto.NewDoctorDTO(
 		u.ID, u.Name, u.Phone, u.Email, u.ProfessionTitles, u.SecondProfessionTitles, u.IsDeleted,
 	)
 }
 
-type SpecialityDTO struct {
+type MisSpeciality struct {
 	ID         int    `json:"id"`
 	Name       string `json:"name"`
 	DoctorName string `json:"doctor_name"`
@@ -81,17 +81,17 @@ type SpecialityDTO struct {
 type GetSpecialityResponse struct {
 	Error int `json:"error"`
 	Data  []struct {
-		SpecialityDTO
+		MisSpeciality
 	} `json:"data"`
 }
 
-func (s SpecialityDTO) ToDomain() appointment.Speciality {
-	return appointment.NewSpeciality(
+func (s MisSpeciality) ToDTO() dto.SpecialityDTO {
+	return dto.NewSpecialityDTO(
 		s.ID, s.Name, s.DoctorName, s.IsDeleted,
 	)
 }
 
-type ScheduleDTO struct {
+type MisSchedule struct {
 	ClinicId       int    `json:"clinic_id"`
 	DoctorId       int    `json:"user_id"`
 	Date           string `json:"date"`
@@ -109,17 +109,17 @@ type ScheduleDTO struct {
 
 type GetScheduleResponse struct {
 	Error int                      `json:"error"`
-	Data  map[string][]ScheduleDTO `json:"data"`
+	Data  map[string][]MisSchedule `json:"data"`
 }
 
-func (sch ScheduleDTO) ToDomain() appointment.Schedule {
-	return appointment.NewSchedule(
+func (sch MisSchedule) ToDTO() dto.ScheduleDTO {
+	return dto.NewScheduleDTO(
 		sch.ClinicId, sch.DoctorId, sch.CategoryId, sch.Date, sch.TimeStart, sch.TimeStartShort, sch.TimeEnd,
 		sch.TimeEndShort, sch.Category, sch.Profession, sch.Room, sch.IsBusy, sch.IsPast,
 	)
 }
 
-type SchedulePeriodDTO struct {
+type MisSchedulePeriod struct {
 	Date            string `json:"date"`
 	TimeStart       string `json:"time_start"` //dd.mm.yyyy hh:mm
 	TimeEnd         string `json:"time_end"`   //dd.mm.yyyy hh:mm
@@ -135,18 +135,18 @@ type SchedulePeriodDTO struct {
 type GetSchedulePeriodsResponse struct {
 	Error int `json:"error"`
 	Data  []struct {
-		SchedulePeriodDTO
+		MisSchedulePeriod
 	} `json:"data"`
 }
 
-func (schPer SchedulePeriodDTO) ToDomain() {
+func (schPer MisSchedulePeriod) ToDTO() {
 
 }
 
 type CreateAppointmentResponse struct {
 	Error int `json:"error"`
 	Data  struct {
-		ID int `json:"id"`
+		ID *int `json:"id"`
 	} `json:"data"`
 }
 
@@ -157,7 +157,7 @@ type ConfirmAndCancelAppointmentResponse struct {
 	} `json:"data"`
 }
 
-type AppointmentDTO struct {
+type MisAppointment struct {
 	Id               int    `json:"id"`
 	TimeStart        string `json:"time_start"` //dd.mm.yyyy hh:mm
 	TimeEnd          string `json:"time_end"`   //dd.mm.yyyy hh:mm
@@ -184,19 +184,19 @@ type AppointmentDTO struct {
 type GetAppointmentsResponse struct {
 	Error int `json:"error"`
 	Data  []struct {
-		AppointmentDTO
+		MisAppointment
 	} `json:"data"`
 }
 
-func (a AppointmentDTO) ToDomain() appointment.Appointment {
-	return appointment.NewAppointment(
+func (a MisAppointment) ToDTO() dto.AppointmentDTO {
+	return dto.NewAppointmentDTO(
 		a.Id, a.ClinicId, a.DoctorId, a.PatientId, a.StatusId, a.MovedTo, a.MovedFrom, a.TimeStart, a.TimeEnd, a.Clinic, a.Doctor,
 		a.PatientName, a.PatientBirthDate, a.PatientGender, a.PatientPhone, a.PatientEmail, a.DateCreated, a.DateUpdated,
 		a.Status, a.ConfirmStatus, a.Source,
 	)
 }
 
-type CreatePatientData struct {
+type MisCreatePatientData struct {
 	PatientID int    `json:"patient_id"`
 	Number    int    `json:"number"`
 	LastName  string `json:"last_name"`
@@ -213,11 +213,11 @@ type CreatePatientData struct {
 type CreatePatientResponse struct {
 	Error int `json:"error"`
 	Data  struct {
-		CreatePatientData
+		MisCreatePatientData
 	} `json:"data"`
 }
 
-type PatientAddress struct {
+type MisPatientAddress struct {
 	City        string `json:"city"`
 	Street      string `json:"street"`
 	House       string `json:"house"`
@@ -230,53 +230,57 @@ type PatientAddress struct {
 }
 
 type GetPatientData struct {
-	Number         int             `json:"number"`
-	LastName       string          `json:"last_name"`
-	FirstName      string          `json:"first_name"`
-	ThirdName      string          `json:"third_name"`
-	BirthDate      string          `json:"birth_date"`
-	BirthPlace     string          `json:"birth_place"`
-	Age            string          `json:"age"`
-	Gender         string          `json:"gender"`
-	Mobile         string          `json:"mobile"`
-	Phone          string          `json:"phone"`
-	Email          string          `json:"email"`
-	CarNumber      string          `json:"car_number"`
-	ExternalID     string          `json:"external_id"`
-	ExternalNumber string          `json:"external_number"`
-	JobPlace       string          `json:"job_place"`
-	JobProfession  string          `json:"job_profession"`
-	JobPosition    string          `json:"job_position"`
-	Factory        string          `json:"factory"`
-	Unit           string          `json:"unit"`
-	Workshop       string          `json:"workshop"`
-	Area           string          `json:"area"`
-	ServiceNumber  string          `json:"service_number"`
-	JobAttitude    string          `json:"job_attitude"`
-	SendSMS        string          `json:"send_sms"`
-	SendEmail      string          `json:"send_email"`
-	SendSMSLab     string          `json:"send_sms_lab"`
-	SendEmailLab   string          `json:"send_email_lab"`
-	DateCreated    string          `json:"date_created"`
-	DateUpdated    string          `json:"date_updated"`
-	TimeCreated    string          `json:"time_created"`
-	TimeUpdated    string          `json:"time_updated"`
-	CategoryIDs    string          `json:"category_ids"`
-	ParentID       string          `json:"parent_id"`
-	Groups         string          `json:"groups"`
-	HasAccount     string          `json:"has_account"`
-	AdvChannelID   string          `json:"adv_channel_id"`
-	Desc           string          `json:"desc"`
-	Address        PatientAddress  `json:"address"`
-	IsDeleted      bool            `json:"is_deleted"`
-	DateDeleted    string          `json:"date_deleted"`
-	PatientID      int             `json:"patient_id"`
-	Documents      json.RawMessage `json:"documents"`
+	Number         int               `json:"number"`
+	LastName       string            `json:"last_name"`
+	FirstName      string            `json:"first_name"`
+	ThirdName      string            `json:"third_name"`
+	BirthDate      string            `json:"birth_date"`
+	BirthPlace     string            `json:"birth_place"`
+	Age            string            `json:"age"`
+	Gender         string            `json:"gender"`
+	Mobile         string            `json:"mobile"`
+	Phone          string            `json:"phone"`
+	Email          string            `json:"email"`
+	CarNumber      string            `json:"car_number"`
+	ExternalID     string            `json:"external_id"`
+	ExternalNumber string            `json:"external_number"`
+	JobPlace       string            `json:"job_place"`
+	JobProfession  string            `json:"job_profession"`
+	JobPosition    string            `json:"job_position"`
+	Factory        string            `json:"factory"`
+	Unit           string            `json:"unit"`
+	Workshop       string            `json:"workshop"`
+	Area           string            `json:"area"`
+	ServiceNumber  string            `json:"service_number"`
+	JobAttitude    string            `json:"job_attitude"`
+	SendSMS        string            `json:"send_sms"`
+	SendEmail      string            `json:"send_email"`
+	SendSMSLab     string            `json:"send_sms_lab"`
+	SendEmailLab   string            `json:"send_email_lab"`
+	DateCreated    string            `json:"date_created"`
+	DateUpdated    string            `json:"date_updated"`
+	TimeCreated    string            `json:"time_created"`
+	TimeUpdated    string            `json:"time_updated"`
+	CategoryIDs    string            `json:"category_ids"`
+	ParentID       string            `json:"parent_id"`
+	Groups         string            `json:"groups"`
+	HasAccount     string            `json:"has_account"`
+	AdvChannelID   string            `json:"adv_channel_id"`
+	Desc           string            `json:"desc"`
+	Address        MisPatientAddress `json:"address"`
+	IsDeleted      bool              `json:"is_deleted"`
+	DateDeleted    string            `json:"date_deleted"`
+	PatientID      int               `json:"patient_id"`
+	Documents      json.RawMessage   `json:"documents"`
 }
 
-type GetPatientResponse struct {
+type MisGetPatientResponse struct {
 	Error int `json:"error"`
 	Data  struct {
 		GetPatientData
 	} `json:"data"`
+}
+
+func (p GetPatientData) ToDTO() dto.CreatedPatientDTO {
+	return dto.NewCreatePatientDTO()
 }
