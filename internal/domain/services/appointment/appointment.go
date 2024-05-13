@@ -107,10 +107,10 @@ func (as *AppointmentService) CancelAppointment(ctx context.Context, user entity
 	return true
 }
 
-func (as *AppointmentService) RescheduleAppointment(ctx context.Context, appointmentId int, movedTo string) (result bool) {
+func (as *AppointmentService) RescheduleAppointment(ctx context.Context, user entity.User, appointmentId int, movedTo string) (result bool) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.RescheduleAppointment"
 
-	result, err := as.misAdapter.RescheduleAppointment(ctx, "", appointmentId)
+	err := as.misAdapter.RescheduleAppointment(ctx, user, movedTo, appointmentId)
 	if err != nil {
 		as.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
 		return false

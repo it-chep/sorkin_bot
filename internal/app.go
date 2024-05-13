@@ -9,6 +9,7 @@ import (
 	"sorkin_bot/internal/clients/gateways/mis_reno"
 	"sorkin_bot/internal/controller"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
+	"sorkin_bot/internal/domain/services/adapter"
 	"sorkin_bot/internal/domain/services/appointment"
 	"sorkin_bot/internal/domain/services/bot"
 	"sorkin_bot/internal/domain/services/message"
@@ -99,7 +100,7 @@ func (app *App) InitServices(ctx context.Context) *App {
 	)
 	// todo исправить
 	app.services.appointmentService = appointment.NewAppointmentService(
-		&app.gateways.MisRenoGateway,
+		app.adapters.appointmentServiceAdapter,
 		app.storages.readTranslationStorage,
 		app.logger,
 		app.services.userService,
@@ -128,8 +129,15 @@ func (app *App) InitTelegram(ctx context.Context) *App {
 	return app
 }
 
+func (app *App) InitAdapters(ctx context.Context) *App {
+	app.adapters.appointmentServiceAdapter = adapter.NewAppointmentServiceAdapter(
+		&app.gateways.MisRenoGateway,
+	)
+	return app
+}
+
 func (app *App) InitControllers(ctx context.Context) *App {
-	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot, app.machine, app.services.userService, app.services.appointmentService, app.services.messageService, app.services.botService)
+	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot, app.machine, app.services.userService, &app.services.appointmentService, app.services.messageService, app.services.botService)
 	app.controller.telegramWebhookController.InitController()
 
 	app.server = &http.Server{

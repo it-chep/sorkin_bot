@@ -8,6 +8,7 @@ import (
 	"sorkin_bot/internal/config"
 	"sorkin_bot/internal/controller"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
+	"sorkin_bot/internal/domain/services/adapter"
 	"sorkin_bot/internal/domain/services/appointment"
 	"sorkin_bot/internal/domain/services/bot"
 	"sorkin_bot/internal/domain/services/message"
@@ -66,6 +67,10 @@ type periodicalTasks struct {
 	getTranslatedSpeciality tasks.GetTranslatedSpecialityTask
 }
 
+type adapters struct {
+	appointmentServiceAdapter adapter.AppointmentServiceAdapter
+}
+
 type gateways struct {
 	MisRenoGateway mis_reno.MisRenoGateway
 }
@@ -80,6 +85,7 @@ type App struct {
 	useCases        useCases
 	gateways        gateways
 	workers         workers
+	adapters        adapters
 	periodicalTasks periodicalTasks
 	bot             telegram.Bot
 	pgxClient       postgres.Client
@@ -98,6 +104,7 @@ func NewApp(ctx context.Context) *App {
 		InitStorage(ctx).
 		InitMachine(ctx).
 		InitGateways(ctx).
+		InitAdapters(ctx).
 		InitUseCases(ctx).
 		InitServices(ctx).
 		InitTelegram(ctx).

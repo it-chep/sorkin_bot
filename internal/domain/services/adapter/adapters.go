@@ -10,8 +10,9 @@ type AppointmentServiceAdapter struct {
 	gateway Gateway
 }
 
-func NewAppointmentServiceAdapter() AppointmentServiceAdapter {
+func NewAppointmentServiceAdapter(gateway Gateway) AppointmentServiceAdapter {
 	return AppointmentServiceAdapter{
-		cache: *inmemory_cache.NewCache[string, any](time.Second * 10),
+		cache:   *inmemory_cache.NewCache[string, any](time.Second * 10),
+		gateway: gateway,
 	}
 }
