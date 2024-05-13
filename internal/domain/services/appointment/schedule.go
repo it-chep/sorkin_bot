@@ -6,9 +6,9 @@ import (
 	"sorkin_bot/internal/domain/entity/appointment"
 )
 
-func (as AppointmentService) GetFastAppointmentSchedules(ctx context.Context) (schedulesMap map[int][]appointment.Schedule) {
+func (as *AppointmentService) GetFastAppointmentSchedules(ctx context.Context) (schedulesMap map[int][]appointment.Schedule) {
 	op := "sorkin_bot.internal.domain.services.appointment.schedule.GetFastAppointmentSchedules"
-	err, schedulesMap := as.misAdapter.FastAppointment(ctx)
+	schedulesMap, err := as.misAdapter.FastAppointment(ctx)
 	if err != nil {
 		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
 		return
@@ -17,9 +17,9 @@ func (as AppointmentService) GetFastAppointmentSchedules(ctx context.Context) (s
 	return schedulesMap
 }
 
-func (as AppointmentService) GetSchedules(ctx context.Context, doctorId int) {
+func (as *AppointmentService) GetSchedules(ctx context.Context, doctorId int) {
 	op := "sorkin_bot.internal.domain.services.appointment.schedule.GetSchedules	"
-	err, schedules := as.misAdapter.GetSchedules(ctx, doctorId, "")
+	schedules, err := as.misAdapter.GetSchedules(ctx, doctorId, "")
 	// +- такая логика
 	if doctorId == 0 {
 		for doctorId, doctorSchedules := range schedules {

@@ -28,7 +28,7 @@ func NewAppointmentService(misAdapter adapter.AppointmentServiceAdapter, readRep
 	}
 }
 
-func (as AppointmentService) GetAppointments(ctx context.Context, user entity.User) (appointments []appointment.Appointment) {
+func (as *AppointmentService) GetAppointments(ctx context.Context, user entity.User) (appointments []appointment.Appointment) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.GetAppointments"
 	var err error
 	if user.GetPatientId() == nil {
@@ -49,14 +49,14 @@ func (as AppointmentService) GetAppointments(ctx context.Context, user entity.Us
 	return appointments
 }
 
-func (as AppointmentService) GetAppointmentDetail(ctx context.Context, user entity.User, appointmentId int) (appointmentEntity appointment.Appointment) {
+func (as *AppointmentService) GetAppointmentDetail(ctx context.Context, user entity.User, appointmentId int) (appointmentEntity appointment.Appointment) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.GetAppointmentDetail"
 
 	if user.GetPatientId() == nil {
 		return
 	}
 
-	err, appointmentEntity := as.misAdapter.DetailAppointment(ctx, user, appointmentId)
+	appointmentEntity, err := as.misAdapter.DetailAppointment(ctx, user, appointmentId)
 	if err != nil {
 		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
 		return appointment.Appointment{}
@@ -65,7 +65,7 @@ func (as AppointmentService) GetAppointmentDetail(ctx context.Context, user enti
 	return appointmentEntity
 }
 
-func (as AppointmentService) CreateAppointment(ctx context.Context, user entity.User, callbackData string) (appointmentId int) {
+func (as *AppointmentService) CreateAppointment(ctx context.Context, user entity.User, callbackData string) (appointmentId *int) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.CreateAppointment"
 	if user.GetPatientId() == nil {
 		return
@@ -77,19 +77,19 @@ func (as AppointmentService) CreateAppointment(ctx context.Context, user entity.
 	timeStart := strings.Split(elements[1], "_")[1]
 	timeEnd := strings.Split(elements[2], "_")[1]
 
-	err, appointmentId := as.misAdapter.CreateAppointment(ctx, user, doctorId, timeStart, timeEnd)
+	appointmentId, err := as.misAdapter.CreateAppointment(ctx, user, doctorId, timeStart, timeEnd)
 	if err != nil {
 		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
-		return -1
+		return nil
 	}
 
 	return appointmentId
 }
 
-func (as AppointmentService) ConfirmAppointment(ctx context.Context, appointmentId int) (result bool) {
+func (as *AppointmentService) ConfirmAppointment(ctx context.Context, appointmentId int) (result bool) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.ConfirmAppointment"
 
-	err, result := as.misAdapter.ConfirmAppointment(ctx, appointmentId)
+	result, err := as.misAdapter.ConfirmAppointment(ctx, appointmentId)
 	if err != nil {
 		as.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
 		return false
@@ -97,10 +97,9 @@ func (as AppointmentService) ConfirmAppointment(ctx context.Context, appointment
 	return true
 }
 
-func (as AppointmentService) CancelAppointment(ctx context.Context, appointmentId int) (result bool) {
+func (as *AppointmentService) CancelAppointment(ctx context.Context, user entity.User, appointmentId int) (result bool) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.CancelAppointment"
-
-	err, result := as.misAdapter.CancelAppointment(ctx, "", appointmentId)
+	result, err := as.misAdapter.CancelAppointment(ctx, user, appointmentId)
 	if err != nil {
 		as.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
 		return false
@@ -108,10 +107,10 @@ func (as AppointmentService) CancelAppointment(ctx context.Context, appointmentI
 	return true
 }
 
-func (as AppointmentService) RescheduleAppointment(ctx context.Context, appointmentId int, movedTo string) (result bool) {
+func (as *AppointmentService) RescheduleAppointment(ctx context.Context, appointmentId int, movedTo string) (result bool) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.RescheduleAppointment"
 
-	err, result := as.misAdapter.CancelAppointment(ctx, movedTo, appointmentId)
+	result, err := as.misAdapter.RescheduleAppointment(ctx, "", appointmentId)
 	if err != nil {
 		as.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
 		return false

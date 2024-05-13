@@ -58,6 +58,12 @@ func (cache *Cache[Key, Val]) Get(key Key) (Val, bool) {
 	return val.value, ok
 }
 
+func (cache *Cache[Key, Val]) Del(key Key) {
+	cache.mutex.Lock()
+	defer cache.mutex.Unlock()
+	delete(cache.cache, key)
+}
+
 func (cache *Cache[Key, Val]) cleaner(now time.Time) {
 	cache.mutex.Lock()
 	defer cache.mutex.Unlock()
