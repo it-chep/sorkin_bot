@@ -22,6 +22,8 @@ import (
 	"sorkin_bot/internal/domain/usecases/user/update_user_third_name"
 	"sorkin_bot/internal/storage/read_repo"
 	"sorkin_bot/internal/storage/write_repo"
+	"sorkin_bot/internal/worker_pool"
+	"sorkin_bot/internal/worker_pool/tasks"
 	"sorkin_bot/pkg/client/postgres"
 	"sorkin_bot/pkg/client/telegram"
 )
@@ -56,22 +58,32 @@ type storages struct {
 	writeTelegramStorage   write_repo.TelegramMessageStorage
 }
 
+type workers struct {
+	everyDayWorker worker_pool.Worker
+}
+
+type periodicalTasks struct {
+	getTranslatedSpeciality tasks.GetTranslatedSpecialityTask
+}
+
 type gateways struct {
 	MisRenoGateway mis_reno.MisRenoGateway
 }
 
 type App struct {
-	logger     *slog.Logger
-	config     *config.Config
-	controller controllers
-	machine    *state_machine.UserStateMachine
-	services   services
-	storages   storages
-	useCases   useCases
-	gateways   gateways
-	bot        telegram.Bot
-	pgxClient  postgres.Client
-	server     *http.Server
+	logger          *slog.Logger
+	config          *config.Config
+	controller      controllers
+	machine         *state_machine.UserStateMachine
+	services        services
+	storages        storages
+	useCases        useCases
+	gateways        gateways
+	workers         workers
+	periodicalTasks periodicalTasks
+	bot             telegram.Bot
+	pgxClient       postgres.Client
+	server          *http.Server
 }
 
 func NewApp(ctx context.Context) *App {
@@ -89,6 +101,8 @@ func NewApp(ctx context.Context) *App {
 		InitUseCases(ctx).
 		InitServices(ctx).
 		InitTelegram(ctx).
+		InitTasks(ctx).
+		InitWorkers(ctx).
 		InitControllers(ctx)
 
 	return app
@@ -96,5 +110,6 @@ func NewApp(ctx context.Context) *App {
 
 func (app *App) Run() error {
 	app.logger.Info("start server")
+	go app.workers.everyDayWorker.Run()
 	return app.server.ListenAndServe()
 }

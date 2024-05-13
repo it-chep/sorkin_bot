@@ -22,6 +22,8 @@ import (
 	"sorkin_bot/internal/domain/usecases/user/update_user_third_name"
 	"sorkin_bot/internal/storage/read_repo"
 	"sorkin_bot/internal/storage/write_repo"
+	"sorkin_bot/internal/worker_pool"
+	"sorkin_bot/internal/worker_pool/tasks"
 	"sorkin_bot/pkg/client/postgres"
 	"sorkin_bot/pkg/client/telegram"
 	"time"
@@ -59,6 +61,16 @@ func (app *App) InitStorage(ctx context.Context) *App {
 
 func (app *App) InitGateways(ctx context.Context) *App {
 	app.gateways.MisRenoGateway = mis_reno.NewMisRenoGateway(app.logger, http.Client{Timeout: time.Second * 10})
+	return app
+}
+
+func (app *App) InitTasks(ctx context.Context) *App {
+	app.periodicalTasks.getTranslatedSpeciality = tasks.NewGetTranslatedSpecialityTask(&app.services.appointmentService, app.services.userService, app.logger, app.bot)
+	return app
+}
+
+func (app *App) InitWorkers(ctx context.Context) *App {
+	app.workers.everyDayWorker = worker_pool.NewWorker(app.periodicalTasks.getTranslatedSpeciality)
 	return app
 }
 

@@ -7,26 +7,27 @@ import (
 	entity "sorkin_bot/internal/domain/entity/user"
 )
 
-func (as AppointmentService) GetSpecialities(ctx context.Context) (err error, specialities []appointment.Speciality) {
+func (as AppointmentService) GetSpecialities(ctx context.Context) (specialities []appointment.Speciality, err error) {
 	specialities = as.misAdapter.GetSpecialities(ctx)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
-	return nil, specialities
+	return specialities, err
 }
 
 func (as AppointmentService) GetTranslatedSpecialities(
 	ctx context.Context,
 	user entity.User,
 	specialities []appointment.Speciality,
-) (translatedSpecialities map[int]string, err error) {
+) (translatedSpecialities map[int]string, unTranslatedSpecialities []string, err error) {
 	var translatedSpeciality string
 	op := "sorkin_bot.internal.domain.services.appointment.speciality.GetTranslatedSpecialities"
 	translations, err := as.readRepo.GetTranslationsBySlug(ctx, "doctor")
 	translatedSpecialities = make(map[int]string)
+	unTranslatedSpecialities = make([]string, 0)
 
 	if err != nil {
-		return translatedSpecialities, err
+		return translatedSpecialities, nil, err
 	}
 	langCode := user.GetLanguageCode()
 
@@ -35,7 +36,7 @@ func (as AppointmentService) GetTranslatedSpecialities(
 
 		if !ok {
 			as.logger.Error(fmt.Sprintf("untranslated speciality: %s, please translate this in priority. Place %s", speciality.GetDoctorName(), op))
-			translatedSpeciality = speciality.GetDoctorName()
+			unTranslatedSpecialities = append(unTranslatedSpecialities, speciality.GetDoctorName())
 		}
 
 		switch langCode {
@@ -49,5 +50,5 @@ func (as AppointmentService) GetTranslatedSpecialities(
 
 		translatedSpecialities[speciality.GetId()] = translatedSpeciality
 	}
-	return translatedSpecialities, err
+	return translatedSpecialities, unTranslatedSpecialities, err
 }
