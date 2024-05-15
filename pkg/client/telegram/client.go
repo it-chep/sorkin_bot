@@ -50,7 +50,7 @@ func (bot *Bot) SendMessage(msg tgbotapi.MessageConfig, messageDTO tg.MessageDTO
 	messageDTO.Text = sentMessage.Text
 
 	go func() {
-		err = bot.messageService.SaveMessageLog(context.TODO(), messageDTO)
+		err = bot.messageService.SaveMessageLog(context.Background(), messageDTO)
 		if err != nil {
 			bot.logger.Error(fmt.Sprintf("%s", err))
 		}

@@ -66,7 +66,7 @@ func (app *App) InitGateways(ctx context.Context) *App {
 }
 
 func (app *App) InitTasks(ctx context.Context) *App {
-	app.periodicalTasks.getTranslatedSpeciality = tasks.NewGetTranslatedSpecialityTask(app.services.appointmentService, app.services.userService, app.logger, app.bot)
+	app.periodicalTasks.getTranslatedSpeciality = tasks.NewGetTranslatedSpecialityTask(&app.services.appointmentService, app.services.userService, app.logger, app.bot)
 	return app
 }
 
@@ -137,7 +137,7 @@ func (app *App) InitAdapters(ctx context.Context) *App {
 }
 
 func (app *App) InitControllers(ctx context.Context) *App {
-	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot, app.machine, app.services.userService, app.services.appointmentService, app.services.messageService, app.services.botService)
+	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot, app.machine, app.services.userService, &app.services.appointmentService, app.services.messageService, app.services.botService)
 	app.controller.telegramWebhookController.InitController()
 
 	app.server = &http.Server{

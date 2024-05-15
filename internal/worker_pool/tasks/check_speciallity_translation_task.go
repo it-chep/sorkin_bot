@@ -33,22 +33,24 @@ func (task GetTranslatedSpecialityTask) Process(ctx context.Context) error {
 		panic("adminId not found")
 	}
 	dto := tg.TgUserDTO{TgID: int64(adminId)}
+	messageDTO := tg.MessageDTO{}
+
 	getUser, err := task.userService.GetUser(ctx, dto)
 	if err != nil {
 		msg := tgbotapi.NewMessage(int64(adminId), "error while getting admin in GetTranslatedSpecialityTask")
-		_, _ = task.bot.Bot.Send(msg)
+		task.bot.SendMessage(msg, messageDTO)
 		return err
 	}
 	specialities, err := task.appointmentService.GetSpecialities(ctx)
 	if err != nil {
 		msg := tgbotapi.NewMessage(int64(adminId), "error while getting speciality in GetTranslatedSpecialityTask")
-		_, _ = task.bot.Bot.Send(msg)
+		task.bot.SendMessage(msg, messageDTO)
 		return err
 	}
 	_, unTranslatedSpecialities, err := task.appointmentService.GetTranslatedSpecialities(ctx, getUser, specialities)
 	for _, unTranslatedSpeciality := range unTranslatedSpecialities {
 		msg := tgbotapi.NewMessage(int64(adminId), fmt.Sprintf("untranslated speciality %s !", unTranslatedSpeciality))
-		_, _ = task.bot.Bot.Send(msg)
+		task.bot.SendMessage(msg, messageDTO)
 	}
 	return nil
 }

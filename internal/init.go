@@ -35,7 +35,7 @@ type controllers struct {
 
 type services struct {
 	userService        user.UserService
-	appointmentService *appointment.AppointmentService
+	appointmentService appointment.AppointmentService
 	messageService     message.MessageService
 	botService         bot.BotService
 }
@@ -68,7 +68,7 @@ type periodicalTasks struct {
 }
 
 type adapters struct {
-	appointmentServiceAdapter adapter.AppointmentServiceAdapter
+	appointmentServiceAdapter *adapter.AppointmentServiceAdapter
 }
 
 type gateways struct {
