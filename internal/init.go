@@ -35,7 +35,7 @@ type controllers struct {
 
 type services struct {
 	userService        user.UserService
-	appointmentService appointment.AppointmentService
+	appointmentService *appointment.AppointmentService
 	messageService     message.MessageService
 	botService         bot.BotService
 }

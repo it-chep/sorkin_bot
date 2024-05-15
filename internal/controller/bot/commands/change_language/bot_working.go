@@ -2,7 +2,6 @@ package change_language
 
 import (
 	"context"
-	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
 	"sorkin_bot/internal/controller/dto/tg"
@@ -29,7 +28,7 @@ func NewChangeLanguageCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.T
 	}
 }
 
-func (c ChangeLanguageCommand) Execute(ctx context.Context) {
+func (c ChangeLanguageCommand) Execute(ctx context.Context, messageDTO tg.MessageDTO) {
 	userEntity, err := c.userService.GetUser(ctx, c.tgUser)
 	if err != nil {
 		return
@@ -40,9 +39,5 @@ func (c ChangeLanguageCommand) Execute(ctx context.Context) {
 
 	msg.ReplyMarkup = keyboard
 
-	_, err = c.bot.Bot.Send(msg)
-	if err != nil {
-		c.logger.Error(fmt.Sprintf("%s", err))
-	}
-
+	c.bot.SendMessage(msg, messageDTO)
 }

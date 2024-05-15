@@ -51,18 +51,5 @@ func (c MyAppointmentsCommand) Execute(ctx context.Context, messageDTO tg.Messag
 
 	c.machine.SetState(userEntity, userEntity.GetState(), state_machine.ChooseAppointment)
 
-	sentMessage, err := c.bot.Bot.Send(msg)
-	// todo мб вынести в отдельный метод
-	if err != nil {
-		c.logger.Error(fmt.Sprintf("%s", err))
-	}
-	messageDTO.MessageID = int64(sentMessage.MessageID)
-	messageDTO.Text = sentMessage.Text
-
-	go func() {
-		err := c.messageService.SaveMessageLog(context.TODO(), messageDTO)
-		if err != nil {
-			return
-		}
-	}()
+	c.bot.SendMessage(msg, messageDTO)
 }

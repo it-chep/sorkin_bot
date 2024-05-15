@@ -73,8 +73,5 @@ func (c *CallbackBotMessage) Execute(ctx context.Context, messageDTO tg.MessageD
 
 	msg = tgbotapi.NewMessage(c.tgUser.TgID, msgText)
 
-	_, err = c.bot.Bot.Send(msg)
-	if err != nil {
-		c.logger.Error(fmt.Sprintf("%s", err))
-	}
+	c.bot.SendMessage(msg, messageDTO)
 }

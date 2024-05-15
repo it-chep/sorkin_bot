@@ -72,20 +72,7 @@ func (c *FastAppointmentBotCommand) Execute(ctx context.Context, message tg.Mess
 
 	c.logger.Info(fmt.Sprintf("%s", message))
 
-	sentMessage, err := c.bot.Bot.Send(msg)
-	// todo мб вынести в отдельный метод
-	if err != nil {
-		c.logger.Error(fmt.Sprintf("%s", err))
-	}
-	message.MessageID = int64(sentMessage.MessageID)
-	message.Text = sentMessage.Text
-
-	go func() {
-		err := c.messageService.SaveMessageLog(context.TODO(), message)
-		if err != nil {
-			return
-		}
-	}()
+	c.bot.SendMessage(msg, message)
 
 	// todo, мб горутину на стейты
 	userEntity, err := c.userService.GetUser(ctx, c.tgUser)

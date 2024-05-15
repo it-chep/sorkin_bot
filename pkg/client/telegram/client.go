@@ -1,15 +1,21 @@
 package telegram
 
 import (
+	"context"
+	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"log/slog"
 	"sorkin_bot/internal/config"
+	"sorkin_bot/internal/controller/dto/tg"
 )
 
 type Bot struct {
-	Bot *tgbotapi.BotAPI
+	Bot            *tgbotapi.BotAPI
+	logger         *slog.Logger
+	messageService MessageService
 }
 
-func NewTelegramBot(cfg config.Config) *Bot {
+func NewTelegramBot(cfg config.Config, logger *slog.Logger, messageService MessageService) *Bot {
 	bot, err := tgbotapi.NewBotAPI(cfg.Bot.Token)
 	bot.Debug = true
 	if err != nil {
@@ -28,6 +34,25 @@ func NewTelegramBot(cfg config.Config) *Bot {
 	}
 
 	return &Bot{
-		Bot: bot,
+		Bot:            bot,
+		logger:         logger,
+		messageService: messageService,
 	}
+}
+
+func (bot *Bot) SendMessage(msg tgbotapi.MessageConfig, messageDTO tg.MessageDTO) {
+	sentMessage, err := bot.Bot.Send(msg)
+	if err != nil {
+		bot.logger.Error(fmt.Sprintf("%s", err))
+	}
+
+	messageDTO.MessageID = int64(sentMessage.MessageID)
+	messageDTO.Text = sentMessage.Text
+
+	go func() {
+		err = bot.messageService.SaveMessageLog(context.TODO(), messageDTO)
+		if err != nil {
+			bot.logger.Error(fmt.Sprintf("%s", err))
+		}
+	}()
 }

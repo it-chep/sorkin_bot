@@ -17,13 +17,13 @@ func (c TextBotMessage) GetName(ctx context.Context, user entity.User, messageDT
 		_, err := c.userService.UpdateThirdName(ctx, c.tgUser, messageDTO.Text)
 		if err != nil {
 			msg = tgbotapi.NewMessage(c.tgUser.TgID, message.ServerError)
-			_, _ = c.bot.Bot.Send(msg)
+			c.bot.SendMessage(msg, messageDTO)
 			return
 		}
 	} else {
 		messageText, _ := c.messageService.GetMessage(ctx, user, "invalid name")
 		msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
-		_, _ = c.bot.Bot.Send(msg)
+		c.bot.SendMessage(msg, messageDTO)
 		return
 	}
 

@@ -9,7 +9,7 @@ import (
 
 type AppointmentService interface {
 	// appointmeent interfaces in service and gateway
-	CreateAppointment(ctx context.Context, user entity.User, callbackData string) (appointmentId int)
+	CreateAppointment(ctx context.Context, user entity.User, callbackData string) (appointmentId *int)
 
 	// user interfaces in service and gateway
 	GetPatient(ctx context.Context, user entity.User) (result bool)

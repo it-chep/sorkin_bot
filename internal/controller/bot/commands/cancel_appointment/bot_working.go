@@ -44,7 +44,7 @@ func (c *CancelAppointmentBotCommand) Execute(ctx context.Context, message tg.Me
 		messageText, err := c.messageService.GetMessage(ctx, userEntity, "Select appointment")
 		msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
 		if err != nil {
-			_, _ = c.bot.Bot.Send(msg)
+			c.bot.SendMessage(msg, message)
 			return
 		}
 		keyboard := tgbotapi.NewInlineKeyboardMarkup()
@@ -62,18 +62,5 @@ func (c *CancelAppointmentBotCommand) Execute(ctx context.Context, message tg.Me
 
 	c.machine.SetState(userEntity, userEntity.GetState(), state_machine.ChooseAppointment)
 
-	sentMessage, err := c.bot.Bot.Send(msg)
-	// todo мб вынести в отдельный метод
-	if err != nil {
-		c.logger.Error(fmt.Sprintf("%s", err))
-	}
-	message.MessageID = int64(sentMessage.MessageID)
-	message.Text = sentMessage.Text
-
-	go func() {
-		err := c.messageService.SaveMessageLog(context.TODO(), message)
-		if err != nil {
-			return
-		}
-	}()
+	c.bot.SendMessage(msg, messageDTO)
 }

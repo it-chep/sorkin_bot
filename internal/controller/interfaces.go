@@ -12,16 +12,16 @@ type AppointmentService interface {
 	// appointmeent interfaces in service and gateway
 	GetAppointments(ctx context.Context, user entity.User) (appointments []appointment.Appointment)
 	GetAppointmentDetail(ctx context.Context, user entity.User, appointmentId int) (appointmentEntity appointment.Appointment)
-	CreateAppointment(ctx context.Context, user entity.User, callbackData string) (appointmentId int)
+	CreateAppointment(ctx context.Context, user entity.User, callbackData string) (appointmentId *int)
 	ConfirmAppointment(ctx context.Context, appointmentId int) (result bool)
-	CancelAppointment(ctx context.Context, appointmentId int) (result bool)
-	RescheduleAppointment(ctx context.Context, appointmentId int, movedTo string) (result bool)
+	CancelAppointment(ctx context.Context, user entity.User, appointmentId int) (result bool)
+	RescheduleAppointment(ctx context.Context, user entity.User, appointmentId int, movedTo string) (result bool)
 
 	// doctors interfaces in service and gateway
 	GetDoctors(ctx context.Context, specialityId int) (doctors []appointment.Doctor)
 
-	GetSpecialities(ctx context.Context) (err error, specialities []appointment.Speciality)
-	GetTranslatedSpecialities(ctx context.Context, user entity.User, specialities []appointment.Speciality) (translatedSpecialities map[int]string, err error)
+	GetSpecialities(ctx context.Context) (specialities []appointment.Speciality, err error)
+	GetTranslatedSpecialities(ctx context.Context, user entity.User, specialities []appointment.Speciality) (translatedSpecialities map[int]string, unTranslatedSpecialities []string, err error)
 
 	// schedules interfaces in service and gateway
 	GetSchedules(ctx context.Context, doctorId int)

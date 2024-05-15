@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	botapi "sorkin_bot/internal/controller/bot"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
+	"sorkin_bot/internal/middleware"
 	"sorkin_bot/pkg/client/telegram"
 
 	"log/slog"
@@ -23,7 +24,10 @@ type RestController struct {
 
 func NewRestController(cfg config.Config, logger *slog.Logger, bot telegram.Bot, machine *state_machine.UserStateMachine, userService UserService, appointmentService AppointmentService, messageService MessageService, botService BotService) *RestController {
 	router := gin.New()
-	router.Use(gin.Recovery())
+	botMiddleware := middleware.NewMessageLogMiddleware()
+	sentryMiddleware := middleware.NewSentryMiddleware()
+	tgAdminMiddleware := middleware.NewTgAdminWarningMiddleware()
+	router.Use(gin.Recovery(), botMiddleware.ProcessRequest, sentryMiddleware.ProcessRequest, tgAdminMiddleware.ProcessRequest)
 
 	botApiController := botapi.NewTelegramWebhookController(cfg, logger, bot, machine, userService, appointmentService, messageService, botService)
 

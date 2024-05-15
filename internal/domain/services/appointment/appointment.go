@@ -13,13 +13,13 @@ import (
 )
 
 type AppointmentService struct {
-	misAdapter  adapter.AppointmentServiceAdapter
+	misAdapter  *adapter.AppointmentServiceAdapter
 	userService user.UserService
 	readRepo    ReadRepo
 	logger      *slog.Logger
 }
 
-func NewAppointmentService(misAdapter adapter.AppointmentServiceAdapter, readRepo ReadRepo, logger *slog.Logger, userService user.UserService) AppointmentService {
+func NewAppointmentService(misAdapter *adapter.AppointmentServiceAdapter, readRepo ReadRepo, logger *slog.Logger, userService user.UserService) AppointmentService {
 	return AppointmentService{
 		misAdapter:  misAdapter,
 		userService: userService,

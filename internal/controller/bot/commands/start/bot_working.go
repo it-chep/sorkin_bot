@@ -2,7 +2,6 @@ package start
 
 import (
 	"context"
-	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
 	"sorkin_bot/internal/controller/dto/tg"
@@ -51,8 +50,5 @@ func (c *StartBotCommand) Execute(ctx context.Context, message tg.MessageDTO) {
 		msg.ReplyMarkup = keyboard
 	}
 
-	_, err = c.bot.Bot.Send(msg)
-	if err != nil {
-		c.logger.Error(fmt.Sprintf("%s", err))
-	}
+	c.bot.SendMessage(msg, message)
 }

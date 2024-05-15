@@ -3,7 +3,6 @@ package bot
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -12,6 +11,7 @@ import (
 	"net/http"
 	"sorkin_bot/internal/config"
 	callback "sorkin_bot/internal/controller/bot/callback/callback_message"
+	"sorkin_bot/internal/controller/bot/text/text_message"
 
 	"sorkin_bot/internal/controller/bot/commands/cancel_appointment"
 	"sorkin_bot/internal/controller/bot/commands/change_language"
@@ -25,7 +25,6 @@ import (
 )
 
 type TelegramWebhookController struct {
-	router             *gin.Engine
 	cfg                config.Config
 	logger             *slog.Logger
 	bot                telegram.Bot
@@ -46,11 +45,8 @@ func NewTelegramWebhookController(
 	messageService MessageService,
 	botService BotService,
 ) TelegramWebhookController {
-	router := gin.New()
-	router.Use(gin.Recovery())
 
 	return TelegramWebhookController{
-		router:             router,
 		cfg:                cfg,
 		logger:             logger,
 		bot:                bot,
@@ -76,116 +72,72 @@ func (t TelegramWebhookController) BotWebhookHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-
+	ctx := context.WithValue(context.Background(), "userID", update.Message.From.ID)
+	tgUser := t.getUserFromWebhook(update)
+	tgMessage := t.getMessageFromWebhook(update)
 	// Сначала проверяем на команду, потом на текстовое сообщение, потом callback
 	if update.Message != nil {
 		if update.Message.IsCommand() {
-			err := t.ForkCommands(update)
-			if err != nil {
-				return
-			}
+			t.ForkCommands(ctx, update, tgUser, tgMessage)
 		} else {
-			err := t.ForkMessages(update)
-			if err != nil {
-				return
-			}
+			t.ForkMessages(ctx, tgUser, tgMessage)
 		}
 	} else if update.CallbackQuery != nil {
-		err := t.ForkCallbacks(update)
-		if err != nil {
-			return
-		}
+		t.ForkCallbacks(ctx, update, tgUser, tgMessage)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "received"})
 }
 
-func (t TelegramWebhookController) ForkCommands(update tgbotapi.Update) error {
-	tgUser := t.getUserFromWebhook(update)
-	tgMessage := t.getMessageFromWebhook(update)
-	ctx := context.WithValue(context.Background(), "userID", update.Message.From.ID)
+func (t TelegramWebhookController) ForkCommands(ctx context.Context, update tgbotapi.Update, tgUser tg.TgUserDTO, tgMessage tg.MessageDTO) {
 
 	switch update.Message.Command() {
 	case "start":
-		t.logger.Info("start command was called")
 		command := start.NewStartBotCommand(t.logger, t.bot, tgUser, t.userService, t.messageService, t.botService)
 		command.Execute(ctx, tgMessage)
 	case "help":
 		// service по работе с help
-
-		_, err := t.bot.Bot.Send(tgbotapi.NewMessage(update.FromChat().ID, "i will help you"))
-		if err != nil {
-			return err
-		}
-		return nil
+		t.bot.SendMessage(tgbotapi.NewMessage(update.FromChat().ID, "i will help you"), tgMessage)
 	case "tech_support":
 		// service по работе с tech_support
-
-		_, err := t.bot.Bot.Send(tgbotapi.NewMessage(update.FromChat().ID, "i will help you"))
-		if err != nil {
-			return err
-		}
-		return nil
+		t.bot.SendMessage(tgbotapi.NewMessage(update.FromChat().ID, "i will help you"), tgMessage)
 	case "fast_appointment":
 		// service по работе с fast appointment
-
-		t.logger.Info("fast_appointment command was called")
 		command := fast_appointment.NewFastAppointmentBotCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.appointmentService, t.messageService)
 		command.Execute(ctx, tgMessage)
-		return nil
 	case "appointment":
 		// service по работе с appointment
-		t.logger.Info("create_appointment command was called")
-
 		command := create_appointment.NewCreateAppointmentCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.appointmentService, t.messageService)
 		command.Execute(ctx, tgMessage)
 	case "cancel_appointment":
 		// service по работе с cancel_appointment
-
-		t.logger.Info("cancel_appointment command was called")
 		command := cancel_appointment.NewCancelAppointmentBotCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.appointmentService, t.messageService)
 		command.Execute(ctx, tgMessage)
-		return nil
 	case "my_appointments":
 		// service по работе с my_appointments
-
 		command := my_appointment.NewMyAppointmentsCommand(t.logger, t.bot, tgUser, t.machine, t.userService, t.appointmentService, t.messageService)
 		command.Execute(ctx, tgMessage)
-		return nil
 	case "change_language":
-		t.logger.Info("change_language command was called")
-
 		command := change_language.NewChangeLanguageCommand(t.logger, t.bot, tgUser, t.userService, t.messageService, t.botService)
-		command.Execute(ctx)
+		command.Execute(ctx, tgMessage)
 	case "menu":
 		// service по работе с menu
-
-		_, err := t.bot.Bot.Send(tgbotapi.NewMessage(update.FromChat().ID, "my_appointments"))
-		if err != nil {
-			return err
-		}
-		return nil
+		t.bot.SendMessage(tgbotapi.NewMessage(update.FromChat().ID, "i will help you"), tgMessage)
 	}
-	return errors.New("no commands")
 }
 
 // todo в эти форки будут сыпаться все текстовые сообщения и колбэки
 // todo и в зависимости от состояния пользователя ему будет выдаваться контент
 
-func (t TelegramWebhookController) ForkMessages(update tgbotapi.Update) error {
-	tgMessage := t.getMessageFromWebhook(update)
-	t.logger.Info(tgMessage.Text)
-	return errors.New("no texts yet")
+func (t TelegramWebhookController) ForkMessages(ctx context.Context, tgUser tg.TgUserDTO, tgMessage tg.MessageDTO) {
+	messageBot := text_message.NewTextBotMessage(t.logger, t.bot, tgUser, t.machine, t.userService, t.messageService, t.appointmentService, t.botService)
+	messageBot.Execute(ctx, tgMessage)
 }
 
-func (t TelegramWebhookController) ForkCallbacks(update tgbotapi.Update) error {
-	ctx := context.TODO()
-	tgUser := t.getUserFromWebhook(update)
+func (t TelegramWebhookController) ForkCallbacks(ctx context.Context, update tgbotapi.Update, tgUser tg.TgUserDTO, tgMessage tg.MessageDTO) {
 	callbackData := update.CallbackData()
-	tgMessage := t.getMessageFromWebhook(update)
 	callbackBot := callback.NewCallbackBot(t.logger, t.bot, tgUser, t.machine, t.userService, t.messageService, t.appointmentService)
 	callbackBot.Execute(ctx, tgMessage, callbackData)
-	return errors.New("no callbacks yet")
 }
 
 func (t TelegramWebhookController) getUserFromWebhook(update tgbotapi.Update) tg.TgUserDTO {
@@ -204,7 +156,7 @@ func (t TelegramWebhookController) getUserFromWebhook(update tgbotapi.Update) tg
 		t.logger.Error(fmt.Sprintf("Error marshaling user to JSON: %s", err))
 		return tg.TgUserDTO{}
 	}
-	if err := json.Unmarshal(userJSON, &tgUser); err != nil {
+	if err = json.Unmarshal(userJSON, &tgUser); err != nil {
 		t.logger.Error(fmt.Sprintf("Error decoding JSON: %s", err))
 		return tg.TgUserDTO{}
 	}
@@ -227,21 +179,9 @@ func (t TelegramWebhookController) getMessageFromWebhook(update tgbotapi.Update)
 		t.logger.Error(fmt.Sprintf("Error marshaling user to JSON: %s", err))
 		return tg.MessageDTO{}
 	}
-	if err := json.Unmarshal(userJSON, &tgMessage); err != nil {
+	if err = json.Unmarshal(userJSON, &tgMessage); err != nil {
 		t.logger.Error(fmt.Sprintf("Error decoding JSON: %s", err))
 		return tg.MessageDTO{}
 	}
-
-	go func() {
-		err := t.messageService.SaveMessageLog(context.TODO(), tgMessage)
-		if err != nil {
-			return
-		}
-	}()
-	if err != nil {
-		t.logger.Error(fmt.Sprintf("Error while saving message: %s", err))
-		return tg.MessageDTO{}
-	}
-
 	return tgMessage
 }

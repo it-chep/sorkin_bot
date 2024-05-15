@@ -15,11 +15,12 @@ func (c *CallbackBotMessage) GetAppointmentDetail(ctx context.Context, messageDT
 	userEntity, _ := c.userService.GetUser(ctx, c.tgUser)
 	//todo возможно добавить сообщение, что я загружаю ваши записи, пожалуйста подождите
 	//msg = tgbotapi.NewMessage(c.tgUser.TgID)
-	//_, _ = c.bot.Bot.Send(msg)
+	//c.bot.SendMessage(msg, messageDTO)
+
 	appointmentId, err := strconv.Atoi(callbackData)
 	if err != nil {
 		msg = tgbotapi.NewMessage(c.tgUser.TgID, message.ServerError)
-		_, _ = c.bot.Bot.Send(msg)
+		c.bot.SendMessage(msg, messageDTO)
 		return
 	}
 
@@ -30,13 +31,13 @@ func (c *CallbackBotMessage) GetAppointmentDetail(ctx context.Context, messageDT
 		cancelText, err := c.messageService.GetMessage(ctx, userEntity, "cancel appointment button")
 		if err != nil {
 			msg = tgbotapi.NewMessage(c.tgUser.TgID, message.ServerError)
-			_, _ = c.bot.Bot.Send(msg)
+			c.bot.SendMessage(msg, messageDTO)
 			return
 		}
 		rescheduleText, err := c.messageService.GetMessage(ctx, userEntity, "reschedule appointment button")
 		if err != nil {
 			msg = tgbotapi.NewMessage(c.tgUser.TgID, message.ServerError)
-			_, _ = c.bot.Bot.Send(msg)
+			c.bot.SendMessage(msg, messageDTO)
 			return
 		}
 		// формируем клавиатуру действий с онлайн записью
@@ -50,7 +51,7 @@ func (c *CallbackBotMessage) GetAppointmentDetail(ctx context.Context, messageDT
 		emptyMessageText, err := c.messageService.GetMessage(ctx, userEntity, "empty appointments")
 		if err != nil {
 			msg = tgbotapi.NewMessage(c.tgUser.TgID, message.ServerError)
-			_, _ = c.bot.Bot.Send(msg)
+			c.bot.SendMessage(msg, messageDTO)
 			return
 		}
 		msg = tgbotapi.NewMessage(c.tgUser.TgID, emptyMessageText)
@@ -58,18 +59,5 @@ func (c *CallbackBotMessage) GetAppointmentDetail(ctx context.Context, messageDT
 
 	c.machine.SetState(userEntity, userEntity.GetState(), state_machine.DetailMyAppointment)
 
-	sentMessage, err := c.bot.Bot.Send(msg)
-	// todo мб вынести в отдельный метод
-	if err != nil {
-		c.logger.Error(fmt.Sprintf("%s", err))
-	}
-	messageDTO.MessageID = int64(sentMessage.MessageID)
-	messageDTO.Text = sentMessage.Text
-
-	go func() {
-		err := c.messageService.SaveMessageLog(context.TODO(), messageDTO)
-		if err != nil {
-			return
-		}
-	}()
+	c.bot.SendMessage(msg, messageDTO)
 }

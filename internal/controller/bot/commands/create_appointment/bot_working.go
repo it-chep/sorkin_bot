@@ -2,7 +2,6 @@ package create_appointment
 
 import (
 	"context"
-	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
 	"sorkin_bot/internal/controller/dto/tg"
@@ -43,7 +42,7 @@ func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.Mes
 	}
 	//todo возможно добавить сообщение, что я загружаю ваши записи, пожалуйста подождите
 	//msg = tgbotapi.NewMessage(c.tgUser.TgID)
-	//_, _ = c.bot.Bot.Send(msg)
+	//c.bot.SendMessage(msg, messageDTO)
 
 	////todo докрутить логику со специальностями
 	//switch userEntity.GetState() {
@@ -55,7 +54,7 @@ func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.Mes
 	//	messageText, err := c.messageService.GetMessage(ctx, userEntity, "Choose speciality")
 	//	msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
 	//	if err != nil {
-	//		_, _ = c.bot.Bot.Send(msg)
+	//		c.bot.SendMessage(msg, messageDTO)
 	//		return
 	//	}
 	//	keyboard := tgbotapi.NewInlineKeyboardMarkup()
@@ -74,18 +73,5 @@ func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.Mes
 
 	c.machine.SetState(userEntity, userEntity.GetState(), state_machine.ChooseSpeciality)
 
-	sentMessage, err := c.bot.Bot.Send(msg)
-	// todo мб вынести в отдельный метод
-	if err != nil {
-		c.logger.Error(fmt.Sprintf("%s", err))
-	}
-	messageDTO.MessageID = int64(sentMessage.MessageID)
-	messageDTO.Text = sentMessage.Text
-
-	go func() {
-		err := c.messageService.SaveMessageLog(context.TODO(), messageDTO)
-		if err != nil {
-			return
-		}
-	}()
+	c.bot.SendMessage(msg, messageDTO)
 }
