@@ -65,13 +65,13 @@ func (t TelegramWebhookController) BotWebhookHandler(c *gin.Context) {
 			t.logger.Error(fmt.Sprintf("%s", err))
 		}
 	}(c.Request.Body)
-
 	var update tgbotapi.Update
 	if err := c.ShouldBindJSON(&update); err != nil {
 		t.logger.Error("Error binding JSON", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+
 	ctx := context.WithValue(context.Background(), "userID", update.Message.From.ID)
 	tgUser := t.getUserFromWebhook(update)
 	tgMessage := t.getMessageFromWebhook(update)

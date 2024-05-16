@@ -62,5 +62,5 @@ func (c *CancelAppointmentBotCommand) Execute(ctx context.Context, message tg.Me
 
 	c.machine.SetState(userEntity, userEntity.GetState(), state_machine.ChooseAppointment)
 
-	c.bot.SendMessage(msg, messageDTO)
+	c.bot.SendMessage(msg, message)
 }

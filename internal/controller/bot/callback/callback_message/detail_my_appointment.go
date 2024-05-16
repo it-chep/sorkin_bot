@@ -21,9 +21,9 @@ func (c *CallbackBotMessage) DetailMyAppointment(ctx context.Context, messageDTO
 }
 
 func (c *CallbackBotMessage) cancelAppointment(ctx context.Context, appointmentId int) {
-	c.appointmentService.CancelAppointment(ctx, appointmentId)
+	//c.appointmentService.CancelAppointment(ctx, appointmentId)
 }
 
 func (c *CallbackBotMessage) rescheduleAppointment(ctx context.Context, movedTo string, appointmentId int) {
-	c.appointmentService.RescheduleAppointment(ctx, appointmentId, movedTo)
+	//c.appointmentService.RescheduleAppointment(ctx, appointmentId, movedTo)
 }

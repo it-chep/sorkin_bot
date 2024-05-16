@@ -45,7 +45,7 @@ type AppointmentService interface {
 }
 
 type UpdateUser interface {
-	UpdatePatientId(ctx context.Context, user entity.User, patientId int) (err error)
+	UpdatePatientId(ctx context.Context, user entity.User, patientId *int) (err error)
 	UpdateBirthDate(ctx context.Context, dto tg.TgUserDTO, birthDate string) (user entity.User, err error)
 	UpdateThirdName(ctx context.Context, dto tg.TgUserDTO, thirdName string) (user entity.User, err error)
 	UpdatePhone(ctx context.Context, dto tg.TgUserDTO, phone string) (user entity.User, err error)

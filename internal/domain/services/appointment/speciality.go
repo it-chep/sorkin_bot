@@ -34,7 +34,7 @@ func (as *AppointmentService) GetTranslatedSpecialities(
 	for _, speciality := range specialities {
 		translationEntity, ok := translations[speciality.GetDoctorName()]
 
-		if !ok {
+		if !ok && speciality.GetDoctorName() != "" {
 			as.logger.Error(fmt.Sprintf("untranslated speciality: %s, please translate this in priority. Place %s", speciality.GetDoctorName(), op))
 			unTranslatedSpecialities = append(unTranslatedSpecialities, speciality.GetDoctorName())
 		}

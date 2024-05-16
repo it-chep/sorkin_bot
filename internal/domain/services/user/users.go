@@ -65,7 +65,7 @@ func (u UserService) RegisterNewUser(ctx context.Context, dto tg.TgUserDTO) (use
 		return entity.User{}, err
 	}
 	//todo add pointer
-	if reflect.ValueOf(user).IsZero() {
+	if !reflect.ValueOf(user.GetTgId()).IsZero() {
 		u.logger.Warn("user has registered")
 		return user, nil
 	}

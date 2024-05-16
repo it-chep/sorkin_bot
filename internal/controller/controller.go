@@ -24,7 +24,7 @@ type RestController struct {
 
 func NewRestController(cfg config.Config, logger *slog.Logger, bot telegram.Bot, machine *state_machine.UserStateMachine, userService UserService, appointmentService AppointmentService, messageService MessageService, botService BotService) *RestController {
 	router := gin.New()
-	botMiddleware := middleware.NewMessageLogMiddleware()
+	botMiddleware := middleware.NewMessageLogMiddleware(messageService)
 	sentryMiddleware := middleware.NewSentryMiddleware()
 	tgAdminMiddleware := middleware.NewTgAdminWarningMiddleware()
 	router.Use(gin.Recovery(), botMiddleware.ProcessRequest, sentryMiddleware.ProcessRequest, tgAdminMiddleware.ProcessRequest)

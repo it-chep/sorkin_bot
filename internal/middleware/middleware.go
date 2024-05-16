@@ -1,9 +1,12 @@
 package middleware
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"sorkin_bot/internal/controller/dto/tg"
@@ -13,14 +16,28 @@ type MessageLogMiddleware struct {
 	messageService MessageService
 }
 
-func NewMessageLogMiddleware() MessageLogMiddleware {
-	return MessageLogMiddleware{}
+func NewMessageLogMiddleware(messageService MessageService) MessageLogMiddleware {
+	return MessageLogMiddleware{
+		messageService: messageService,
+	}
 }
 
 func (middleware MessageLogMiddleware) ProcessRequest(c *gin.Context) {
 	var update tgbotapi.Update
+	// todo выглядит как костыль, потому что решил логать сообщение в мидлварине, исправить
+	// todo костыль потому что если прочитать контекст, то он потом будет пустым
+	// Чтение тела запроса
+	body, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error reading request body"})
+		return
+	}
 
-	if err := c.ShouldBindJSON(&update); err != nil {
+	// Восстановление тела запроса обратно в тело запроса (поскольку Read() его потребовал)
+	c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+	// Декодирование JSON в объект update
+	if err = json.Unmarshal(body, &update); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -34,10 +51,12 @@ func (middleware MessageLogMiddleware) ProcessRequest(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No message or callback query data found"})
 		return
 	}
+	chatId := tg.Chat{ID: sourceMessage.Chat.ID}
 
 	tgMessage := tg.MessageDTO{
 		MessageID: int64(sourceMessage.MessageID),
 		Text:      sourceMessage.Text,
+		Chat:      &chatId,
 	}
 
 	go func() {
@@ -45,7 +64,7 @@ func (middleware MessageLogMiddleware) ProcessRequest(c *gin.Context) {
 			log.Println("Failed to log incoming message:", err)
 		}
 	}()
-
+	//c.Set("update", byte(update))
 	c.Next()
 }
 

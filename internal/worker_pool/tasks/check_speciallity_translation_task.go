@@ -29,11 +29,15 @@ func NewGetTranslatedSpecialityTask(appointmentService AppointmentService, userS
 
 func (task GetTranslatedSpecialityTask) Process(ctx context.Context) error {
 	adminId, err := strconv.Atoi(os.Getenv("ADMIN_ID"))
+	return nil
 	if err != nil {
 		panic("adminId not found")
 	}
 	dto := tg.TgUserDTO{TgID: int64(adminId)}
-	messageDTO := tg.MessageDTO{}
+	chatId := tg.Chat{ID: int64(adminId)}
+	messageDTO := tg.MessageDTO{
+		Chat: &chatId,
+	}
 
 	getUser, err := task.userService.GetUser(ctx, dto)
 	if err != nil {
