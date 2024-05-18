@@ -29,7 +29,7 @@ func (mr MessageStorage) GetMessageByName(ctx context.Context, name string) (err
 
 	err = pgxscan.Get(ctx, mr.client, &MessageDAO, q, name)
 	if err != nil {
-		mr.logger.Error(fmt.Sprintf("error while scanning db rows %s, place: %s", err, op))
+		mr.logger.Error(fmt.Sprintf("error while scanning db rows %s, place: %s, name: %s", err, op, name))
 		return err, messageEntity
 	}
 

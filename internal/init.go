@@ -13,6 +13,11 @@ import (
 	"sorkin_bot/internal/domain/services/bot"
 	"sorkin_bot/internal/domain/services/message"
 	"sorkin_bot/internal/domain/services/user"
+	"sorkin_bot/internal/domain/usecases/appointment/clean_draft_appointment"
+	"sorkin_bot/internal/domain/usecases/appointment/create_draft_appointment"
+	"sorkin_bot/internal/domain/usecases/appointment/update_appointment_date"
+	"sorkin_bot/internal/domain/usecases/appointment/update_appointment_status"
+	"sorkin_bot/internal/domain/usecases/appointment/update_int_appointment_field"
 	"sorkin_bot/internal/domain/usecases/bot/save_message_log"
 	"sorkin_bot/internal/domain/usecases/user/change_language"
 	"sorkin_bot/internal/domain/usecases/user/change_user_status"
@@ -41,22 +46,29 @@ type services struct {
 }
 
 type useCases struct {
-	createUserUserCase         create_user.CreateUserUseCase
-	changeLanguageUseCase      change_language.ChangeLanguageUseCase
-	changeStatusUseCase        change_user_status.ChangeStatusUseCase
-	saveMessageUseCase         save_message_log.SaveMessageLogUseCase
-	updateUserPatientIdUseCase update_user_patient_id.UpdateUserPatientIdUseCase
-	updateUserPhoneUseCase     update_user_phone.UpdateUserPhoneUseCase
-	updateUserThirdNameUseCase update_user_third_name.UpdateUserThirdNameUseCase
-	updateUserBirthDateUseCase update_user_birth_date.UpdateUserBirthDateUseCase
+	createUserUserCase                    create_user.CreateUserUseCase
+	changeLanguageUseCase                 change_language.ChangeLanguageUseCase
+	changeStatusUseCase                   change_user_status.ChangeStatusUseCase
+	saveMessageUseCase                    save_message_log.SaveMessageLogUseCase
+	updateUserPatientIdUseCase            update_user_patient_id.UpdateUserPatientIdUseCase
+	updateUserPhoneUseCase                update_user_phone.UpdateUserPhoneUseCase
+	updateUserThirdNameUseCase            update_user_third_name.UpdateUserThirdNameUseCase
+	updateUserBirthDateUseCase            update_user_birth_date.UpdateUserBirthDateUseCase
+	createDraftAppointmentUseCase         create_draft_appointment.CreateDraftAppointmentUseCase
+	updateDraftAppointmentStatusUseCase   update_appointment_status.UpdateAppointmentStatusUseCase
+	updateDraftAppointmentIntFieldUseCase update_int_appointment_field.UpdateIntAppointmentFieldUseCase
+	updateDraftAppointmentDateUseCase     update_appointment_date.UpdateAppointmentDate
+	cleanDraftAppointmentUseCase          clean_draft_appointment.CleanDraftAppointmentUseCase
 }
 
 type storages struct {
-	readUserStorage        read_repo.UserStorage
-	readTranslationStorage read_repo.TranslationStorage
-	readMessageStorage     read_repo.MessageStorage
-	writeUserStorage       write_repo.UserStorage
-	writeTelegramStorage   write_repo.TelegramMessageStorage
+	readUserStorage              read_repo.UserStorage
+	readTranslationStorage       read_repo.TranslationStorage
+	readMessageStorage           read_repo.MessageStorage
+	readDraftAppointmentStorage  read_repo.AppointmentStorage
+	writeUserStorage             write_repo.UserStorage
+	writeTelegramStorage         write_repo.TelegramMessageStorage
+	writeDraftAppointmentStorage write_repo.AppointmentStorage
 }
 
 type workers struct {

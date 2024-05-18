@@ -79,5 +79,6 @@ func (c *FastAppointmentBotCommand) Execute(ctx context.Context, message tg.Mess
 	if err != nil {
 		return
 	}
-	c.machine.SetState(userEntity, userEntity.GetState(), state_machine.FastAppointment)
+	go c.machine.SetState(userEntity, userEntity.GetState(), state_machine.FastAppointment)
+	go c.appointmentService.CreateDraftAppointment(ctx, userEntity.GetTgId())
 }

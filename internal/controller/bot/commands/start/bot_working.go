@@ -46,7 +46,7 @@ func (c *StartBotCommand) Execute(ctx context.Context, message tg.MessageDTO) {
 
 	msg = tgbotapi.NewMessage(c.tgUser.TgID, msgText)
 
-	if len(keyboard.InlineKeyboard) != 0 {
+	if keyboard.InlineKeyboard != nil {
 		msg.ReplyMarkup = keyboard
 	}
 

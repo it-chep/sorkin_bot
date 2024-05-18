@@ -9,6 +9,7 @@ import (
 
 type AppointmentService interface {
 	GetFastAppointmentSchedules(ctx context.Context) (schedulesMap map[int][]appointment.Schedule)
+	CreateDraftAppointment(ctx context.Context, tgId int64)
 }
 
 type UserService interface {

@@ -26,19 +26,18 @@ type MisUser struct {
 	DocumentDate           string   `json:"document_date"`
 	Phone                  string   `json:"phone"`
 	Email                  string   `json:"email"`
-	Contacts               []string `json:"contacts"`
 	Profession             []string `json:"profession"`
 	ProfessionTitles       string   `json:"profession_titles"`
 	SecondProfession       []string `json:"second_profession"`
 	SecondProfessionTitles string   `json:"second_profession_titles"`
 	Clinic                 []string `json:"clinic"`
 	ClinicTitles           string   `json:"clinic_titles"`
-	AvgTime                string   `json:"avg_time"`
+	AvgTime                int      `json:"avg_time"`
 	HasCompany             bool     `json:"has_company"`
 	AvgTimeCompany         string   `json:"avg_time_company"`
 	AvgTimeRepeat          string   `json:"avg_time_repeat"`
 	AvgTimeRepeatCompany   string   `json:"avg_time_repeat_company"`
-	DefaultClinic          string   `json:"default_clinic"`
+	DefaultClinic          int      `json:"default_clinic"`
 	DefaultRoom            string   `json:"default_room"`
 	IsChildDoctor          bool     `json:"is_child_doctor"`
 	IsAdultDoctor          bool     `json:"is_adult_doctor"`

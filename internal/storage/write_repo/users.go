@@ -30,11 +30,11 @@ func (ws UserStorage) CreateUser(ctx context.Context, user entity.User) (userID 
 	currentTime := time.Now()
 	registrationTime := fmt.Sprintf("%02d.%02d.%d %02d:%02d", currentTime.Day(), currentTime.Month(), currentTime.Year(), currentTime.Hour(), currentTime.Minute())
 
-	ws.logger.Info(op)
 	err = ws.client.QueryRow(
 		ctx, q, user.GetTgId(), user.GetFirstName(), user.GetLastName(), user.GetUsername(), registrationTime,
 	).Scan(&userID)
 	if err != nil {
+		ws.logger.Error(fmt.Sprintf("%s op %s", err, op))
 		return -1, err
 	}
 
@@ -46,9 +46,10 @@ func (ws UserStorage) UpdateUserPatientId(ctx context.Context, user entity.User,
 	q := `
 		update tg_users set patient_id = $1 where tg_id = $2;
 	`
-	ws.logger.Info(op)
+
 	_, err = ws.client.Exec(ctx, q, patientId, user.GetTgId())
 	if err != nil {
+		ws.logger.Error(fmt.Sprintf("%s op %s", err, op))
 		return err
 	}
 
@@ -60,8 +61,6 @@ func (ws UserStorage) UpdateUserState(ctx context.Context, user entity.User) (er
 	q := `
 		update tg_users set last_state = $1 where tg_id = $2;
 	`
-
-	ws.logger.Info(op)
 
 	_, err = ws.client.Exec(ctx, q, user.GetState(), user.GetTgId())
 	if err != nil {
@@ -76,7 +75,7 @@ func (ws UserStorage) UpdateUserVarcharField(ctx context.Context, user entity.Us
 	q := fmt.Sprintf(`
 		update tg_users set %s = $1 where tg_id = $2;
 	`, field)
-	ws.logger.Info(op)
+
 	_, err = ws.client.Exec(ctx, q, value, user.GetTgId())
 	if err != nil {
 		ws.logger.Error(fmt.Sprintf("%s op %s", err, op))

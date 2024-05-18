@@ -14,6 +14,11 @@ import (
 	"sorkin_bot/internal/domain/services/bot"
 	"sorkin_bot/internal/domain/services/message"
 	"sorkin_bot/internal/domain/services/user"
+	"sorkin_bot/internal/domain/usecases/appointment/clean_draft_appointment"
+	"sorkin_bot/internal/domain/usecases/appointment/create_draft_appointment"
+	"sorkin_bot/internal/domain/usecases/appointment/update_appointment_date"
+	"sorkin_bot/internal/domain/usecases/appointment/update_appointment_status"
+	"sorkin_bot/internal/domain/usecases/appointment/update_int_appointment_field"
 	"sorkin_bot/internal/domain/usecases/bot/save_message_log"
 	"sorkin_bot/internal/domain/usecases/user/change_language"
 	"sorkin_bot/internal/domain/usecases/user/create_user"
@@ -57,6 +62,8 @@ func (app *App) InitStorage(ctx context.Context) *App {
 	app.storages.readTranslationStorage = read_repo.NewTranslationRepo(app.pgxClient, app.logger)
 	app.storages.readMessageStorage = read_repo.NewReadMessageStorage(app.pgxClient, app.logger)
 	app.storages.writeTelegramStorage = write_repo.NewTelegramMessageStorage(app.pgxClient, app.logger)
+	app.storages.readDraftAppointmentStorage = read_repo.NewAppointmentStorage(app.pgxClient, app.logger)
+	app.storages.writeDraftAppointmentStorage = write_repo.NewAppointmentStorage(app.pgxClient, app.logger)
 	return app
 }
 
@@ -83,6 +90,11 @@ func (app *App) InitUseCases(ctx context.Context) *App {
 	app.useCases.updateUserPatientIdUseCase = update_user_patient_id.NewUpdateUserPatientIdUseCase(app.storages.writeUserStorage, app.logger)
 	app.useCases.updateUserBirthDateUseCase = update_user_birth_date.NewUpdateUserBirthDateUseCase(app.storages.writeUserStorage, app.logger)
 	app.useCases.updateUserThirdNameUseCase = update_user_third_name.NewUpdateUserThirdNameUseCase(app.storages.writeUserStorage, app.logger)
+	app.useCases.createDraftAppointmentUseCase = create_draft_appointment.NewCreateDraftAppointmentUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
+	app.useCases.updateDraftAppointmentStatusUseCase = update_appointment_status.NewUpdateAppointmentStatusUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
+	app.useCases.updateDraftAppointmentIntFieldUseCase = update_int_appointment_field.NewUpdateIntAppointmentFieldUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
+	app.useCases.updateDraftAppointmentDateUseCase = update_appointment_date.NewUpdateAppointmentDate(app.storages.writeDraftAppointmentStorage, app.logger)
+	app.useCases.cleanDraftAppointmentUseCase = clean_draft_appointment.NewCleanDraftAppointmentUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
 	return app
 }
 
@@ -102,8 +114,14 @@ func (app *App) InitServices(ctx context.Context) *App {
 	app.services.appointmentService = appointment.NewAppointmentService(
 		app.adapters.appointmentServiceAdapter,
 		app.storages.readTranslationStorage,
+		app.storages.readDraftAppointmentStorage,
 		app.logger,
 		app.services.userService,
+		app.useCases.createDraftAppointmentUseCase,
+		app.useCases.updateDraftAppointmentDateUseCase,
+		app.useCases.updateDraftAppointmentStatusUseCase,
+		app.useCases.updateDraftAppointmentIntFieldUseCase,
+		app.useCases.cleanDraftAppointmentUseCase,
 	)
 	app.services.messageService = message.NewMessageService(
 		app.useCases.saveMessageUseCase,

@@ -30,15 +30,13 @@ func (rs UserStorage) GetUserByTgID(ctx context.Context, userID int64) (user ent
 			from tg_users where tg_id = $1`
 
 	var userDAO dao.UserDAO
-	rs.logger.Info(op)
 	err = pgxscan.Get(ctx, rs.client, &userDAO, q, userID)
 	if err != nil {
-		rs.logger.Error(fmt.Sprintf("Error while scanning row: %s", err))
+		rs.logger.Error(fmt.Sprintf("Error while scanning row: %s, op: %s", err, op))
 		return entity.User{}, err
 	}
 
 	// Create and return a new User entity
 	user = *userDAO.ToDomain()
-	rs.logger.Info(fmt.Sprintf("%s, %s", userDAO, user))
 	return user, nil
 }

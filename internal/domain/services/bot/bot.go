@@ -15,7 +15,7 @@ const (
 
 type BotService struct {
 	logger         *slog.Logger
-	messageService message.MessageService
+	messageService MessageService
 }
 
 func NewBotService(logger *slog.Logger, messageService message.MessageService) BotService {
@@ -113,7 +113,13 @@ func (bs BotService) ConfigureGetDoctorMessage(
 			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 			count++
 		}
+	} else if lengthOfDoctors == 0 {
+		msgText, err = bs.messageService.GetMessage(ctx, userEntity, "empty doctors")
+		if err != nil {
+			return msgText, keyboard
+		}
 	} else {
+		fmt.Println(fmt.Sprintf("doctors: %v", doctors))
 		for doctorId, doctorName := range doctors {
 			btn := tgbotapi.NewInlineKeyboardButtonData(doctorName, fmt.Sprintf("%d", doctorId))
 			row := tgbotapi.NewInlineKeyboardRow(btn)

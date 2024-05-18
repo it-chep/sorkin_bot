@@ -64,3 +64,48 @@ func (a Appointment) GetTimeStart() string {
 func (a Appointment) GetTimeEnd() string {
 	return a.timeEnd
 }
+
+type DraftAppointment struct {
+	id           int
+	timeStart    *string
+	timeEnd      *string
+	doctorId     *int
+	tgId         *int64
+	specialityId *int
+}
+
+func NewDraftAppointment(id int, specialityId, doctorId *int, tgId *int64, timeStart, timeEnd *string,
+) DraftAppointment {
+	return DraftAppointment{
+		id:           id,
+		doctorId:     doctorId,
+		tgId:         tgId,
+		timeEnd:      timeEnd,
+		timeStart:    timeStart,
+		specialityId: specialityId,
+	}
+}
+
+func (a DraftAppointment) GetAppointmentId() int {
+	return a.id
+}
+
+func (a DraftAppointment) GetTimeStart() string {
+	return *a.timeStart
+}
+
+func (a DraftAppointment) GetTimeEnd() string {
+	return *a.timeEnd
+}
+
+func (a DraftAppointment) GetDoctorId() int {
+	return *a.doctorId
+}
+
+func (a DraftAppointment) GetTgId() int64 {
+	return *a.tgId
+}
+
+func (a DraftAppointment) GetSpecialityId() int {
+	return *a.specialityId
+}

@@ -8,6 +8,14 @@ import (
 	entity "sorkin_bot/internal/domain/entity/user"
 )
 
+type DraftAppointment interface {
+	UpdateDraftAppointmentStatus(ctx context.Context, tgId int64)
+	UpdateDraftAppointmentDate(ctx context.Context, tgId int64, timeStart, timeEnd, date string)
+	UpdateDraftAppointmentIntField(ctx context.Context, tgId int64, intVal int, fieldName string)
+	CreateDraftAppointment(ctx context.Context, tgId int64)
+	CleanDraftAppointment(ctx context.Context, tgId int64)
+}
+
 type AppointmentService interface {
 	// appointmeent interfaces in service and gateway
 	GetAppointments(ctx context.Context, user entity.User) (appointments []appointment.Appointment)
@@ -18,7 +26,7 @@ type AppointmentService interface {
 	RescheduleAppointment(ctx context.Context, user entity.User, appointmentId int, movedTo string) (result bool)
 
 	// doctors interfaces in service and gateway
-	GetDoctors(ctx context.Context, specialityId int) (doctors []appointment.Doctor)
+	GetDoctors(ctx context.Context, tgId int64, offset int, specialityId *int) (doctorsMap map[int]string)
 
 	GetSpecialities(ctx context.Context) (specialities []appointment.Speciality, err error)
 	GetTranslatedSpecialities(ctx context.Context, user entity.User, specialities []appointment.Speciality, offset int) (translatedSpecialities map[int]string, unTranslatedSpecialities []string, err error)
@@ -28,6 +36,8 @@ type AppointmentService interface {
 	GetFastAppointmentSchedules(ctx context.Context) (schedulesMap map[int][]appointment.Schedule)
 	GetPatient(ctx context.Context, user entity.User) (result bool)
 	CreatePatient(ctx context.Context, user entity.User) (result bool)
+
+	DraftAppointment
 }
 
 type UserService interface {
@@ -52,6 +62,13 @@ type BotService interface {
 		ctx context.Context,
 		userEntity entity.User,
 		translatedSpecialities map[int]string,
+		offset int,
+	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
+
+	ConfigureGetDoctorMessage(
+		ctx context.Context,
+		userEntity entity.User,
+		doctors map[int]string,
 		offset int,
 	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
 }

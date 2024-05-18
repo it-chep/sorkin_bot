@@ -26,7 +26,7 @@ type MisUser interface {
 
 // MisDoctors interfaces in service and gateway
 type MisDoctors interface {
-	GetDoctors(ctx context.Context, specialityId int) (doctors []appointment.Doctor)
+	GetDoctors(ctx context.Context, tgId int64, offset int, specialityId *int) (doctorsMap map[int]string)
 	GetSpecialities(ctx context.Context) (specialities []appointment.Speciality, err error)
 	GetTranslatedSpecialities(ctx context.Context, user entity.User, specialities []appointment.Speciality, offset int) (translatedSpecialities map[int]string, unTranslatedSpecialities []string, err error)
 }
@@ -37,11 +37,20 @@ type MisSchedules interface {
 	GetFastAppointmentSchedules(ctx context.Context) (schedulesMap map[int][]appointment.Schedule)
 }
 
+type DraftAppointment interface {
+	UpdateDraftAppointmentStatus(ctx context.Context, tgId int64)
+	UpdateDraftAppointmentDate(ctx context.Context, tgId int64, timeStart, timeEnd, date string)
+	UpdateDraftAppointmentIntField(ctx context.Context, tgId int64, intVal int, fieldName string)
+	CreateDraftAppointment(ctx context.Context, tgId int64)
+	CleanDraftAppointment(ctx context.Context, tgId int64)
+}
+
 type AppointmentService interface {
 	MisAppointment
 	MisUser
 	MisDoctors
 	MisSchedules
+	DraftAppointment
 }
 
 type UpdateUser interface {
@@ -74,6 +83,13 @@ type BotService interface {
 		ctx context.Context,
 		userEntity entity.User,
 		translatedSpecialities map[int]string,
+		offset int,
+	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
+
+	ConfigureGetDoctorMessage(
+		ctx context.Context,
+		userEntity entity.User,
+		doctors map[int]string,
 		offset int,
 	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
 }

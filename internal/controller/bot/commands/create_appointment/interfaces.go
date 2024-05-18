@@ -12,6 +12,7 @@ type AppointmentService interface {
 	// speciality interfaces in service and gateway
 	GetSpecialities(ctx context.Context) (specialities []appointment.Speciality, err error)
 	GetTranslatedSpecialities(ctx context.Context, user entity.User, specialities []appointment.Speciality, offset int) (translatedSpecialities map[int]string, unTranslatedSpecialities []string, err error)
+	CreateDraftAppointment(ctx context.Context, tgId int64)
 }
 
 type UserService interface {

@@ -86,9 +86,14 @@ func (t TelegramWebhookController) BotWebhookHandler(c *gin.Context) {
 	} else if update.CallbackQuery != nil {
 		ctx := context.WithValue(context.Background(), "userID", update.CallbackQuery.From.ID)
 		t.ForkCallbacks(ctx, update, tgUser, tgMessage)
+	} else {
+		t.logger.Warn(fmt.Sprintf("Unhandled update type: %+v", update))
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "received"})
+	return
 }
 
 func (t TelegramWebhookController) ForkCommands(ctx context.Context, update tgbotapi.Update, tgUser tg.TgUserDTO, tgMessage tg.MessageDTO) {

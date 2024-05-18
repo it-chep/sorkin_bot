@@ -21,3 +21,11 @@ func NewDoctor(id int, name, phone, email, professionTitles, secondProfessionTit
 		isDeleted:              isDeleted,
 	}
 }
+
+func (d *Doctor) GetID() int {
+	return d.id
+}
+
+func (d *Doctor) GetName() string {
+	return d.name
+}

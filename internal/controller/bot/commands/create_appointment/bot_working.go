@@ -68,10 +68,13 @@ func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.Mes
 
 		msgText, keyboard := c.botService.ConfigureGetSpecialityMessage(ctx, userEntity, translatedSpecialities, 0)
 		msg = tgbotapi.NewMessage(c.tgUser.TgID, msgText)
-		msg.ReplyMarkup = keyboard
+		if keyboard.InlineKeyboard != nil {
+			msg.ReplyMarkup = keyboard
+		}
 		c.bot.SendMessage(msg, messageDTO)
 		return
 	}
 
 	c.machine.SetState(userEntity, userEntity.GetState(), state_machine.ChooseSpeciality)
+	go c.appointmentService.CreateDraftAppointment(ctx, userEntity.GetTgId())
 }

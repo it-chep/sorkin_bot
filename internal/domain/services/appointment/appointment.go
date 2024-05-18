@@ -13,18 +13,41 @@ import (
 )
 
 type AppointmentService struct {
-	misAdapter  *adapter.AppointmentServiceAdapter
-	userService user.UserService
-	readRepo    ReadRepo
-	logger      *slog.Logger
+	misAdapter                     *adapter.AppointmentServiceAdapter
+	userService                    user.UserService
+	logger                         *slog.Logger
+	readMessageRepo                ReadMessageRepo
+	readDraftAppointmentRepo       ReadDraftAppointmentRepo
+	createDraftAppointmentUseCase  CreateDraftAppointmentUseCase
+	updateDraftAppointmentDate     UpdateDraftAppointmentDate
+	updateDraftAppointmentStatus   UpdateDraftAppointmentStatus
+	updateDraftAppointmentIntField UpdateDraftAppointmentIntField
+	cleanDraftAppointmentUseCase   CleanDraftAppointmentUseCase
 }
 
-func NewAppointmentService(misAdapter *adapter.AppointmentServiceAdapter, readRepo ReadRepo, logger *slog.Logger, userService user.UserService) AppointmentService {
+func NewAppointmentService(
+	misAdapter *adapter.AppointmentServiceAdapter,
+	readMessageRepo ReadMessageRepo,
+	readDraftAppointmentRepo ReadDraftAppointmentRepo,
+	logger *slog.Logger,
+	userService user.UserService,
+	createDraftAppointmentUseCase CreateDraftAppointmentUseCase,
+	updateDraftAppointmentDate UpdateDraftAppointmentDate,
+	updateDraftAppointmentStatus UpdateDraftAppointmentStatus,
+	updateDraftAppointmentIntField UpdateDraftAppointmentIntField,
+	cleanDraftAppointmentUseCase CleanDraftAppointmentUseCase,
+) AppointmentService {
 	return AppointmentService{
-		misAdapter:  misAdapter,
-		userService: userService,
-		readRepo:    readRepo,
-		logger:      logger,
+		misAdapter:                     misAdapter,
+		userService:                    userService,
+		readMessageRepo:                readMessageRepo,
+		readDraftAppointmentRepo:       readDraftAppointmentRepo,
+		logger:                         logger,
+		createDraftAppointmentUseCase:  createDraftAppointmentUseCase,
+		updateDraftAppointmentDate:     updateDraftAppointmentDate,
+		updateDraftAppointmentStatus:   updateDraftAppointmentStatus,
+		updateDraftAppointmentIntField: updateDraftAppointmentIntField,
+		cleanDraftAppointmentUseCase:   cleanDraftAppointmentUseCase,
 	}
 }
 
