@@ -7,6 +7,7 @@ import (
 
 func (a *AppointmentServiceAdapter) GetPatientById(ctx context.Context, patientId int) (patientDTO dto.CreatedPatientDTO, err error) {
 	patientDTO, err = a.gateway.GetPatientById(ctx, patientId)
+
 	if err != nil {
 		return dto.CreatedPatientDTO{}, err
 	}

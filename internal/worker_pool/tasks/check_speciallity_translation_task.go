@@ -51,7 +51,7 @@ func (task GetTranslatedSpecialityTask) Process(ctx context.Context) error {
 		task.bot.SendMessage(msg, messageDTO)
 		return err
 	}
-	_, unTranslatedSpecialities, err := task.appointmentService.GetTranslatedSpecialities(ctx, getUser, specialities)
+	_, unTranslatedSpecialities, err := task.appointmentService.GetTranslatedSpecialities(ctx, getUser, specialities, 0)
 	for _, unTranslatedSpeciality := range unTranslatedSpecialities {
 		msg := tgbotapi.NewMessage(int64(adminId), fmt.Sprintf("untranslated speciality %s !", unTranslatedSpeciality))
 		task.bot.SendMessage(msg, messageDTO)

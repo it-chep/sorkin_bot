@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sorkin_bot/internal/domain/entity/appointment"
 	entity "sorkin_bot/internal/domain/entity/user"
+	"sort"
 )
 
 func (as *AppointmentService) GetSpecialities(ctx context.Context) (specialities []appointment.Speciality, err error) {
@@ -19,6 +20,7 @@ func (as *AppointmentService) GetTranslatedSpecialities(
 	ctx context.Context,
 	user entity.User,
 	specialities []appointment.Speciality,
+	offset int,
 ) (translatedSpecialities map[int]string, unTranslatedSpecialities []string, err error) {
 	var translatedSpeciality string
 	op := "sorkin_bot.internal.domain.services.appointment.speciality.GetTranslatedSpecialities"
@@ -48,7 +50,41 @@ func (as *AppointmentService) GetTranslatedSpecialities(
 			translatedSpeciality = translationEntity.GetPtBrText()
 		}
 
+		if translatedSpeciality == "" {
+			continue
+		}
+
 		translatedSpecialities[speciality.GetId()] = translatedSpeciality
 	}
+	translatedSpecialities = as.specialitiesWithOffset(as.sortedSpeciality(translatedSpecialities), offset)
 	return translatedSpecialities, unTranslatedSpecialities, err
+}
+
+func (as *AppointmentService) sortedSpeciality(m map[int]string) map[int]string {
+	sortedKeys := make([]int, 0, len(m))
+	for k := range m {
+		sortedKeys = append(sortedKeys, k)
+	}
+	sort.Ints(sortedKeys)
+
+	sortedMap := make(map[int]string)
+	for _, k := range sortedKeys {
+		sortedMap[k] = m[k]
+	}
+	return sortedMap
+}
+
+func (as *AppointmentService) specialitiesWithOffset(allSpecialities map[int]string, offset int) map[int]string {
+	sortedKeys := make([]int, 0, len(allSpecialities))
+	for k := range allSpecialities {
+		sortedKeys = append(sortedKeys, k)
+	}
+	sort.Ints(sortedKeys)
+	offsetMap := make(map[int]string)
+	if offset < len(sortedKeys) {
+		for _, k := range sortedKeys[offset:] {
+			offsetMap[k] = allSpecialities[k]
+		}
+	}
+	return offsetMap
 }

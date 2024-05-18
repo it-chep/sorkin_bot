@@ -28,7 +28,7 @@ type MisUser interface {
 type MisDoctors interface {
 	GetDoctors(ctx context.Context, specialityId int) (doctors []appointment.Doctor)
 	GetSpecialities(ctx context.Context) (specialities []appointment.Speciality, err error)
-	GetTranslatedSpecialities(ctx context.Context, user entity.User, specialities []appointment.Speciality) (translatedSpecialities map[int]string, unTranslatedSpecialities []string, err error)
+	GetTranslatedSpecialities(ctx context.Context, user entity.User, specialities []appointment.Speciality, offset int) (translatedSpecialities map[int]string, unTranslatedSpecialities []string, err error)
 }
 
 // MisSchedules interfaces in service and gateway
@@ -70,4 +70,10 @@ type MessageService interface {
 
 type BotService interface {
 	ConfigureChangeLanguageMessage(ctx context.Context, user entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
+	ConfigureGetSpecialityMessage(
+		ctx context.Context,
+		userEntity entity.User,
+		translatedSpecialities map[int]string,
+		offset int,
+	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
 }

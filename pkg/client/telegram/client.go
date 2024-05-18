@@ -29,10 +29,10 @@ func NewTelegramBot(cfg config.Config, logger *slog.Logger, messageService Messa
 	}
 
 	_, err = bot.GetWebhookInfo()
+
 	if err != nil {
 		panic("error while getting webhook")
 	}
-
 	return &Bot{
 		Bot:            bot,
 		logger:         logger,
@@ -55,4 +55,12 @@ func (bot *Bot) SendMessage(msg tgbotapi.MessageConfig, messageDTO tg.MessageDTO
 			bot.logger.Error(fmt.Sprintf("%s", err))
 		}
 	}()
+}
+
+func (bot *Bot) RemoveMessage(chatId int64, messageId int) {
+	messageToDelete := tgbotapi.NewDeleteMessage(chatId, messageId)
+	_, err := bot.Bot.Send(messageToDelete)
+	if err != nil {
+		return
+	}
 }

@@ -65,6 +65,7 @@ func (t TelegramWebhookController) BotWebhookHandler(c *gin.Context) {
 			t.logger.Error(fmt.Sprintf("%s", err))
 		}
 	}(c.Request.Body)
+
 	var update tgbotapi.Update
 	if err := c.ShouldBindJSON(&update); err != nil {
 		t.logger.Error("Error binding JSON", err)
@@ -72,17 +73,18 @@ func (t TelegramWebhookController) BotWebhookHandler(c *gin.Context) {
 		return
 	}
 
-	ctx := context.WithValue(context.Background(), "userID", update.Message.From.ID)
 	tgUser := t.getUserFromWebhook(update)
 	tgMessage := t.getMessageFromWebhook(update)
 	// Сначала проверяем на команду, потом на текстовое сообщение, потом callback
 	if update.Message != nil {
+		ctx := context.WithValue(context.Background(), "userID", update.Message.From.ID)
 		if update.Message.IsCommand() {
 			t.ForkCommands(ctx, update, tgUser, tgMessage)
 		} else {
 			t.ForkMessages(ctx, tgUser, tgMessage)
 		}
 	} else if update.CallbackQuery != nil {
+		ctx := context.WithValue(context.Background(), "userID", update.CallbackQuery.From.ID)
 		t.ForkCallbacks(ctx, update, tgUser, tgMessage)
 	}
 
@@ -107,7 +109,7 @@ func (t TelegramWebhookController) ForkCommands(ctx context.Context, update tgbo
 		command.Execute(ctx, tgMessage)
 	case "appointment":
 		// service по работе с appointment
-		command := create_appointment.NewCreateAppointmentCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.appointmentService, t.messageService)
+		command := create_appointment.NewCreateAppointmentCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.appointmentService, t.messageService, t.botService)
 		command.Execute(ctx, tgMessage)
 	case "cancel_appointment":
 		// service по работе с cancel_appointment
@@ -136,7 +138,7 @@ func (t TelegramWebhookController) ForkMessages(ctx context.Context, tgUser tg.T
 
 func (t TelegramWebhookController) ForkCallbacks(ctx context.Context, update tgbotapi.Update, tgUser tg.TgUserDTO, tgMessage tg.MessageDTO) {
 	callbackData := update.CallbackData()
-	callbackBot := callback.NewCallbackBot(t.logger, t.bot, tgUser, t.machine, t.userService, t.messageService, t.appointmentService)
+	callbackBot := callback.NewCallbackBot(t.logger, t.bot, tgUser, t.machine, t.userService, t.messageService, t.appointmentService, t.botService)
 	callbackBot.Execute(ctx, tgMessage, callbackData)
 }
 

@@ -12,7 +12,6 @@ func (mg *MisRenoGateway) GetPatientById(ctx context.Context, patientId int) (pa
 	var request = mis_dto.GetPatientRequest{
 		Id: patientId,
 	}
-
 	responseBody := mg.sendToMIS(ctx, mis_dto.GetPatientMethod, JsonMarshaller(request, op, mg.logger))
 
 	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)

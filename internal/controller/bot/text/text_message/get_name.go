@@ -26,7 +26,9 @@ func (c TextBotMessage) GetName(ctx context.Context, user entity.User, messageDT
 		c.bot.SendMessage(msg, messageDTO)
 		return
 	}
-
+	messageText, _ := c.messageService.GetMessage(ctx, user, "enter birthdate")
+	msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
+	c.bot.SendMessage(msg, messageDTO)
 	c.machine.SetState(user, state_machine.GetName, state_machine.GetBirthDate)
 }
 

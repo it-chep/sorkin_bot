@@ -29,9 +29,11 @@ func (c TextBotMessage) GetBirthDate(ctx context.Context, user entity.User, mess
 		return
 	}
 
+	messageText, _ := c.messageService.GetMessage(ctx, user, "ready to appointment")
+	msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
+	c.bot.SendMessage(msg, messageDTO)
 	c.machine.SetState(user, state_machine.GetBirthDate, state_machine.CreateAppointment)
 
-	// todo это для создания записи на прием
 	if c.appointmentService.GetPatient(ctx, user) {
 	} else {
 		c.appointmentService.CreatePatient(ctx, user)
@@ -39,7 +41,7 @@ func (c TextBotMessage) GetBirthDate(ctx context.Context, user entity.User, mess
 }
 
 func (c TextBotMessage) validateBirthDateMessage(birthDate string) (valid bool) {
-	currentTime := time.Now().Unix()
+	currentTime := time.Now()
 	dateItems := strings.Split(birthDate, ".")
 	validDateToday := false
 
@@ -61,10 +63,9 @@ func (c TextBotMessage) validateBirthDateMessage(birthDate string) (valid bool) 
 			return false
 		}
 
-		unvalidatedDate := time.Date(intYear, time.Month(intMonth), intDay, 0, 0, 0, 0, nil).Unix()
-		validDateToday = unvalidatedDate < currentTime
+		unvalidatedDate := time.Date(intYear, time.Month(intMonth), intDay, 0, 0, 0, 0, time.UTC)
+		validDateToday = unvalidatedDate.Before(currentTime)
 	}
-
 	if validLength && validDateItemsLength && validDateToday {
 		return true
 	}

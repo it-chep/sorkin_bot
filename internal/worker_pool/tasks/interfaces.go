@@ -13,6 +13,7 @@ type AppointmentService interface {
 		ctx context.Context,
 		user entity.User,
 		specialities []appointment.Speciality,
+		offset int,
 	) (translatedSpecialities map[int]string, unTranslatedSpecialities []string, err error)
 }
 

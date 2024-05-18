@@ -17,9 +17,18 @@ type CreateAppointmentCommand struct {
 	machine            *state_machine.UserStateMachine
 	appointmentService AppointmentService
 	messageService     MessageService
+	botService         BotService
 }
 
-func NewCreateAppointmentCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, userService UserService, machine *state_machine.UserStateMachine, appointmentService AppointmentService, messageService MessageService,
+func NewCreateAppointmentCommand(
+	logger *slog.Logger,
+	bot telegram.Bot,
+	tgUser tg.TgUserDTO,
+	userService UserService,
+	machine *state_machine.UserStateMachine,
+	appointmentService AppointmentService,
+	messageService MessageService,
+	botService BotService,
 ) CreateAppointmentCommand {
 	return CreateAppointmentCommand{
 		logger:             logger,
@@ -29,6 +38,7 @@ func NewCreateAppointmentCommand(logger *slog.Logger, bot telegram.Bot, tgUser t
 		machine:            machine,
 		appointmentService: appointmentService,
 		messageService:     messageService,
+		botService:         botService,
 	}
 }
 
@@ -36,42 +46,32 @@ func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.Mes
 	var msg tgbotapi.MessageConfig
 	// так как мы не изменяем бизнес сущность, а бот меняет состояние, то нахождение сущность в слое controllers некритично
 	userEntity, _ := c.userService.GetUser(ctx, c.tgUser)
-	err, _ := c.appointmentService.GetSpecialities(ctx)
-	if err != nil {
-		return
-	}
+	//_, err := c.appointmentService.GetSpecialities(ctx)
+	//if err != nil {
+	//	return
+	//}
 	//todo возможно добавить сообщение, что я загружаю ваши записи, пожалуйста подождите
 	//msg = tgbotapi.NewMessage(c.tgUser.TgID)
 	//c.bot.SendMessage(msg, messageDTO)
 
 	////todo докрутить логику со специальностями
-	//switch userEntity.GetState() {
-	//case "":
-	//	err, specialities := c.appointmentService.GetSpecialities(ctx)
-	//	if err != nil {
-	//		return
-	//	}
-	//	messageText, err := c.messageService.GetMessage(ctx, userEntity, "Choose speciality")
-	//	msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
-	//	if err != nil {
-	//		c.bot.SendMessage(msg, messageDTO)
-	//		return
-	//	}
-	//	keyboard := tgbotapi.NewInlineKeyboardMarkup()
-	//	translatedSpecialities, err := c.appointmentService.GetTranslatedSpecialities(ctx, userEntity, specialities)
-	//	if err != nil {
-	//		return
-	//	}
-	//	for specialityId, translatedSpeciality := range translatedSpecialities {
-	//		btn := tgbotapi.NewInlineKeyboardButtonData(translatedSpeciality, fmt.Sprintf("%d", specialityId))
-	//		row := tgbotapi.NewInlineKeyboardRow(btn)
-	//		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
-	//	}
-	//	msg.ReplyMarkup = keyboard
-	//}
-	//todo докрутить логику со специальностями
+	switch userEntity.GetState() {
+	case "":
+		specialities, err := c.appointmentService.GetSpecialities(ctx)
+		if err != nil {
+			return
+		}
+		translatedSpecialities, _, err := c.appointmentService.GetTranslatedSpecialities(ctx, userEntity, specialities, 0)
+		if err != nil {
+			return
+		}
+
+		msgText, keyboard := c.botService.ConfigureGetSpecialityMessage(ctx, userEntity, translatedSpecialities, 0)
+		msg = tgbotapi.NewMessage(c.tgUser.TgID, msgText)
+		msg.ReplyMarkup = keyboard
+		c.bot.SendMessage(msg, messageDTO)
+		return
+	}
 
 	c.machine.SetState(userEntity, userEntity.GetState(), state_machine.ChooseSpeciality)
-
-	c.bot.SendMessage(msg, messageDTO)
 }

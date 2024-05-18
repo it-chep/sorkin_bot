@@ -2,10 +2,16 @@ package callback
 
 import (
 	"context"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/internal/domain/entity/appointment"
 	entity "sorkin_bot/internal/domain/entity/user"
 )
+
+type AppointmentSpeciality interface {
+	GetSpecialities(ctx context.Context) (specialities []appointment.Speciality, err error)
+	GetTranslatedSpecialities(ctx context.Context, user entity.User, specialities []appointment.Speciality, offset int) (translatedSpecialities map[int]string, unTranslatedSpecialities []string, err error)
+}
 
 type AppointmentService interface {
 	// appointmeent interfaces in service and gateway
@@ -22,6 +28,8 @@ type AppointmentService interface {
 	// schedules interfaces in service and gateway
 	GetSchedules(ctx context.Context, doctorId int)
 	GetFastAppointmentSchedules(ctx context.Context) (schedulesMap map[int][]appointment.Schedule)
+
+	AppointmentSpeciality
 }
 
 type UserService interface {
@@ -33,4 +41,13 @@ type UserService interface {
 type MessageService interface {
 	GetMessage(ctx context.Context, user entity.User, name string) (messageText string, err error)
 	SaveMessageLog(ctx context.Context, message tg.MessageDTO) (err error)
+}
+
+type BotService interface {
+	ConfigureGetSpecialityMessage(
+		ctx context.Context,
+		userEntity entity.User,
+		translatedSpecialities map[int]string,
+		offset int,
+	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
 }

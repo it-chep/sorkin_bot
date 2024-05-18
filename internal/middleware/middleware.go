@@ -64,7 +64,6 @@ func (middleware MessageLogMiddleware) ProcessRequest(c *gin.Context) {
 			log.Println("Failed to log incoming message:", err)
 		}
 	}()
-	//c.Set("update", byte(update))
 	c.Next()
 }
 

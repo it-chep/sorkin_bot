@@ -13,18 +13,19 @@ import (
 func (c TextBotMessage) GetPhone(ctx context.Context, user entity.User, messageDTO tg.MessageDTO) {
 	var msg tgbotapi.MessageConfig
 	var phone string
-	if messageDTO.Contact.PhoneNumber != "" {
+	if messageDTO.Contact != nil {
 		phone = messageDTO.Contact.PhoneNumber
 	} else {
 		phone = messageDTO.Text
 	}
 	if c.validatePhoneMessage(phone) {
-		_, err := c.userService.UpdatePhone(ctx, c.tgUser, messageDTO.Text)
+		_, err := c.userService.UpdatePhone(ctx, c.tgUser, phone)
 		if err != nil {
 			msg = tgbotapi.NewMessage(c.tgUser.TgID, message.ServerError)
 			c.bot.SendMessage(msg, messageDTO)
 			return
 		}
+
 	} else {
 		messageText, _ := c.messageService.GetMessage(ctx, user, "invalid phone")
 		msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
@@ -33,18 +34,17 @@ func (c TextBotMessage) GetPhone(ctx context.Context, user entity.User, messageD
 	}
 
 	c.machine.SetState(user, state_machine.GetPhone, state_machine.GetName)
-
+	messageText, _ := c.messageService.GetMessage(ctx, user, "enter name")
+	msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
+	c.bot.SendMessage(msg, messageDTO)
 }
 
 func (c TextBotMessage) validatePhoneMessage(phone string) (valid bool) {
-	pattern := ""
-	//todo add phone pattern
-	matchString, err := regexp.MatchString(pattern, phone)
+	pattern := `^\+[1-9]\d{1,14}$`
+
+	match, err := regexp.MatchString(pattern, phone)
 	if err != nil {
 		return false
 	}
-	if matchString {
-		return true
-	}
-	return false
+	return match
 }
