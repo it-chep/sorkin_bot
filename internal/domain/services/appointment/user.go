@@ -21,11 +21,11 @@ func (as *AppointmentService) GetPatient(ctx context.Context, user entity.User) 
 func (as *AppointmentService) CreatePatient(ctx context.Context, user entity.User) (result bool) {
 	op := "sorkin_bot.internal.domain.services.appointment.user.CreatePatient"
 	userDTO := dto.PatientDTO{
-		LastName:  user.GetLastName(),
+		LastName:  *user.GetLastName(),
 		FirstName: user.GetFirstName(),
 		ThirdName: user.GetThirdName(),
-		BirthDate: user.GetBirthDate(),
-		Phone:     user.GetPhone(),
+		BirthDate: *user.GetBirthDate(),
+		Phone:     *user.GetPhone(),
 	}
 	patientId, err := as.misAdapter.CreatePatient(ctx, userDTO)
 	err = as.userService.UpdatePatientId(ctx, user, patientId)

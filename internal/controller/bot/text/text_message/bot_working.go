@@ -37,9 +37,8 @@ func (c TextBotMessage) Execute(ctx context.Context, messageDTO tg.MessageDTO) {
 	var _ tgbotapi.MessageConfig
 	// так как мы не изменяем бизнес сущность, а бот меняет состояние, то нахождение сущность в слое controllers некритично
 	userEntity, _ := c.userService.GetUser(ctx, c.tgUser.TgID)
-	switch userEntity.GetState() {
+	switch *userEntity.GetState() {
 	case "":
-	//	todo administrationHelp or start
 	case state_machine.GetPhone:
 		if userEntity.GetPatientId() != nil {
 			c.GetPhone(ctx, userEntity, messageDTO)
@@ -53,5 +52,4 @@ func (c TextBotMessage) Execute(ctx context.Context, messageDTO tg.MessageDTO) {
 			c.GetBirthDate(ctx, userEntity, messageDTO)
 		}
 	}
-
 }

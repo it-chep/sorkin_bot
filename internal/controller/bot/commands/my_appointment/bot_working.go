@@ -49,7 +49,7 @@ func (c MyAppointmentsCommand) Execute(ctx context.Context, messageDTO tg.Messag
 
 	msg.ReplyMarkup = keyboard
 
-	c.machine.SetState(userEntity, userEntity.GetState(), state_machine.ChooseAppointment)
+	c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.ChooseAppointment)
 
 	c.bot.SendMessage(msg, messageDTO)
 }

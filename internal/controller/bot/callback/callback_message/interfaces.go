@@ -11,6 +11,7 @@ import (
 type AppointmentSpeciality interface {
 	GetSpecialities(ctx context.Context) (specialities []appointment.Speciality, err error)
 	GetTranslatedSpecialities(ctx context.Context, user entity.User, specialities []appointment.Speciality, offset int) (translatedSpecialities map[int]string, unTranslatedSpecialities []string, err error)
+	TranslateSpecialityByID(ctx context.Context, user entity.User, specialityId int) (translatedSpeciality string, err error)
 }
 
 type DraftAppointment interface {

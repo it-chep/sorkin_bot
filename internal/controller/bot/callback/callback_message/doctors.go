@@ -15,23 +15,30 @@ func (c *CallbackBotMessage) GetDoctors(ctx context.Context, messageDTO tg.Messa
 	doctors := c.appointmentService.GetDoctors(ctx, userEntity.GetTgId(), 0, &specialityId)
 
 	msgText, err := c.messageService.GetMessage(ctx, userEntity, "your speciality")
+
 	if err != nil {
 		c.bot.SendMessage(tgbotapi.NewMessage(c.tgUser.TgID, msgText), messageDTO)
 		return
 	}
+
+	specialityText, err := c.appointmentService.TranslateSpecialityByID(ctx, userEntity, specialityId)
+	if err != nil {
+		return
+	}
+
 	c.bot.RemoveMessage(c.tgUser.TgID, int(messageDTO.MessageID))
-	c.bot.SendMessage(tgbotapi.NewMessage(c.tgUser.TgID, fmt.Sprintf(msgText, specialityId)), messageDTO)
+	c.bot.SendMessage(tgbotapi.NewMessage(c.tgUser.TgID, fmt.Sprintf(msgText, specialityText)), messageDTO)
 	msgText, keyboard := c.botService.ConfigureGetDoctorMessage(ctx, userEntity, doctors, 0)
 	msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
 
 	if keyboard.InlineKeyboard != nil {
 		msg.ReplyMarkup = keyboard
 		c.bot.SendMessage(msg, messageDTO)
-		c.machine.SetState(userEntity, userEntity.GetState(), state_machine.ChooseDoctor)
+		c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.ChooseDoctor)
 	} else {
 		c.bot.SendMessage(msg, messageDTO)
 		c.moreLessSpeciality(ctx, messageDTO, userEntity, "")
-		c.machine.SetState(userEntity, userEntity.GetState(), state_machine.ChooseSpeciality)
+		c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.ChooseSpeciality)
 	}
 }
 

@@ -38,7 +38,7 @@ func (c *StartBotCommand) Execute(ctx context.Context, message tg.MessageDTO) {
 		return
 	}
 
-	if user.GetState() == "" && user.GetLanguageCode() == "" {
+	if user.GetState() == nil && user.GetLanguageCode() == nil {
 		msgText, keyboard = c.botService.ConfigureChangeLanguageMessage(ctx, user)
 	} else {
 		msgText, err = c.messageService.GetMessage(ctx, user, "Start")

@@ -96,6 +96,9 @@ func (u UserService) ChangeLanguage(ctx context.Context, dto tg.TgUserDTO, langu
 	if err != nil {
 		return entity.User{}, err
 	}
+	// todo add pointer to user
+	user.SetLanguageCode(languageCode)
+
 	return user, nil
 }
 

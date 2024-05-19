@@ -29,6 +29,7 @@ type MisDoctors interface {
 	GetDoctors(ctx context.Context, tgId int64, offset int, specialityId *int) (doctorsMap map[int]string)
 	GetSpecialities(ctx context.Context) (specialities []appointment.Speciality, err error)
 	GetTranslatedSpecialities(ctx context.Context, user entity.User, specialities []appointment.Speciality, offset int) (translatedSpecialities map[int]string, unTranslatedSpecialities []string, err error)
+	TranslateSpecialityByID(ctx context.Context, user entity.User, specialityId int) (translatedSpeciality string, err error)
 }
 
 // MisSchedules interfaces in service and gateway

@@ -66,7 +66,7 @@ func (a Appointment) GetTimeEnd() string {
 }
 
 type DraftAppointment struct {
-	id           int
+	id           *int
 	timeStart    *string
 	timeEnd      *string
 	doctorId     *int
@@ -74,7 +74,7 @@ type DraftAppointment struct {
 	specialityId *int
 }
 
-func NewDraftAppointment(id int, specialityId, doctorId *int, tgId *int64, timeStart, timeEnd *string,
+func NewDraftAppointment(id *int, specialityId, doctorId *int, tgId *int64, timeStart, timeEnd *string,
 ) DraftAppointment {
 	return DraftAppointment{
 		id:           id,
@@ -86,7 +86,7 @@ func NewDraftAppointment(id int, specialityId, doctorId *int, tgId *int64, timeS
 	}
 }
 
-func (a DraftAppointment) GetAppointmentId() int {
+func (a DraftAppointment) GetAppointmentId() *int {
 	return a.id
 }
 

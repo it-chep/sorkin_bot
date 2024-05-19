@@ -58,7 +58,7 @@ func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.Mes
 	sentMessageId := c.bot.SendMessageAndGetId(tgbotapi.NewMessage(c.tgUser.TgID, msgText), messageDTO)
 
 	////todo докрутить логику со специальностями
-	switch userEntity.GetState() {
+	switch *userEntity.GetState() {
 	case "":
 		specialities, err := c.appointmentService.GetSpecialities(ctx)
 		if err != nil {
@@ -76,7 +76,7 @@ func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.Mes
 		}
 		c.bot.RemoveMessage(c.tgUser.TgID, sentMessageId)
 		c.bot.SendMessage(msg, messageDTO)
-		c.machine.SetState(userEntity, userEntity.GetState(), state_machine.ChooseSpeciality)
+		c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.ChooseSpeciality)
 		go c.appointmentService.CreateDraftAppointment(ctx, userEntity.GetTgId())
 		return
 	}

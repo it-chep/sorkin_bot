@@ -2,8 +2,10 @@ package read_repo
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/jackc/pgx/v5"
 	"log/slog"
 	entity "sorkin_bot/internal/domain/entity/user"
 	"sorkin_bot/internal/storage/dao"
@@ -32,6 +34,9 @@ func (rs UserStorage) GetUserByTgID(ctx context.Context, userID int64) (user ent
 	var userDAO dao.UserDAO
 	err = pgxscan.Get(ctx, rs.client, &userDAO, q, userID)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return entity.User{}, nil
+		}
 		rs.logger.Error(fmt.Sprintf("Error while scanning row: %s, op: %s", err, op))
 		return entity.User{}, err
 	}

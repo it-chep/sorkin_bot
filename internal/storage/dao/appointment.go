@@ -13,7 +13,7 @@ type AppointmentDAO struct {
 
 func (a *AppointmentDAO) ToDomain() appointment.DraftAppointment {
 	return appointment.NewDraftAppointment(
-		*a.id,
+		a.id,
 		a.specialityId,
 		a.doctorId,
 		a.tgId,

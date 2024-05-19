@@ -39,7 +39,7 @@ func (c *CancelAppointmentBotCommand) Execute(ctx context.Context, message tg.Me
 	// так как мы не изменяем бизнес сущность, а бот меняет состояние, то нахождение сущность в слое controllers некритично
 	userEntity, _ := c.userService.GetUser(ctx, c.tgUser.TgID)
 
-	if userEntity.GetState() != "" {
+	if userEntity.GetState() != nil {
 		appointments := c.appointmentService.GetAppointments(ctx, userEntity)
 		messageText, err := c.messageService.GetMessage(ctx, userEntity, "Select appointment")
 		msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
@@ -60,7 +60,7 @@ func (c *CancelAppointmentBotCommand) Execute(ctx context.Context, message tg.Me
 		return
 	}
 
-	c.machine.SetState(userEntity, userEntity.GetState(), state_machine.ChooseAppointment)
+	c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.ChooseAppointment)
 
 	c.bot.SendMessage(msg, message)
 }

@@ -7,6 +7,7 @@ import (
 
 type ReadMessageRepo interface {
 	GetTranslationsBySlug(ctx context.Context, slug string) (translations map[string]appointment.TranslationEntity, err error)
+	GetTranslationsBySourceId(ctx context.Context, sourceId int) (translation appointment.TranslationEntity, err error)
 }
 
 type ReadDraftAppointmentRepo interface {

@@ -31,7 +31,7 @@ func (as *AppointmentService) GetTranslatedSpecialities(
 	if err != nil {
 		return translatedSpecialities, nil, err
 	}
-	langCode := user.GetLanguageCode()
+	langCode := *user.GetLanguageCode()
 
 	for _, speciality := range specialities {
 		translationEntity, ok := translations[speciality.GetDoctorName()]
@@ -58,4 +58,24 @@ func (as *AppointmentService) GetTranslatedSpecialities(
 	}
 	translatedSpecialities = utils.IntMapWithOffset(utils.SortedIntMap(translatedSpecialities), offset)
 	return translatedSpecialities, unTranslatedSpecialities, err
+}
+
+func (as *AppointmentService) TranslateSpecialityByID(ctx context.Context, user entity.User, specialityId int) (translatedSpeciality string, err error) {
+
+	translationEntity, err := as.readMessageRepo.GetTranslationsBySourceId(ctx, specialityId)
+	if err != nil {
+		return "", err
+	}
+
+	langCode := *user.GetLanguageCode()
+	switch langCode {
+	case "RU":
+		translatedSpeciality = translationEntity.GetRuText()
+	case "EN":
+		translatedSpeciality = translationEntity.GetEngText()
+	case "PT":
+		translatedSpeciality = translationEntity.GetPtBrText()
+	}
+
+	return translatedSpeciality, nil
 }

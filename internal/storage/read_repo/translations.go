@@ -40,20 +40,17 @@ func (tr TranslationStorage) GetTranslationsBySlug(ctx context.Context, slug str
 	return translations, nil
 }
 
-func (tr TranslationStorage) GetTranslationsBySourceId(ctx context.Context, sourceId int) (translations map[string]appointment.TranslationEntity, err error) {
-	var translationsDao []dao.TranslationDao
+func (tr TranslationStorage) GetTranslationsBySourceId(ctx context.Context, sourceId int) (translation appointment.TranslationEntity, err error) {
+	var translationsDao dao.TranslationDao
 	op := "sorkin_bot.internal.storage.read_repo.translations.GetTranslationsBySourceId"
 	q := `select slug, ru_text, eng_text, pt_br_text, uses from translations where id_in_source_system = $1 and uses = true;`
 
-	err = pgxscan.Select(ctx, tr.client, &translationsDao, q, sourceId)
+	err = pgxscan.Get(ctx, tr.client, &translationsDao, q, sourceId)
 	if err != nil {
 		tr.logger.Error(fmt.Sprintf("Error while scanning row: %s op: %s", err, op))
-		return translations, err
+		return translation, err
 	}
+	translation = translationsDao.ToDomain()
 
-	translations = make(map[string]appointment.TranslationEntity)
-	for _, translation := range translationsDao {
-		translations[translation.RuText] = translation.ToDomain()
-	}
-	return translations, nil
+	return translation, nil
 }

@@ -14,7 +14,7 @@ create table if not exists tg_users
     last_state        varchar(255),
     phone             varchar(30),
     language_code     varchar(5),
-    admin             boolean
+    admin             boolean default false
 );
 
 create table if not exists message_log
@@ -29,8 +29,8 @@ create table if not exists message_log
 create table if not exists translations
 (
     id                  bigserial,
-    id_in_source_system bigint,
-    uses                boolean,
+    id_in_source_system bigint unique,
+    uses                boolean default false,
     slug                text unique,
     ru_text             text,
     eng_text            text,
