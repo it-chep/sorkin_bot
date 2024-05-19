@@ -158,7 +158,6 @@ func (mg *MisRenoGateway) CreateAppointment(ctx context.Context, patientId, doct
 	var response mis_dto.CreateAppointmentResponse
 	var request = mis_dto.CreateAppointmentRequest{
 		PatientId: patientId,
-		ClinicId:  mis_dto.DefaultClinicId,
 		DoctorId:  doctorId,
 		TimeStart: timeStart,
 		TimeEnd:   timeEnd,

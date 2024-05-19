@@ -10,11 +10,11 @@ import (
 	"strings"
 )
 
-func (c TextBotMessage) GetName(ctx context.Context, user entity.User, messageDTO tg.MessageDTO) {
+func (c TextBotMessage) getName(ctx context.Context, user entity.User, messageDTO tg.MessageDTO) {
 	var msg tgbotapi.MessageConfig
 
 	if c.validateNameMessage(messageDTO.Text) {
-		_, err := c.userService.UpdateThirdName(ctx, c.tgUser, messageDTO.Text)
+		_, err := c.userService.UpdateThirdName(ctx, c.tgUser, strings.Split(messageDTO.Text, " ")[2])
 		if err != nil {
 			msg = tgbotapi.NewMessage(c.tgUser.TgID, message.ServerError)
 			c.bot.SendMessage(msg, messageDTO)
@@ -29,7 +29,7 @@ func (c TextBotMessage) GetName(ctx context.Context, user entity.User, messageDT
 	messageText, _ := c.messageService.GetMessage(ctx, user, "enter birthdate")
 	msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
 	c.bot.SendMessage(msg, messageDTO)
-	c.machine.SetState(user, state_machine.GetName, state_machine.GetBirthDate)
+	c.machine.SetState(user, *user.GetState(), state_machine.GetBirthDate)
 }
 
 func (c TextBotMessage) validateNameMessage(name string) (valid bool) {

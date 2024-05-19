@@ -27,7 +27,7 @@ func NewAppointmentStorage(client postgres.Client, logger *slog.Logger) Appointm
 func (rs AppointmentStorage) GetUserDraftAppointment(ctx context.Context, tgId int64) (draftAppointment appointment.DraftAppointment, err error) {
 	op := "internal/storage/read_repo/appointment/GetUserDraftAppointment"
 	q := `
-		select id, tg_id, speciality_id, doctor_id, date, time_start, time_end, draft 
+		select tg_id, speciality_id, doctor_id, date, time_start, time_end 
 		from appointment
 		where tg_id = $1 and draft = true;
 	`

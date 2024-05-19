@@ -20,7 +20,6 @@ func (as *AppointmentService) CreateDraftAppointment(ctx context.Context, tgId i
 		return
 	}
 	if !reflect.ValueOf(draftAppointment.GetTgId()).IsZero() {
-		as.logger.Warn("draftAppointment is exist")
 		return
 	}
 

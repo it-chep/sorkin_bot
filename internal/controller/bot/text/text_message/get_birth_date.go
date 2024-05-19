@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func (c TextBotMessage) GetBirthDate(ctx context.Context, user entity.User, messageDTO tg.MessageDTO) {
+func (c TextBotMessage) getBirthDate(ctx context.Context, user entity.User, messageDTO tg.MessageDTO) {
 	var msg tgbotapi.MessageConfig
 	var err error
 	if c.validateBirthDateMessage(messageDTO.Text) {

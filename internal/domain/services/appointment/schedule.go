@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sorkin_bot/internal/domain/entity/appointment"
+	entity "sorkin_bot/internal/domain/entity/user"
 )
 
 func (as *AppointmentService) GetFastAppointmentSchedules(ctx context.Context) (schedulesMap map[int][]appointment.Schedule) {
@@ -17,20 +18,24 @@ func (as *AppointmentService) GetFastAppointmentSchedules(ctx context.Context) (
 	return schedulesMap
 }
 
-func (as *AppointmentService) GetSchedules(ctx context.Context, doctorId int) {
+func (as *AppointmentService) GetSchedules(ctx context.Context, userEntity entity.User, doctorId *int) (schedulesMap []appointment.Schedule, err error) {
 	op := "sorkin_bot.internal.domain.services.appointment.schedule.GetSchedules	"
-	schedules, err := as.misAdapter.GetSchedules(ctx, doctorId, "")
-	// +- такая логика
-	if doctorId == 0 {
-		for doctorId, doctorSchedules := range schedules {
-			as.logger.Info(fmt.Sprintf("schedules[doctorId] %d %s", doctorId, doctorSchedules))
+
+	if doctorId == nil {
+		draftAppointment, err := as.GetDraftAppointment(ctx, userEntity.GetTgId())
+		if err != nil {
+			return nil, err
 		}
-	} else {
-		as.logger.Info(fmt.Sprintf("schedules[doctorId] %d %s", doctorId, schedules[doctorId]))
+		doctorIdValue := draftAppointment.GetDoctorId()
+		doctorId = doctorIdValue
 	}
 
+	schedules, err := as.misAdapter.GetSchedules(ctx, *doctorId, "")
 	if err != nil {
 		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
-		return
+		return nil, err
 	}
+
+	return schedules[*doctorId], err
+
 }

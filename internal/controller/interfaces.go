@@ -9,6 +9,7 @@ import (
 )
 
 type draftAppointment interface {
+	GetDraftAppointment(ctx context.Context, tgId int64) (draftAppointment appointment.DraftAppointment, err error)
 	UpdateDraftAppointmentStatus(ctx context.Context, tgId int64)
 	UpdateDraftAppointmentDate(ctx context.Context, tgId int64, timeStart, timeEnd, date string)
 	UpdateDraftAppointmentIntField(ctx context.Context, tgId int64, intVal int, fieldName string)
@@ -33,7 +34,7 @@ type appointmentService interface {
 	TranslateSpecialityByID(ctx context.Context, user entity.User, specialityId int) (translatedSpeciality string, err error)
 
 	// schedules interfaces in service and gateway
-	GetSchedules(ctx context.Context, doctorId int)
+	GetSchedules(ctx context.Context, userEntity entity.User, doctorId *int) (schedulesMap []appointment.Schedule, err error)
 	GetFastAppointmentSchedules(ctx context.Context) (schedulesMap map[int][]appointment.Schedule)
 	GetPatient(ctx context.Context, user entity.User) (result bool)
 	CreatePatient(ctx context.Context, user entity.User) (result bool)
@@ -72,4 +73,15 @@ type botService interface {
 		doctors map[int]string,
 		offset int,
 	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
+
+	ConfigureGetScheduleMessage(
+		ctx context.Context,
+		userEntity entity.User,
+		schedules []appointment.Schedule,
+		offset int,
+	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
+
+	ConfigureConfirmAppointmentMessage(ctx context.Context, userEntity entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
+
+	ConfigureGetPhoneMessage(ctx context.Context, userEntity entity.User) (msgText string, keyboard tgbotapi.ReplyKeyboardMarkup)
 }

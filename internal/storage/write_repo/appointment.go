@@ -39,7 +39,7 @@ func (rs AppointmentStorage) UpdateDateDraftAppointment(
 ) (err error) {
 	op := "internal/storage/read_repo/appointment/UpdateDateDraftAppointment"
 	q := `
-		update appointment set time_start = $1, time_end = $2, date = $3 where tg_id = $1 and draft = true;
+		update appointment set time_start = $1, time_end = $2, date = $3 where tg_id = $4 and draft = true;
 	`
 
 	_, err = rs.client.Exec(ctx, q, timeStart, timeEnd, date, tgId)

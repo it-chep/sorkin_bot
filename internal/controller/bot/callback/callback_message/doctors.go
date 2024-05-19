@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func (c *CallbackBotMessage) GetDoctors(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, specialityId int) {
+func (c *CallbackBotMessage) getDoctors(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, specialityId int) {
 	doctors := c.appointmentService.GetDoctors(ctx, userEntity.GetTgId(), 0, &specialityId)
 
 	msgText, err := c.messageService.GetMessage(ctx, userEntity, "your speciality")
@@ -46,7 +46,10 @@ func (c *CallbackBotMessage) chooseDoctor(ctx context.Context, messageDTO tg.Mes
 	if strings.Contains(callbackData, "offset") {
 		c.moreLessDoctors(ctx, messageDTO, userEntity, callbackData)
 	} else {
-		c.GetSchedules(ctx, messageDTO, callbackData)
+		doctorId, _ := strconv.Atoi(callbackData)
+		c.getSchedules(ctx, messageDTO, userEntity, callbackData)
+		c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.ChooseSchedule)
+		go c.appointmentService.UpdateDraftAppointmentIntField(ctx, userEntity.GetTgId(), doctorId, "doctor_id")
 	}
 }
 

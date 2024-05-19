@@ -5,6 +5,7 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
+	"sorkin_bot/internal/domain/entity/appointment"
 	entity "sorkin_bot/internal/domain/entity/user"
 	"sorkin_bot/internal/domain/services/message"
 )
@@ -44,7 +45,20 @@ func (bs BotService) ConfigureGetPhoneMessage(ctx context.Context, userEntity en
 			tgbotapi.NewKeyboardButtonContact(buttonText),
 		),
 	)
-	msgText, _ = bs.messageService.GetMessage(ctx, userEntity, "send phone message")
+	msgText, _ = bs.messageService.GetMessage(ctx, userEntity, "enter phone")
+	return msgText, keyboard
+}
+
+func (bs BotService) ConfigureConfirmAppointmentMessage(ctx context.Context, userEntity entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup) {
+	buttonTextYes, _ := bs.messageService.GetMessage(ctx, userEntity, "confirm appointment ? btn yes")
+	buttonTextNo, _ := bs.messageService.GetMessage(ctx, userEntity, "confirm appointment ? btn no")
+	keyboard = tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData(buttonTextYes, "confirm_appointment"),
+			tgbotapi.NewInlineKeyboardButtonData(buttonTextNo, "reject_appointment"),
+		),
+	)
+	msgText, _ = bs.messageService.GetMessage(ctx, userEntity, "confirm appointment ? text")
 	return msgText, keyboard
 }
 
@@ -127,28 +141,33 @@ func (bs BotService) ConfigureGetDoctorMessage(
 func (bs BotService) ConfigureGetScheduleMessage(
 	ctx context.Context,
 	userEntity entity.User,
-	schedules map[int]string,
+	schedules []appointment.Schedule,
 	offset int,
 ) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup) {
-	msgText, err := bs.messageService.GetMessage(ctx, userEntity, "Choose speciality")
+	msgText, err := bs.messageService.GetMessage(ctx, userEntity, "Choose schedule")
 	if err != nil {
 		return msgText, keyboard
 	}
 	lengthOfSchedules := len(schedules)
+
 	if lengthOfSchedules > InlineButtonsLimit {
 		count := 0
-		for specialityId, translatedSpeciality := range schedules {
+		for _, schedule := range schedules[offset:] {
 			if count == InlineButtonsLimit {
 				break
 			}
-			btn := tgbotapi.NewInlineKeyboardButtonData(translatedSpeciality, fmt.Sprintf("%d", specialityId))
+			btn := tgbotapi.NewInlineKeyboardButtonData(
+				fmt.Sprintf("%s: %s - %s", schedule.GetDate(), schedule.GetTimeStartShort(), schedule.GetTimeEndShort()),
+				fmt.Sprintf("schedule_%d_%s_%s_%s", schedule.GetDoctorId(), schedule.GetTimeStart(), schedule.GetTimeEnd(), schedule.GetDate()))
 			row := tgbotapi.NewInlineKeyboardRow(btn)
 			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 			count++
 		}
 	} else {
-		for specialityId, translatedSpeciality := range schedules {
-			btn := tgbotapi.NewInlineKeyboardButtonData(translatedSpeciality, fmt.Sprintf("%d", specialityId))
+		for _, schedule := range schedules {
+			btn := tgbotapi.NewInlineKeyboardButtonData(
+				fmt.Sprintf("%s: %s - %s", schedule.GetDate(), schedule.GetTimeStartShort(), schedule.GetTimeEndShort()),
+				fmt.Sprintf("schedule_%d_%s_%s_%s", schedule.GetDoctorId(), schedule.GetTimeStart(), schedule.GetTimeEnd(), schedule.GetDate()))
 			row := tgbotapi.NewInlineKeyboardRow(btn)
 			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 		}

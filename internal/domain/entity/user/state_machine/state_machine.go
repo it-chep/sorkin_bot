@@ -18,6 +18,7 @@ type UserStateMachine struct {
 }
 
 const (
+	Start               = ""
 	ChooseLanguage      = "chooseLanguage"
 	ChooseSpeciality    = "chooseSpeciality"
 	FastAppointment     = "fastAppointment"
@@ -38,16 +39,17 @@ func NewUserStateMachine(userService user.UserService) *UserStateMachine {
 		userService: userService,
 	}
 	machine.FSM = fsm.NewFSM(
-		"",
+		Start,
 		fsm.Events{
 			{Name: ChooseLanguage, Src: []string{""}, Dst: ChooseLanguage},
 			{Name: ChooseSpeciality, Src: []string{"", ChooseLanguage}, Dst: ChooseSpeciality},
 			{Name: FastAppointment, Src: []string{""}, Dst: FastAppointment},
 			{Name: ChooseDoctor, Src: []string{"", ChooseSpeciality, FastAppointment}, Dst: ChooseDoctor},
 			{Name: ChooseSchedule, Src: []string{"", ChooseDoctor}, Dst: ChooseSchedule},
-			{Name: GetPhone, Src: []string{ChooseSchedule}, Dst: GetPhone},
-			{Name: GetName, Src: []string{GetPhone}, Dst: GetName},
-			{Name: CreateAppointment, Src: []string{GetName}, Dst: CreateAppointment},
+			{Name: GetPhone, Src: []string{"", ChooseSchedule}, Dst: GetPhone},
+			{Name: GetName, Src: []string{"", GetPhone}, Dst: GetName},
+			{Name: GetBirthDate, Src: []string{"", GetName}, Dst: GetBirthDate},
+			{Name: CreateAppointment, Src: []string{"", GetName}, Dst: CreateAppointment},
 			{Name: MyAppointments, Src: []string{ChooseSpeciality}, Dst: MyAppointments},
 			{Name: DetailMyAppointment, Src: []string{MyAppointments}, Dst: DetailMyAppointment},
 			{Name: ChooseAppointment, Src: []string{""}, Dst: ChooseAppointment},
@@ -61,6 +63,7 @@ func NewUserStateMachine(userService user.UserService) *UserStateMachine {
 			fmt.Sprintf("enter_%s", ChooseSchedule):      enterChooseSchedule,
 			fmt.Sprintf("enter_%s", GetPhone):            enterGetPhone,
 			fmt.Sprintf("enter_%s", GetName):             enterGetName,
+			fmt.Sprintf("enter_%s", GetBirthDate):        enterGetBirthDate,
 			fmt.Sprintf("enter_%s", CreateAppointment):   enterCreateAppointment,
 			fmt.Sprintf("enter_%s", MyAppointments):      enterMyAppointments,
 			fmt.Sprintf("enter_%s", DetailMyAppointment): enterDetailMyAppointment,

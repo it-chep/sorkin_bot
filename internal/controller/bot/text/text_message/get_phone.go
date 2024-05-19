@@ -10,7 +10,7 @@ import (
 	"sorkin_bot/internal/domain/services/message"
 )
 
-func (c TextBotMessage) GetPhone(ctx context.Context, user entity.User, messageDTO tg.MessageDTO) {
+func (c TextBotMessage) getPhone(ctx context.Context, user entity.User, messageDTO tg.MessageDTO) {
 	var msg tgbotapi.MessageConfig
 	var phone string
 	if messageDTO.Contact != nil {
@@ -25,7 +25,6 @@ func (c TextBotMessage) GetPhone(ctx context.Context, user entity.User, messageD
 			c.bot.SendMessage(msg, messageDTO)
 			return
 		}
-
 	} else {
 		messageText, _ := c.messageService.GetMessage(ctx, user, "invalid phone")
 		msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
@@ -33,14 +32,14 @@ func (c TextBotMessage) GetPhone(ctx context.Context, user entity.User, messageD
 		return
 	}
 
-	c.machine.SetState(user, state_machine.GetPhone, state_machine.GetName)
 	messageText, _ := c.messageService.GetMessage(ctx, user, "enter name")
 	msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
 	c.bot.SendMessage(msg, messageDTO)
+	c.machine.SetState(user, *user.GetState(), state_machine.GetName)
 }
 
 func (c TextBotMessage) validatePhoneMessage(phone string) (valid bool) {
-	pattern := `^\+[1-9]\d{1,14}$`
+	pattern := `^\+?[1-9]\d{1,14}$`
 
 	match, err := regexp.MatchString(pattern, phone)
 	if err != nil {

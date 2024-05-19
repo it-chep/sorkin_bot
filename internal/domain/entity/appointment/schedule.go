@@ -56,3 +56,11 @@ func (sch Schedule) GetTimeEnd() string {
 func (sch Schedule) GetTimeEndShort() string {
 	return sch.timeEndShort
 }
+
+func (sch Schedule) GetDoctorId() int {
+	return sch.doctorId
+}
+
+func (sch Schedule) GetDate() string {
+	return sch.date
+}

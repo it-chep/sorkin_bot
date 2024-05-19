@@ -95,3 +95,9 @@ func enterChooseAppointment(ctx context.Context, e *fsm.Event) {
 		changeState(ctx, e)
 	}
 }
+
+func enterGetBirthDate(ctx context.Context, e *fsm.Event) {
+	if len(e.Args) > 1 {
+		changeState(ctx, e)
+	}
+}
