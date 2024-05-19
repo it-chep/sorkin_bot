@@ -13,22 +13,22 @@ type CreateAppointmentCommand struct {
 	logger             *slog.Logger
 	bot                telegram.Bot
 	tgUser             tg.TgUserDTO
-	userService        UserService
+	userService        userService
 	machine            *state_machine.UserStateMachine
-	appointmentService AppointmentService
-	messageService     MessageService
-	botService         BotService
+	appointmentService appointmentService
+	messageService     messageService
+	botService         botService
 }
 
 func NewCreateAppointmentCommand(
 	logger *slog.Logger,
 	bot telegram.Bot,
 	tgUser tg.TgUserDTO,
-	userService UserService,
+	userService userService,
 	machine *state_machine.UserStateMachine,
-	appointmentService AppointmentService,
-	messageService MessageService,
-	botService BotService,
+	appointmentService appointmentService,
+	messageService messageService,
+	botService botService,
 ) CreateAppointmentCommand {
 	return CreateAppointmentCommand{
 		logger:             logger,
@@ -45,7 +45,7 @@ func NewCreateAppointmentCommand(
 func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.MessageDTO) {
 	var msg tgbotapi.MessageConfig
 	// так как мы не изменяем бизнес сущность, а бот меняет состояние, то нахождение сущность в слое controllers некритично
-	userEntity, _ := c.userService.GetUser(ctx, c.tgUser)
+	userEntity, _ := c.userService.GetUser(ctx, c.tgUser.TgID)
 	//_, err := c.appointmentService.GetSpecialities(ctx)
 	//if err != nil {
 	//	return
@@ -53,6 +53,9 @@ func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.Mes
 	//todo возможно добавить сообщение, что я загружаю ваши записи, пожалуйста подождите
 	//msg = tgbotapi.NewMessage(c.tgUser.TgID)
 	//c.bot.SendMessage(msg, messageDTO)
+
+	msgText, _ := c.messageService.GetMessage(ctx, userEntity, "wait speciality")
+	sentMessageId := c.bot.SendMessageAndGetId(tgbotapi.NewMessage(c.tgUser.TgID, msgText), messageDTO)
 
 	////todo докрутить логику со специальностями
 	switch userEntity.GetState() {
@@ -71,10 +74,12 @@ func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.Mes
 		if keyboard.InlineKeyboard != nil {
 			msg.ReplyMarkup = keyboard
 		}
+		c.bot.RemoveMessage(c.tgUser.TgID, sentMessageId)
 		c.bot.SendMessage(msg, messageDTO)
+		c.machine.SetState(userEntity, userEntity.GetState(), state_machine.ChooseSpeciality)
+		go c.appointmentService.CreateDraftAppointment(ctx, userEntity.GetTgId())
 		return
 	}
 
-	c.machine.SetState(userEntity, userEntity.GetState(), state_machine.ChooseSpeciality)
-	go c.appointmentService.CreateDraftAppointment(ctx, userEntity.GetTgId())
+	return
 }

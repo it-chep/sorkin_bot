@@ -7,7 +7,7 @@ import (
 	entity "sorkin_bot/internal/domain/entity/user"
 )
 
-type AppointmentService interface {
+type appointmentService interface {
 	// appointmeent interfaces in service and gateway
 	CreateAppointment(ctx context.Context, user entity.User, callbackData string) (appointmentId *int)
 
@@ -16,19 +16,18 @@ type AppointmentService interface {
 	CreatePatient(ctx context.Context, user entity.User) (result bool)
 }
 
-type UserService interface {
-	GetUser(ctx context.Context, dto tg.TgUserDTO) (user entity.User, err error)
+type userService interface {
+	GetUser(ctx context.Context, tgId int64) (user entity.User, err error)
 	UpdatePatientId(ctx context.Context, user entity.User, patientId *int) (err error)
 	UpdateBirthDate(ctx context.Context, dto tg.TgUserDTO, birthDate string) (user entity.User, err error)
 	UpdateThirdName(ctx context.Context, dto tg.TgUserDTO, thirdName string) (user entity.User, err error)
 	UpdatePhone(ctx context.Context, dto tg.TgUserDTO, phone string) (user entity.User, err error)
 }
 
-type MessageService interface {
+type messageService interface {
 	GetMessage(ctx context.Context, user entity.User, name string) (messageText string, err error)
-	SaveMessageLog(ctx context.Context, message tg.MessageDTO) (err error)
 }
 
-type BotService interface {
+type botService interface {
 	ConfigureChangeLanguageMessage(ctx context.Context, user entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
 }

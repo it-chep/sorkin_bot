@@ -15,7 +15,7 @@ const (
 
 type BotService struct {
 	logger         *slog.Logger
-	messageService MessageService
+	messageService messageService
 }
 
 func NewBotService(logger *slog.Logger, messageService message.MessageService) BotService {
@@ -23,14 +23,6 @@ func NewBotService(logger *slog.Logger, messageService message.MessageService) B
 		logger:         logger,
 		messageService: messageService,
 	}
-}
-
-func (bs BotService) AdministratorHelp() {
-	// 	TODO create request message_log - controller or adapter mb
-	//  TODO get language
-	//	TODO get admin message by language
-	//  return message
-	//	TODO create response message_log may be go send_message() {} - controller or adapter mb
 }
 
 func (bs BotService) ConfigureChangeLanguageMessage(ctx context.Context, userEntity entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup) {

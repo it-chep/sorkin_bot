@@ -45,7 +45,7 @@ type DraftAppointment interface {
 	CleanDraftAppointment(ctx context.Context, tgId int64)
 }
 
-type AppointmentService interface {
+type appointmentService interface {
 	MisAppointment
 	MisUser
 	MisDoctors
@@ -61,23 +61,22 @@ type UpdateUser interface {
 }
 
 type CRUDUser interface {
-	GetUser(ctx context.Context, dto tg.TgUserDTO) (user entity.User, err error)
+	GetUser(ctx context.Context, tgId int64) (user entity.User, err error)
 	ChangeLanguage(ctx context.Context, dto tg.TgUserDTO, languageCode string) (user entity.User, err error)
-	ChangeState(ctx context.Context, dto tg.TgUserDTO, state string) (user entity.User, err error)
+	ChangeState(ctx context.Context, tgId int64, state string) (user entity.User, err error)
 	RegisterNewUser(ctx context.Context, dto tg.TgUserDTO) (user entity.User, err error)
 }
 
-type UserService interface {
+type userService interface {
 	UpdateUser
 	CRUDUser
 }
 
-type MessageService interface {
+type messageService interface {
 	GetMessage(ctx context.Context, user entity.User, name string) (messageText string, err error)
-	SaveMessageLog(ctx context.Context, message tg.MessageDTO) (err error)
 }
 
-type BotService interface {
+type botService interface {
 	ConfigureChangeLanguageMessage(ctx context.Context, user entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
 	ConfigureGetSpecialityMessage(
 		ctx context.Context,

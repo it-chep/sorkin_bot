@@ -17,12 +17,12 @@ type RestController struct {
 	cfg                config.Config
 	logger             *slog.Logger
 	botApiController   botapi.TelegramWebhookController
-	userService        UserService
-	appointmentService AppointmentService
-	messageService     MessageService
+	userService        userService
+	appointmentService appointmentService
+	messageService     messageService
 }
 
-func NewRestController(cfg config.Config, logger *slog.Logger, bot telegram.Bot, machine *state_machine.UserStateMachine, userService UserService, appointmentService AppointmentService, messageService MessageService, botService BotService) *RestController {
+func NewRestController(cfg config.Config, logger *slog.Logger, bot telegram.Bot, machine *state_machine.UserStateMachine, userService userService, appointmentService appointmentService, messageService messageService, botService botService) *RestController {
 	router := gin.New()
 	botMiddleware := middleware.NewMessageLogMiddleware(messageService)
 	sentryMiddleware := middleware.NewSentryMiddleware()

@@ -50,16 +50,17 @@ func (bot *Bot) SendMessage(msg tgbotapi.MessageConfig, messageDTO tg.MessageDTO
 	if err != nil {
 		bot.logger.Error(fmt.Sprintf("%s", err))
 	}
+	bot.CreateMessageLog(sentMessage, messageDTO)
+}
 
-	messageDTO.MessageID = int64(sentMessage.MessageID)
-	messageDTO.Text = sentMessage.Text
-
-	go func() {
-		err = bot.messageService.SaveMessageLog(context.Background(), messageDTO)
-		if err != nil {
-			bot.logger.Error(fmt.Sprintf("%s", err))
-		}
-	}()
+// SendMessageAndGetId todo может подумать над объединением в 1 метод SendMessage
+func (bot *Bot) SendMessageAndGetId(msg tgbotapi.MessageConfig, messageDTO tg.MessageDTO) int {
+	sentMessage, err := bot.Bot.Send(msg)
+	if err != nil {
+		bot.logger.Error(fmt.Sprintf("%s", err))
+	}
+	bot.CreateMessageLog(sentMessage, messageDTO)
+	return sentMessage.MessageID
 }
 
 func (bot *Bot) RemoveMessage(chatId int64, messageId int) {
@@ -68,4 +69,15 @@ func (bot *Bot) RemoveMessage(chatId int64, messageId int) {
 	if err != nil {
 		return
 	}
+}
+
+func (bot *Bot) CreateMessageLog(sentMessage tgbotapi.Message, messageDTO tg.MessageDTO) {
+	messageDTO.MessageID = int64(sentMessage.MessageID)
+	messageDTO.Text = sentMessage.Text
+	go func() {
+		err := bot.messageService.SaveMessageLog(context.Background(), messageDTO)
+		if err != nil {
+			bot.logger.Error(fmt.Sprintf("%s", err))
+		}
+	}()
 }

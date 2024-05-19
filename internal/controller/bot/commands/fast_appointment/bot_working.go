@@ -14,20 +14,20 @@ type FastAppointmentBotCommand struct {
 	logger             *slog.Logger
 	bot                telegram.Bot
 	tgUser             tg.TgUserDTO
-	userService        UserService
+	userService        userService
 	machine            *state_machine.UserStateMachine
-	appointmentService AppointmentService
-	messageService     MessageService
+	appointmentService appointmentService
+	messageService     messageService
 }
 
 func NewFastAppointmentBotCommand(
 	logger *slog.Logger,
 	bot telegram.Bot,
 	tgUser tg.TgUserDTO,
-	userService UserService,
+	userService userService,
 	machine *state_machine.UserStateMachine,
-	appointmentService AppointmentService,
-	messageService MessageService,
+	appointmentService appointmentService,
+	messageService messageService,
 ) FastAppointmentBotCommand {
 	return FastAppointmentBotCommand{
 		logger:             logger,
@@ -75,7 +75,7 @@ func (c *FastAppointmentBotCommand) Execute(ctx context.Context, message tg.Mess
 	c.bot.SendMessage(msg, message)
 
 	// todo, мб горутину на стейты
-	userEntity, err := c.userService.GetUser(ctx, c.tgUser)
+	userEntity, err := c.userService.GetUser(ctx, c.tgUser.TgID)
 	if err != nil {
 		return
 	}

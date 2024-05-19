@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"sorkin_bot/internal/config"
 	callback "sorkin_bot/internal/controller/bot/callback/callback_message"
+	"sorkin_bot/internal/controller/bot/commands/administration_help"
 	"sorkin_bot/internal/controller/bot/text/text_message"
 
 	"sorkin_bot/internal/controller/bot/commands/cancel_appointment"
@@ -29,10 +30,10 @@ type TelegramWebhookController struct {
 	logger             *slog.Logger
 	bot                telegram.Bot
 	machine            *state_machine.UserStateMachine
-	userService        UserService
-	appointmentService AppointmentService
-	messageService     MessageService
-	botService         BotService
+	userService        userService
+	appointmentService appointmentService
+	messageService     messageService
+	botService         botService
 }
 
 func NewTelegramWebhookController(
@@ -40,10 +41,10 @@ func NewTelegramWebhookController(
 	logger *slog.Logger,
 	bot telegram.Bot,
 	machine *state_machine.UserStateMachine,
-	userService UserService,
-	appointmentService AppointmentService,
-	messageService MessageService,
-	botService BotService,
+	userService userService,
+	appointmentService appointmentService,
+	messageService messageService,
+	botService botService,
 ) TelegramWebhookController {
 
 	return TelegramWebhookController{
@@ -102,12 +103,9 @@ func (t TelegramWebhookController) ForkCommands(ctx context.Context, update tgbo
 	case "start":
 		command := start.NewStartBotCommand(t.logger, t.bot, tgUser, t.userService, t.messageService, t.botService)
 		command.Execute(ctx, tgMessage)
-	case "help":
-		// service по работе с help
-		t.bot.SendMessage(tgbotapi.NewMessage(update.FromChat().ID, "i will help you"), tgMessage)
-	case "tech_support":
-		// service по работе с tech_support
-		t.bot.SendMessage(tgbotapi.NewMessage(update.FromChat().ID, "i will help you"), tgMessage)
+	case "help", "tech_support":
+		command := administration_help.NewAdministrationHelpCommand(t.logger, t.bot, tgUser, t.messageService, t.userService)
+		command.Execute(ctx, tgMessage)
 	case "fast_appointment":
 		// service по работе с fast appointment
 		command := fast_appointment.NewFastAppointmentBotCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.appointmentService, t.messageService)

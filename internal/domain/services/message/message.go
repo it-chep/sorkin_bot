@@ -15,13 +15,15 @@ const ServerError = "500 INTERNAL SERVER ERROR, please call /tech_support"
 type MessageService struct {
 	saveMessageUseCase SaveMessageUseCase
 	readRepo           ReadRepo
+	readLogsRepo       readLogsRepo
 	logger             *slog.Logger
 }
 
-func NewMessageService(saveMessageUseCase SaveMessageUseCase, readRepo ReadRepo, logger *slog.Logger) MessageService {
+func NewMessageService(saveMessageUseCase SaveMessageUseCase, readRepo ReadRepo, readLogsRepo readLogsRepo, logger *slog.Logger) MessageService {
 	return MessageService{
 		saveMessageUseCase: saveMessageUseCase,
 		readRepo:           readRepo,
+		readLogsRepo:       readLogsRepo,
 		logger:             logger,
 	}
 }
@@ -56,11 +58,18 @@ func (ms MessageService) translateMessage(user userEntity.User, message tgEntity
 
 func (ms MessageService) SaveMessageLog(ctx context.Context, message tg.MessageDTO) (err error) {
 	// todo add photo and video saving
-	// todo перенсти логику в interceptor.go
 	messageLog := tgEntity.NewMessageLog(
 		message.MessageID,
 		message.Chat.ID,
 		message.Text,
 	)
 	return ms.saveMessageUseCase.Execute(ctx, messageLog)
+}
+
+func (ms MessageService) GetSupportLogs(ctx context.Context, minutes int) (logs []tgEntity.MessageLog, err error) {
+	logs, err = ms.readLogsRepo.GetSupportLogsByMinutes(ctx, minutes)
+	if err != nil {
+		return nil, err
+	}
+	return logs, nil
 }

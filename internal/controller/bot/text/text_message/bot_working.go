@@ -14,13 +14,13 @@ type TextBotMessage struct {
 	bot                telegram.Bot
 	tgUser             tg.TgUserDTO
 	machine            *state_machine.UserStateMachine
-	userService        UserService
-	messageService     MessageService
-	appointmentService AppointmentService
-	botService         BotService
+	userService        userService
+	messageService     messageService
+	appointmentService appointmentService
+	botService         botService
 }
 
-func NewTextBotMessage(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, machine *state_machine.UserStateMachine, userService UserService, messageService MessageService, appointmentService AppointmentService, botService BotService) TextBotMessage {
+func NewTextBotMessage(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, machine *state_machine.UserStateMachine, userService userService, messageService messageService, appointmentService appointmentService, botService botService) TextBotMessage {
 	return TextBotMessage{
 		logger:             logger,
 		bot:                bot,
@@ -36,7 +36,7 @@ func NewTextBotMessage(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDT
 func (c TextBotMessage) Execute(ctx context.Context, messageDTO tg.MessageDTO) {
 	var _ tgbotapi.MessageConfig
 	// так как мы не изменяем бизнес сущность, а бот меняет состояние, то нахождение сущность в слое controllers некритично
-	userEntity, _ := c.userService.GetUser(ctx, c.tgUser)
+	userEntity, _ := c.userService.GetUser(ctx, c.tgUser.TgID)
 	switch userEntity.GetState() {
 	case "":
 	//	todo administrationHelp or start

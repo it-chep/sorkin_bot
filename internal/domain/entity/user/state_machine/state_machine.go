@@ -12,7 +12,7 @@ import (
 
 type UserStateMachine struct {
 	FSM                *fsm.FSM
-	userService        user.UserService
+	userService        userService
 	appointmentService appointment.AppointmentService
 	bot                telegram.Bot
 }
@@ -43,7 +43,7 @@ func NewUserStateMachine(userService user.UserService) *UserStateMachine {
 			{Name: ChooseLanguage, Src: []string{""}, Dst: ChooseLanguage},
 			{Name: ChooseSpeciality, Src: []string{"", ChooseLanguage}, Dst: ChooseSpeciality},
 			{Name: FastAppointment, Src: []string{""}, Dst: FastAppointment},
-			{Name: ChooseDoctor, Src: []string{"", FastAppointment}, Dst: ChooseDoctor},
+			{Name: ChooseDoctor, Src: []string{"", ChooseSpeciality, FastAppointment}, Dst: ChooseDoctor},
 			{Name: ChooseSchedule, Src: []string{"", ChooseDoctor}, Dst: ChooseSchedule},
 			{Name: GetPhone, Src: []string{ChooseSchedule}, Dst: GetPhone},
 			{Name: GetName, Src: []string{GetPhone}, Dst: GetName},
@@ -73,14 +73,9 @@ func NewUserStateMachine(userService user.UserService) *UserStateMachine {
 }
 
 func (machine *UserStateMachine) SetState(user entity.User, from, to string) {
-	user.SetState(to)
-
-	// todo проверить чтобы не брались чужие состояния
-
-	machine.FSM.SetState(from)
-	err := machine.FSM.Event(context.TODO(), to)
+	ctx := context.Background()
+	err := machine.FSM.Event(ctx, to, user, machine.userService)
 	if err != nil {
 		return
 	}
-
 }

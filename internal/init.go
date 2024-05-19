@@ -66,17 +66,15 @@ type storages struct {
 	readTranslationStorage       read_repo.TranslationStorage
 	readMessageStorage           read_repo.MessageStorage
 	readDraftAppointmentStorage  read_repo.AppointmentStorage
+	readLogsStorage              read_repo.TelegramMessageStorage
 	writeUserStorage             write_repo.UserStorage
 	writeTelegramStorage         write_repo.TelegramMessageStorage
 	writeDraftAppointmentStorage write_repo.AppointmentStorage
 }
 
-type workers struct {
-	everyDayWorker worker_pool.Worker
-}
-
 type periodicalTasks struct {
 	getTranslatedSpeciality tasks.GetTranslatedSpecialityTask
+	checkSupportTask        tasks.CheckAdministrationHelpTask
 }
 
 type adapters struct {
@@ -96,9 +94,9 @@ type App struct {
 	storages        storages
 	useCases        useCases
 	gateways        gateways
-	workers         workers
 	adapters        adapters
 	periodicalTasks periodicalTasks
+	workerPool      worker_pool.WorkerPool
 	bot             telegram.Bot
 	pgxClient       postgres.Client
 	server          *http.Server
@@ -114,11 +112,11 @@ func NewApp(ctx context.Context) *App {
 	app.InitLogger(ctx).
 		InitPgxConn(ctx).
 		InitStorage(ctx).
-		InitMachine(ctx).
 		InitGateways(ctx).
 		InitAdapters(ctx).
 		InitUseCases(ctx).
 		InitServices(ctx).
+		InitMachine(ctx).
 		InitTelegram(ctx).
 		InitTasks(ctx).
 		InitWorkers(ctx).
@@ -129,6 +127,6 @@ func NewApp(ctx context.Context) *App {
 
 func (app *App) Run() error {
 	app.logger.Info("start server")
-	go app.workers.everyDayWorker.Run()
+	go app.workerPool.Run()
 	return app.server.ListenAndServe()
 }

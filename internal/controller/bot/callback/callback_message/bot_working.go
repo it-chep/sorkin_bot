@@ -22,10 +22,10 @@ type CallbackBotMessage struct {
 	bot                telegram.Bot
 	tgUser             tg.TgUserDTO
 	machine            *state_machine.UserStateMachine
-	userService        UserService
-	messageService     MessageService
-	appointmentService AppointmentService
-	botService         BotService
+	userService        userService
+	messageService     messageService
+	appointmentService appointmentService
+	botService         botService
 }
 
 func NewCallbackBot(
@@ -33,10 +33,10 @@ func NewCallbackBot(
 	bot telegram.Bot,
 	tgUser tg.TgUserDTO,
 	machine *state_machine.UserStateMachine,
-	userService UserService,
-	messageService MessageService,
-	appointmentService AppointmentService,
-	botService BotService,
+	userService userService,
+	messageService messageService,
+	appointmentService appointmentService,
+	botService botService,
 ) CallbackBotMessage {
 	return CallbackBotMessage{
 		logger:             logger,
@@ -57,7 +57,7 @@ func (c *CallbackBotMessage) Execute(ctx context.Context, messageDTO tg.MessageD
 	var msgText string
 	var err error
 
-	userEntity, _ := c.userService.GetUser(ctx, c.tgUser)
+	userEntity, _ := c.userService.GetUser(ctx, c.tgUser.TgID)
 	if _, ok := languagesMap[callbackData]; ok {
 		userEntity, err = c.userService.ChangeLanguage(ctx, c.tgUser, callbackData)
 		if err != nil {

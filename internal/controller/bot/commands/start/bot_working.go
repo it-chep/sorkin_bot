@@ -12,12 +12,12 @@ type StartBotCommand struct {
 	logger         *slog.Logger
 	bot            telegram.Bot
 	tgUser         tg.TgUserDTO
-	userService    UserService
-	messageService MessageService
-	botService     BotService
+	userService    userService
+	messageService messageService
+	botService     botService
 }
 
-func NewStartBotCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, userService UserService, messageService MessageService, botService BotService) StartBotCommand {
+func NewStartBotCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, userService userService, messageService messageService, botService botService) StartBotCommand {
 	return StartBotCommand{
 		logger:         logger,
 		bot:            bot,

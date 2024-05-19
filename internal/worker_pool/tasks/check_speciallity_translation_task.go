@@ -12,13 +12,13 @@ import (
 )
 
 type GetTranslatedSpecialityTask struct {
-	appointmentService AppointmentService
-	userService        UserService
+	appointmentService appointmentService
+	userService        userService
 	logger             *slog.Logger
 	bot                telegram.Bot
 }
 
-func NewGetTranslatedSpecialityTask(appointmentService AppointmentService, userService UserService, logger *slog.Logger, bot telegram.Bot) GetTranslatedSpecialityTask {
+func NewGetTranslatedSpecialityTask(appointmentService appointmentService, userService userService, logger *slog.Logger, bot telegram.Bot) GetTranslatedSpecialityTask {
 	return GetTranslatedSpecialityTask{
 		appointmentService: appointmentService,
 		userService:        userService,
@@ -39,7 +39,7 @@ func (task GetTranslatedSpecialityTask) Process(ctx context.Context) error {
 		Chat: &chatId,
 	}
 
-	getUser, err := task.userService.GetUser(ctx, dto)
+	getUser, err := task.userService.GetUser(ctx, dto.TgID)
 	if err != nil {
 		msg := tgbotapi.NewMessage(int64(adminId), "error while getting admin in GetTranslatedSpecialityTask")
 		task.bot.SendMessage(msg, messageDTO)

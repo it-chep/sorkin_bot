@@ -13,7 +13,8 @@ create table if not exists tg_users
     third_name        varchar(255),
     last_state        varchar(255),
     phone             varchar(30),
-    language_code     varchar(5)
+    language_code     varchar(5),
+    admin             boolean
 );
 
 create table if not exists message_log
@@ -22,16 +23,18 @@ create table if not exists message_log
     tg_message_id bigint,
     text          text,
     user_tg_id    bigint,
-    time          timestamp
+    time          timestamp with time zone
 );
 
 create table if not exists translations
 (
-    id         bigserial,
-    slug       text unique,
-    ru_text    text,
-    eng_text   text,
-    pt_Br_text text
+    id                  bigserial,
+    id_in_source_system bigint,
+    uses                boolean,
+    slug                text unique,
+    ru_text             text,
+    eng_text            text,
+    pt_Br_text          text
 );
 
 create table if not exists appointment
@@ -60,6 +63,8 @@ create table if not exists message_condition
 (
     id bigserial
 );
+
+set time zone 'UTC';
 
 -- +goose StatementEnd
 

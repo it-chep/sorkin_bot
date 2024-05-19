@@ -50,7 +50,7 @@ func (as *AppointmentService) GetTranslatedSpecialities(
 			translatedSpeciality = translationEntity.GetPtBrText()
 		}
 
-		if translatedSpeciality == "" {
+		if translatedSpeciality == "" || !translations[speciality.GetDoctorName()].GetUses() {
 			continue
 		}
 

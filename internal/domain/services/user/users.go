@@ -45,10 +45,10 @@ func NewUserService(
 	}
 }
 
-func (u UserService) GetUser(ctx context.Context, dto tg.TgUserDTO) (user entity.User, err error) {
+func (u UserService) GetUser(ctx context.Context, tgId int64) (user entity.User, err error) {
 	op := "sorkin_bot.internal.domain.services.user.users.GetUser"
 
-	user, err = u.readRepo.GetUserByTgID(ctx, dto.TgID)
+	user, err = u.readRepo.GetUserByTgID(ctx, tgId)
 
 	if err != nil {
 		u.logger.Error(fmt.Sprintf("error: %s, place %s", err, op))
@@ -60,7 +60,7 @@ func (u UserService) GetUser(ctx context.Context, dto tg.TgUserDTO) (user entity
 func (u UserService) RegisterNewUser(ctx context.Context, dto tg.TgUserDTO) (user entity.User, err error) {
 	op := "sorkin_bot.internal.domain.services.user.users.RegisterNewUser"
 
-	user, err = u.GetUser(ctx, dto)
+	user, err = u.GetUser(ctx, dto.TgID)
 	if err != nil {
 		return entity.User{}, err
 	}
@@ -109,16 +109,17 @@ func (u UserService) UpdatePatientId(ctx context.Context, user entity.User, pati
 	return err
 }
 
-func (u UserService) ChangeState(ctx context.Context, dto tg.TgUserDTO, state string) (user entity.User, err error) {
+func (u UserService) ChangeState(ctx context.Context, tgId int64, state string) (user entity.User, err error) {
 	op := "sorkin_bot.internal.domain.services.user.users.ChangeState"
-	user, err = u.readRepo.GetUserByTgID(ctx, dto.TgID)
+	user, err = u.readRepo.GetUserByTgID(ctx, tgId)
 
 	if err != nil {
 		u.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
 		return entity.User{}, err
 	}
 
-	err = u.changeStateUseCase.Execute(ctx, user, state)
+	user.SetState(state)
+	err = u.changeStateUseCase.Execute(ctx, user)
 	if err != nil {
 		u.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
 		return entity.User{}, err

@@ -12,7 +12,7 @@ import (
 
 func (c *CallbackBotMessage) GetAppointmentDetail(ctx context.Context, messageDTO tg.MessageDTO, callbackData string) {
 	var msg tgbotapi.MessageConfig
-	userEntity, _ := c.userService.GetUser(ctx, c.tgUser)
+	userEntity, _ := c.userService.GetUser(ctx, c.tgUser.TgID)
 	//todo возможно добавить сообщение, что я загружаю ваши записи, пожалуйста подождите
 	//msg = tgbotapi.NewMessage(c.tgUser.TgID)
 	//c.bot.SendMessage(msg, messageDTO)

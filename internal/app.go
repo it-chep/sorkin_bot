@@ -21,6 +21,7 @@ import (
 	"sorkin_bot/internal/domain/usecases/appointment/update_int_appointment_field"
 	"sorkin_bot/internal/domain/usecases/bot/save_message_log"
 	"sorkin_bot/internal/domain/usecases/user/change_language"
+	"sorkin_bot/internal/domain/usecases/user/change_user_status"
 	"sorkin_bot/internal/domain/usecases/user/create_user"
 	"sorkin_bot/internal/domain/usecases/user/update_user_birth_date"
 	"sorkin_bot/internal/domain/usecases/user/update_user_patient_id"
@@ -61,6 +62,7 @@ func (app *App) InitStorage(ctx context.Context) *App {
 	app.storages.readUserStorage = read_repo.NewUserStorage(app.pgxClient, app.logger)
 	app.storages.readTranslationStorage = read_repo.NewTranslationRepo(app.pgxClient, app.logger)
 	app.storages.readMessageStorage = read_repo.NewReadMessageStorage(app.pgxClient, app.logger)
+	app.storages.readLogsStorage = read_repo.NewTelegramMessageStorage(app.pgxClient, app.logger)
 	app.storages.writeTelegramStorage = write_repo.NewTelegramMessageStorage(app.pgxClient, app.logger)
 	app.storages.readDraftAppointmentStorage = read_repo.NewAppointmentStorage(app.pgxClient, app.logger)
 	app.storages.writeDraftAppointmentStorage = write_repo.NewAppointmentStorage(app.pgxClient, app.logger)
@@ -74,17 +76,23 @@ func (app *App) InitGateways(ctx context.Context) *App {
 
 func (app *App) InitTasks(ctx context.Context) *App {
 	app.periodicalTasks.getTranslatedSpeciality = tasks.NewGetTranslatedSpecialityTask(&app.services.appointmentService, app.services.userService, app.logger, app.bot)
+	app.periodicalTasks.checkSupportTask = tasks.NewCheckAdministrationHelpTask(app.logger, app.bot, app.services.messageService, app.services.userService)
 	return app
 }
 
 func (app *App) InitWorkers(ctx context.Context) *App {
-	app.workers.everyDayWorker = worker_pool.NewWorker(app.periodicalTasks.getTranslatedSpeciality)
+	workers := []worker_pool.Worker{
+		worker_pool.NewWorker(app.periodicalTasks.getTranslatedSpeciality, 24*time.Hour),
+		worker_pool.NewWorker(app.periodicalTasks.checkSupportTask, 5*time.Minute),
+	}
+	app.workerPool = worker_pool.NewWorkerPool(workers)
 	return app
 }
 
 func (app *App) InitUseCases(ctx context.Context) *App {
 	app.useCases.createUserUserCase = create_user.NewCreateUserUseCase(app.storages.writeUserStorage, app.logger)
 	app.useCases.changeLanguageUseCase = change_language.NewChangeLanguageUseCase(app.storages.writeUserStorage, app.logger)
+	app.useCases.changeStatusUseCase = change_user_status.NewChangeStatusUseCase(app.storages.writeUserStorage, app.logger)
 	app.useCases.saveMessageUseCase = save_message_log.NewSaveMessageLogUseCase(app.storages.writeTelegramStorage, app.logger)
 	app.useCases.updateUserPhoneUseCase = update_user_phone.NewUpdateUserPhoneUseCase(app.storages.writeUserStorage, app.logger)
 	app.useCases.updateUserPatientIdUseCase = update_user_patient_id.NewUpdateUserPatientIdUseCase(app.storages.writeUserStorage, app.logger)
@@ -126,6 +134,7 @@ func (app *App) InitServices(ctx context.Context) *App {
 	app.services.messageService = message.NewMessageService(
 		app.useCases.saveMessageUseCase,
 		app.storages.readMessageStorage,
+		app.storages.readLogsStorage,
 		app.logger,
 	)
 	app.services.botService = bot.NewBotService(

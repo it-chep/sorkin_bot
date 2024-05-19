@@ -15,12 +15,12 @@ type MyAppointmentsCommand struct {
 	bot                telegram.Bot
 	tgUser             tg.TgUserDTO
 	machine            *state_machine.UserStateMachine
-	userService        UserService
-	appointmentService AppointmentService
-	messageService     MessageService
+	userService        userService
+	appointmentService appointmentService
+	messageService     messageService
 }
 
-func NewMyAppointmentsCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, machine *state_machine.UserStateMachine, userService UserService, appointmentService AppointmentService, messageService MessageService) MyAppointmentsCommand {
+func NewMyAppointmentsCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, machine *state_machine.UserStateMachine, userService userService, appointmentService appointmentService, messageService messageService) MyAppointmentsCommand {
 	return MyAppointmentsCommand{
 		logger:             logger,
 		bot:                bot,
@@ -33,7 +33,7 @@ func NewMyAppointmentsCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.T
 }
 
 func (c MyAppointmentsCommand) Execute(ctx context.Context, messageDTO tg.MessageDTO) {
-	userEntity, _ := c.userService.GetUser(ctx, c.tgUser)
+	userEntity, _ := c.userService.GetUser(ctx, c.tgUser.TgID)
 	keyboard := tgbotapi.NewInlineKeyboardMarkup()
 	msg := tgbotapi.NewMessage(c.tgUser.TgID, "Выберите запись")
 

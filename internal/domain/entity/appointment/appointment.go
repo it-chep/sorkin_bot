@@ -90,22 +90,22 @@ func (a DraftAppointment) GetAppointmentId() int {
 	return a.id
 }
 
-func (a DraftAppointment) GetTimeStart() string {
-	return *a.timeStart
+func (a DraftAppointment) GetTimeStart() *string {
+	return a.timeStart
 }
 
-func (a DraftAppointment) GetTimeEnd() string {
-	return *a.timeEnd
+func (a DraftAppointment) GetTimeEnd() *string {
+	return a.timeEnd
 }
 
-func (a DraftAppointment) GetDoctorId() int {
-	return *a.doctorId
+func (a DraftAppointment) GetDoctorId() *int {
+	return a.doctorId
 }
 
-func (a DraftAppointment) GetTgId() int64 {
-	return *a.tgId
+func (a DraftAppointment) GetTgId() *int64 {
+	return a.tgId
 }
 
-func (a DraftAppointment) GetSpecialityId() int {
-	return *a.specialityId
+func (a DraftAppointment) GetSpecialityId() *int {
+	return a.specialityId
 }

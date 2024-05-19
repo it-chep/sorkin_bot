@@ -14,7 +14,7 @@ func (as *AppointmentService) GetDoctors(ctx context.Context, tgId int64, offset
 			return nil
 		}
 		specialityIdValue := draftAppointment.GetSpecialityId()
-		specialityId = &specialityIdValue
+		specialityId = specialityIdValue
 	}
 	doctors := as.misAdapter.GetDoctors(ctx, *specialityId)
 	doctorsMap = as.getDoctorsMap(doctors)

@@ -22,10 +22,10 @@ func NewAppointmentStorage(client postgres.Client, logger *slog.Logger) Appointm
 func (rs AppointmentStorage) CreateEmptyDraftAppointment(ctx context.Context, tgId int64) (err error) {
 	op := "internal/storage/read_repo/appointment/CreateEmptyDraftAppointment"
 	q := `
-		insert into appointment (tg_id, draft) values ($1, true);
+		insert into appointment (tg_id, draft) values ($1, true) returning id;
 	`
-
-	err = rs.client.QueryRow(ctx, q, tgId).Scan()
+	var draftAppointmentId *int
+	err = rs.client.QueryRow(ctx, q, tgId).Scan(&draftAppointmentId)
 	if err != nil {
 		rs.logger.Error(fmt.Sprintf("Error while scanning row: %s, op: %s", err, op))
 		return err

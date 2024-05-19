@@ -14,13 +14,13 @@ type CancelAppointmentBotCommand struct {
 	logger             *slog.Logger
 	bot                telegram.Bot
 	tgUser             tg.TgUserDTO
-	userService        UserService
+	userService        userService
 	machine            *state_machine.UserStateMachine
-	appointmentService AppointmentService
-	messageService     MessageService
+	appointmentService appointmentService
+	messageService     messageService
 }
 
-func NewCancelAppointmentBotCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, userService UserService, machine *state_machine.UserStateMachine, appointmentService AppointmentService, messageService MessageService,
+func NewCancelAppointmentBotCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, userService userService, machine *state_machine.UserStateMachine, appointmentService appointmentService, messageService messageService,
 ) CancelAppointmentBotCommand {
 	return CancelAppointmentBotCommand{
 		logger:             logger,
@@ -37,7 +37,7 @@ func NewCancelAppointmentBotCommand(logger *slog.Logger, bot telegram.Bot, tgUse
 func (c *CancelAppointmentBotCommand) Execute(ctx context.Context, message tg.MessageDTO) {
 	var msg tgbotapi.MessageConfig
 	// так как мы не изменяем бизнес сущность, а бот меняет состояние, то нахождение сущность в слое controllers некритично
-	userEntity, _ := c.userService.GetUser(ctx, c.tgUser)
+	userEntity, _ := c.userService.GetUser(ctx, c.tgUser.TgID)
 
 	if userEntity.GetState() != "" {
 		appointments := c.appointmentService.GetAppointments(ctx, userEntity)

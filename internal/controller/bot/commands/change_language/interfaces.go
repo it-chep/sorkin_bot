@@ -3,19 +3,17 @@ package change_language
 import (
 	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"sorkin_bot/internal/controller/dto/tg"
 	entity "sorkin_bot/internal/domain/entity/user"
 )
 
-type UserService interface {
-	GetUser(ctx context.Context, dto tg.TgUserDTO) (user entity.User, err error)
+type userService interface {
+	GetUser(ctx context.Context, tgId int64) (user entity.User, err error)
 }
 
-type BotService interface {
+type botService interface {
 	ConfigureChangeLanguageMessage(ctx context.Context, user entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
 }
 
-type MessageService interface {
+type messageService interface {
 	GetMessage(ctx context.Context, user entity.User, name string) (messageText string, err error)
-	SaveMessageLog(ctx context.Context, message tg.MessageDTO) (err error)
 }

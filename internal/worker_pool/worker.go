@@ -10,18 +10,34 @@ type Worker struct {
 	task     Task
 }
 
-func NewWorker(task Task) Worker {
+func NewWorker(task Task, interval time.Duration) Worker {
 	return Worker{
 		task:     task,
-		interval: 24 * time.Hour,
+		interval: interval,
 	}
 }
 
-func (w Worker) Run() {
+func (w Worker) Start() {
 	for {
 		go func() {
 			_ = w.task.Process(context.Background())
 		}()
 		time.Sleep(w.interval)
+	}
+}
+
+type WorkerPool struct {
+	workers []Worker
+}
+
+func NewWorkerPool(workers []Worker) WorkerPool {
+	return WorkerPool{
+		workers: workers,
+	}
+}
+
+func (wp WorkerPool) Run() {
+	for _, w := range wp.workers {
+		go w.Start()
 	}
 }

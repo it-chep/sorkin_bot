@@ -30,7 +30,7 @@ func (ws TelegramMessageStorage) CreateMessageLog(ctx context.Context, messageLo
 	ws.logger.Info(op)
 
 	_, err = ws.client.Exec(
-		ctx, q, messageLog.GetTgMessageId(), messageLog.GetMessageText(), messageLog.GetUserTgId(), time.Now(),
+		ctx, q, messageLog.GetTgMessageId(), messageLog.GetMessageText(), messageLog.GetUserTgId(), time.Now().UTC(),
 	)
 
 	if err != nil {

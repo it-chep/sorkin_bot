@@ -12,12 +12,12 @@ type ChangeLanguageCommand struct {
 	logger         *slog.Logger
 	bot            telegram.Bot
 	tgUser         tg.TgUserDTO
-	userService    UserService
-	messageService MessageService
-	botService     BotService
+	userService    userService
+	messageService messageService
+	botService     botService
 }
 
-func NewChangeLanguageCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, userService UserService, messageService MessageService, botService BotService) ChangeLanguageCommand {
+func NewChangeLanguageCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, userService userService, messageService messageService, botService botService) ChangeLanguageCommand {
 	return ChangeLanguageCommand{
 		logger:         logger,
 		bot:            bot,
@@ -29,7 +29,7 @@ func NewChangeLanguageCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.T
 }
 
 func (c ChangeLanguageCommand) Execute(ctx context.Context, messageDTO tg.MessageDTO) {
-	userEntity, err := c.userService.GetUser(ctx, c.tgUser)
+	userEntity, err := c.userService.GetUser(ctx, c.tgUser.TgID)
 	if err != nil {
 		return
 	}
