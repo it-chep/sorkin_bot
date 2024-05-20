@@ -9,6 +9,7 @@ type Schedule struct {
 	timeEnd        string
 	timeEndShort   string
 	category       string
+	user           string
 	categoryId     int
 	profession     string
 	room           string
@@ -17,7 +18,7 @@ type Schedule struct {
 }
 
 func NewSchedule(clinicId, doctorId, categoryId int,
-	date, timeStart, timeStartShort, timeEnd, timeEndShort, category, profession, room string,
+	date, timeStart, timeStartShort, timeEnd, timeEndShort, category, profession, room, user string,
 	isBusy, isPast bool,
 ) Schedule {
 	return Schedule{
@@ -34,6 +35,7 @@ func NewSchedule(clinicId, doctorId, categoryId int,
 		room:           room,
 		isBusy:         isBusy,
 		isPast:         isPast,
+		user:           user,
 	}
 }
 
@@ -63,4 +65,8 @@ func (sch Schedule) GetDoctorId() int {
 
 func (sch Schedule) GetDate() string {
 	return sch.date
+}
+
+func (sch Schedule) GetDoctorName() string {
+	return sch.user
 }

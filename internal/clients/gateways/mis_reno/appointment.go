@@ -13,6 +13,7 @@ import (
 	"os"
 	"sorkin_bot/internal/clients/gateways/dto"
 	"sorkin_bot/internal/clients/gateways/mis_reno/mis_dto"
+	"strconv"
 	"time"
 )
 
@@ -159,6 +160,7 @@ func (mg *MisRenoGateway) CreateAppointment(ctx context.Context, patientId, doct
 	var request = mis_dto.CreateAppointmentRequest{
 		PatientId: patientId,
 		DoctorId:  doctorId,
+		ClinicId:  mis_dto.DefaultClinicId,
 		TimeStart: timeStart,
 		TimeEnd:   timeEnd,
 	}
@@ -169,8 +171,11 @@ func (mg *MisRenoGateway) CreateAppointment(ctx context.Context, patientId, doct
 	if err != nil {
 		return nil, err
 	}
+	mg.logger.Info("CreateAppointment response: ", string(responseBody), request)
 
-	return response.Data.ID, nil
+	id, _ := strconv.Atoi(response.Data)
+
+	return &id, nil
 }
 
 func (mg *MisRenoGateway) CancelAppointment(ctx context.Context, movedTo string, appointmentId int) (result bool, err error) {

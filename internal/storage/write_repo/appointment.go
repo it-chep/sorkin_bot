@@ -64,13 +64,13 @@ func (rs AppointmentStorage) UpdateIntDraftAppointment(ctx context.Context, tgId
 	return nil
 }
 
-func (rs AppointmentStorage) UpdateStatusDraftAppointment(ctx context.Context, tgId int64) (err error) {
+func (rs AppointmentStorage) UpdateStatusDraftAppointment(ctx context.Context, tgId int64, appointmentId int) (err error) {
 	op := "internal/storage/read_repo/appointment/UpdateStatusDraftAppointment"
 	q := `
-		update appointment set draft = false where tg_id = $1 and draft = true;
+		update appointment set appointment_id = $1, draft = false where tg_id = $2 and draft = true;
 	`
 
-	_, err = rs.client.Exec(ctx, q, tgId)
+	_, err = rs.client.Exec(ctx, q, appointmentId, tgId)
 	if err != nil {
 		rs.logger.Error(fmt.Sprintf("Error while executing row: %s, op: %s", err, op))
 		return err

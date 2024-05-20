@@ -233,3 +233,24 @@ func (bs BotService) moreLessButtons(offset, lengthOfItems int, keyboard tgbotap
 
 	return keyboard
 }
+
+func (bs BotService) ConfigureFastAppointmentMessage(
+	ctx context.Context,
+	userEntity entity.User,
+	schedulesMap map[int]appointment.Schedule,
+) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup) {
+	msgText, err := bs.messageService.GetMessage(ctx, userEntity, "Choose fast appointment")
+	if err != nil {
+		return msgText, keyboard
+	}
+	for doctorId, schedule := range schedulesMap {
+		btn := tgbotapi.NewInlineKeyboardButtonData(
+			fmt.Sprintf("%s| %s", schedule.GetTimeStartShort(), schedule.GetDoctorName()),
+			fmt.Sprintf("fast__%d__%s__%s", doctorId, schedule.GetTimeStart(), schedule.GetTimeEnd()),
+		)
+		row := tgbotapi.NewInlineKeyboardRow(btn)
+		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+	}
+
+	return msgText, keyboard
+}

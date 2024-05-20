@@ -2,7 +2,6 @@ package mis_reno
 
 import (
 	"context"
-	"fmt"
 	"sorkin_bot/internal/clients/gateways/dto"
 	"sorkin_bot/internal/clients/gateways/mis_reno/mis_dto"
 	"strconv"
@@ -36,23 +35,17 @@ func (mg *MisRenoGateway) GetSchedules(ctx context.Context, doctorId int, timeSt
 		return schedulesMap, err
 	}
 
-	// todo move to service
-	if doctorId != 0 {
-		// Если мы берем расписание у конкретного доктора
-		for _, schedule := range response.Data[fmt.Sprintf("%d", doctorId)] {
-			schedules = append(schedules, schedule.ToDTO())
-		}
-		schedulesMap[doctorId] = schedules
-		return schedulesMap, nil
-	}
-
 	// Если мы берем расписание у всех докторов
 	for strResponseDoctorId, doctorSchedule := range response.Data {
 		for _, schedule := range doctorSchedule {
 			schedules = append(schedules, schedule.ToDTO())
 		}
-		responseDoctorId, _ := strconv.Atoi(strResponseDoctorId)
-		schedulesMap[responseDoctorId] = schedules
+		if doctorId == 0 {
+			responseDoctorId, _ := strconv.Atoi(strResponseDoctorId)
+			schedulesMap[responseDoctorId] = schedules
+		} else {
+			schedulesMap[doctorId] = schedules
+		}
 	}
 
 	return schedulesMap, nil

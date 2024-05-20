@@ -79,3 +79,31 @@ func (as *AppointmentService) TranslateSpecialityByID(ctx context.Context, user 
 
 	return translatedSpeciality, nil
 }
+
+func (as *AppointmentService) TranslateManyByIds(ctx context.Context, user entity.User, ids []int) (translatedSpecialities map[int]string, err error) {
+	translations, err := as.readMessageRepo.GetManyTranslationsByIds(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+	var translatedSpeciality string
+	translatedSpecialities = make(map[int]string)
+
+	for _, translationEntity := range translations {
+
+		langCode := *user.GetLanguageCode()
+		switch langCode {
+		case "RU":
+			translatedSpeciality = translationEntity.GetRuText()
+		case "EN":
+			translatedSpeciality = translationEntity.GetEngText()
+		case "PT":
+			translatedSpeciality = translationEntity.GetPtBrText()
+		}
+
+		if translationEntity.GetSourceId() != nil {
+			translatedSpecialities[*translationEntity.GetSourceId()] = translatedSpeciality
+		}
+
+	}
+	return translatedSpecialities, err
+}

@@ -8,6 +8,7 @@ import (
 	"sorkin_bot/internal/domain/entity/appointment"
 	"sorkin_bot/internal/storage/dao"
 	"sorkin_bot/pkg/client/postgres"
+	"strings"
 )
 
 type TranslationStorage struct {
@@ -53,4 +54,37 @@ func (tr TranslationStorage) GetTranslationsBySourceId(ctx context.Context, sour
 	translation = translationsDao.ToDomain()
 
 	return translation, nil
+}
+
+func (tr TranslationStorage) GetManyTranslationsByIds(ctx context.Context, ids []int) (translations []appointment.TranslationEntity, err error) {
+	var translationsDao []dao.TranslationDao
+	op := "sorkin_bot.internal.storage.read_repo.translations.GetTranslationsBySourceId"
+	if len(ids) == 0 {
+		return nil, fmt.Errorf("ids slice is empty")
+	}
+	placeholders := make([]string, len(ids))
+	args := make([]interface{}, len(ids))
+	for i, id := range ids {
+		placeholders[i] = fmt.Sprintf("$%d", i+1)
+		args[i] = id
+	}
+
+	q := fmt.Sprintf(
+		`select slug, ru_text, eng_text, pt_br_text, uses 
+				from translations 
+				where id_in_source_system in (%s) and uses = true;
+		`, strings.Join(placeholders, ","),
+	)
+
+	err = pgxscan.Select(ctx, tr.client, &translationsDao, q, args...)
+	if err != nil {
+		tr.logger.Error(fmt.Sprintf("Error while scanning row: %s op: %s", err, op))
+		return translations, err
+	}
+
+	for _, translation := range translationsDao {
+		translations = append(translations, translation.ToDomain())
+	}
+
+	return translations, nil
 }

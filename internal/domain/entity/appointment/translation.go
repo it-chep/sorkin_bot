@@ -6,15 +6,17 @@ type TranslationEntity struct {
 	engText  string
 	ptBrText string
 	uses     bool
+	sourceId *int
 }
 
-func NewTranslationEntity(slug, ruText, engText, ptBrText string, uses bool) TranslationEntity {
+func NewTranslationEntity(slug, ruText, engText, ptBrText string, uses bool, sourceId *int) TranslationEntity {
 	return TranslationEntity{
 		slug:     slug,
 		ruText:   ruText,
 		engText:  engText,
 		ptBrText: ptBrText,
 		uses:     uses,
+		sourceId: sourceId,
 	}
 }
 
@@ -32,4 +34,8 @@ func (te TranslationEntity) GetPtBrText() string {
 
 func (te TranslationEntity) GetUses() bool {
 	return te.uses
+}
+
+func (te TranslationEntity) GetSourceId() *int {
+	return te.sourceId
 }

@@ -8,6 +8,7 @@ import (
 type ReadMessageRepo interface {
 	GetTranslationsBySlug(ctx context.Context, slug string) (translations map[string]appointment.TranslationEntity, err error)
 	GetTranslationsBySourceId(ctx context.Context, sourceId int) (translation appointment.TranslationEntity, err error)
+	GetManyTranslationsByIds(ctx context.Context, ids []int) (translations []appointment.TranslationEntity, err error)
 }
 
 type ReadDraftAppointmentRepo interface {
@@ -23,7 +24,7 @@ type UpdateDraftAppointmentDate interface {
 }
 
 type UpdateDraftAppointmentStatus interface {
-	Execute(ctx context.Context, tgId int64) error
+	Execute(ctx context.Context, tgId int64, appointmentId int) error
 }
 
 type UpdateDraftAppointmentIntField interface {

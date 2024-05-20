@@ -39,14 +39,15 @@ create table if not exists translations
 
 create table if not exists appointment
 (
-    id            bigserial,
-    tg_id         bigint,
-    speciality_id bigint,
-    doctor_id     bigint,
-    date          text,
-    time_start    text,
-    time_end      text,
-    draft         boolean
+    id             bigserial,
+    tg_id          bigint,
+    speciality_id  bigint,
+    appointment_id bigint,
+    doctor_id      bigint,
+    date           text,
+    time_start     text,
+    time_end       text,
+    draft          boolean
 );
 
 create table if not exists message

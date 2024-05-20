@@ -30,4 +30,5 @@ type messageService interface {
 
 type botService interface {
 	ConfigureChangeLanguageMessage(ctx context.Context, user entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
+	ConfigureConfirmAppointmentMessage(ctx context.Context, userEntity entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
 }

@@ -46,20 +46,12 @@ func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.Mes
 	var msg tgbotapi.MessageConfig
 	// так как мы не изменяем бизнес сущность, а бот меняет состояние, то нахождение сущность в слое controllers некритично
 	userEntity, _ := c.userService.GetUser(ctx, c.tgUser.TgID)
-	//_, err := c.appointmentService.GetSpecialities(ctx)
-	//if err != nil {
-	//	return
-	//}
-	//todo возможно добавить сообщение, что я загружаю ваши записи, пожалуйста подождите
-	//msg = tgbotapi.NewMessage(c.tgUser.TgID)
-	//c.bot.SendMessage(msg, messageDTO)
 
-	msgText, _ := c.messageService.GetMessage(ctx, userEntity, "wait speciality")
-	sentMessageId := c.bot.SendMessageAndGetId(tgbotapi.NewMessage(c.tgUser.TgID, msgText), messageDTO)
-
-	////todo докрутить логику со специальностями
 	switch *userEntity.GetState() {
 	case "":
+		msgText, _ := c.messageService.GetMessage(ctx, userEntity, "wait speciality")
+		sentMessageId := c.bot.SendMessageAndGetId(tgbotapi.NewMessage(c.tgUser.TgID, msgText), messageDTO)
+
 		specialities, err := c.appointmentService.GetSpecialities(ctx)
 		if err != nil {
 			return

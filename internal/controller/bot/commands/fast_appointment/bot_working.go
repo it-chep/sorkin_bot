@@ -2,7 +2,6 @@ package fast_appointment
 
 import (
 	"context"
-	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
 	"sorkin_bot/internal/controller/dto/tg"
@@ -18,6 +17,7 @@ type FastAppointmentBotCommand struct {
 	machine            *state_machine.UserStateMachine
 	appointmentService appointmentService
 	messageService     messageService
+	botService         botService
 }
 
 func NewFastAppointmentBotCommand(
@@ -28,6 +28,7 @@ func NewFastAppointmentBotCommand(
 	machine *state_machine.UserStateMachine,
 	appointmentService appointmentService,
 	messageService messageService,
+	botService botService,
 ) FastAppointmentBotCommand {
 	return FastAppointmentBotCommand{
 		logger:             logger,
@@ -37,48 +38,25 @@ func NewFastAppointmentBotCommand(
 		machine:            machine,
 		appointmentService: appointmentService,
 		messageService:     messageService,
+		botService:         botService,
 	}
 }
 
 func (c *FastAppointmentBotCommand) Execute(ctx context.Context, message tg.MessageDTO) {
 	var msg tgbotapi.MessageConfig
-
-	schedulesMap := c.appointmentService.GetFastAppointmentSchedules(ctx)
-
-	var rows [][]tgbotapi.InlineKeyboardButton
-
-	for doctorId, schedules := range schedulesMap {
-		if len(schedules) > 1 {
-			for _, schedule := range schedules {
-				rows = append(rows, tgbotapi.NewInlineKeyboardRow(tgbotapi.NewInlineKeyboardButtonData(
-					fmt.Sprintf("doctorId_%d__timeStart_%s__timeEnd_%s", doctorId, schedule.GetTimeStart(), schedule.GetTimeEnd()),
-					fmt.Sprintf("doctorId_%d__timeStart_'%s'__timeEnd_'%s'", doctorId, schedule.GetTimeStart(), schedule.GetTimeEnd()),
-				)))
-			}
-		} else if len(schedules) == 1 {
-			rows = append(rows, tgbotapi.NewInlineKeyboardRow(tgbotapi.NewInlineKeyboardButtonData(
-				fmt.Sprintf("doctorId_%d__timeStart_%s__timeEnd_%s", doctorId, schedules[0].GetTimeStart(), schedules[0].GetTimeEnd()),
-				fmt.Sprintf("doctorId_%d__timeStart_'%s'__timeEnd_'%s'", doctorId, schedules[0].GetTimeStart(), schedules[0].GetTimeEnd()),
-			)))
-		} else {
-			return
-		}
-	}
-
-	keyboard := tgbotapi.NewInlineKeyboardMarkup(rows...)
-
-	msg = tgbotapi.NewMessage(c.tgUser.TgID, "FastAppointmentBotCommand message")
-	msg.ReplyMarkup = keyboard
-
-	c.logger.Info(fmt.Sprintf("%s", message))
-
-	c.bot.SendMessage(msg, message)
-
-	// todo, мб горутину на стейты
 	userEntity, err := c.userService.GetUser(ctx, c.tgUser.TgID)
+
 	if err != nil {
 		return
 	}
+
+	schedulesMap := c.appointmentService.GetFastAppointmentSchedules(ctx)
+
+	msgText, keyboard := c.botService.ConfigureFastAppointmentMessage(ctx, userEntity, schedulesMap)
+	msg = tgbotapi.NewMessage(c.tgUser.TgID, msgText)
+	msg.ReplyMarkup = keyboard
+	c.bot.SendMessage(msg, message)
+
 	go c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.FastAppointment)
 	go c.appointmentService.CreateDraftAppointment(ctx, userEntity.GetTgId())
 }

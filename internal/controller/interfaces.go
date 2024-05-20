@@ -10,7 +10,7 @@ import (
 
 type draftAppointment interface {
 	GetDraftAppointment(ctx context.Context, tgId int64) (draftAppointment appointment.DraftAppointment, err error)
-	UpdateDraftAppointmentStatus(ctx context.Context, tgId int64)
+	UpdateDraftAppointmentStatus(ctx context.Context, tgId int64, appointmentId int)
 	UpdateDraftAppointmentDate(ctx context.Context, tgId int64, timeStart, timeEnd, date string)
 	UpdateDraftAppointmentIntField(ctx context.Context, tgId int64, intVal int, fieldName string)
 	CreateDraftAppointment(ctx context.Context, tgId int64)
@@ -35,7 +35,7 @@ type appointmentService interface {
 
 	// schedules interfaces in service and gateway
 	GetSchedules(ctx context.Context, userEntity entity.User, doctorId *int) (schedulesMap []appointment.Schedule, err error)
-	GetFastAppointmentSchedules(ctx context.Context) (schedulesMap map[int][]appointment.Schedule)
+	GetFastAppointmentSchedules(ctx context.Context) (randomDoctors map[int]appointment.Schedule)
 	GetPatient(ctx context.Context, user entity.User) (result bool)
 	CreatePatient(ctx context.Context, user entity.User) (result bool)
 
@@ -84,4 +84,10 @@ type botService interface {
 	ConfigureConfirmAppointmentMessage(ctx context.Context, userEntity entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
 
 	ConfigureGetPhoneMessage(ctx context.Context, userEntity entity.User) (msgText string, keyboard tgbotapi.ReplyKeyboardMarkup)
+
+	ConfigureFastAppointmentMessage(
+		ctx context.Context,
+		userEntity entity.User,
+		schedulesMap map[int]appointment.Schedule,
+	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
 }

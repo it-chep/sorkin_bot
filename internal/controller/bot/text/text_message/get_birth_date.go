@@ -29,15 +29,14 @@ func (c TextBotMessage) getBirthDate(ctx context.Context, user entity.User, mess
 		return
 	}
 
-	messageText, _ := c.messageService.GetMessage(ctx, user, "ready to appointment")
+	messageText, keyboard := c.botService.ConfigureConfirmAppointmentMessage(ctx, user)
 	msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
+	msg.ReplyMarkup = keyboard
 	c.bot.SendMessage(msg, messageDTO)
-	c.machine.SetState(user, state_machine.GetBirthDate, state_machine.CreateAppointment)
 
-	if c.appointmentService.GetPatient(ctx, user) {
-	} else {
-		c.appointmentService.CreatePatient(ctx, user)
-	}
+	c.appointmentService.CreatePatient(ctx, user)
+
+	c.machine.SetState(user, *user.GetState(), state_machine.CreateAppointment)
 }
 
 func (c TextBotMessage) validateBirthDateMessage(birthDate string) (valid bool) {

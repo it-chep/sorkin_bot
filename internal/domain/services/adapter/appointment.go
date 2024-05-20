@@ -70,7 +70,3 @@ func (a *AppointmentServiceAdapter) DetailAppointment(ctx context.Context, user 
 func (a *AppointmentServiceAdapter) RescheduleAppointment(ctx context.Context, user entity.User, moved_to string, appointmentId int) (err error) {
 	return nil
 }
-
-func (a *AppointmentServiceAdapter) FastAppointment(ctx context.Context) (map[int][]appointment.Schedule, error) {
-	return make(map[int][]appointment.Schedule), nil
-}

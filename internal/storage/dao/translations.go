@@ -8,10 +8,11 @@ type TranslationDao struct {
 	EngText  string `db:"eng_text"`
 	PtBrText string `db:"pt_br_text"`
 	Uses     bool   `db:"uses"`
+	SourceId *int   `db:"source_id"`
 }
 
 func (dao *TranslationDao) ToDomain() appointment.TranslationEntity {
 	return appointment.NewTranslationEntity(
-		dao.Slug, dao.RuText, dao.EngText, dao.PtBrText, dao.Uses,
+		dao.Slug, dao.RuText, dao.EngText, dao.PtBrText, dao.Uses, dao.SourceId,
 	)
 }

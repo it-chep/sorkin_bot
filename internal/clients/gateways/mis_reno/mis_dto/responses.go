@@ -102,6 +102,7 @@ type MisSchedule struct {
 	CategoryId     int    `json:"category_id"`
 	Profession     string `json:"profession"`
 	Room           string `json:"room"`
+	User           string `json:"user"`
 	IsBusy         bool   `json:"is_busy"`
 	IsPast         bool   `json:"is_past"`
 }
@@ -114,7 +115,7 @@ type GetScheduleResponse struct {
 func (sch MisSchedule) ToDTO() dto.ScheduleDTO {
 	return dto.NewScheduleDTO(
 		sch.ClinicId, sch.DoctorId, sch.CategoryId, sch.Date, sch.TimeStart, sch.TimeStartShort, sch.TimeEnd,
-		sch.TimeEndShort, sch.Category, sch.Profession, sch.Room, sch.IsBusy, sch.IsPast,
+		sch.TimeEndShort, sch.Category, sch.Profession, sch.Room, sch.User, sch.IsBusy, sch.IsPast,
 	)
 }
 
@@ -143,10 +144,8 @@ func (schPer MisSchedulePeriod) ToDTO() {
 }
 
 type CreateAppointmentResponse struct {
-	Error int `json:"error"`
-	Data  struct {
-		ID *int `json:"id"`
-	} `json:"data"`
+	Error int    `json:"error"`
+	Data  string `json:"data"`
 }
 
 type ConfirmAndCancelAppointmentResponse struct {

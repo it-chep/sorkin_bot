@@ -9,8 +9,10 @@ import (
 
 func (as *AppointmentService) GetPatient(ctx context.Context, user entity.User) (result bool) {
 	op := "sorkin_bot.internal.domain.services.appointment.user.GetPatient"
-	res, err := as.misAdapter.GetPatientById(ctx, *user.GetPatientId())
-	as.logger.Info(fmt.Sprintf("%s: %s", op, res))
+	if user.GetPatientId() == nil {
+		return false
+	}
+	_, err := as.misAdapter.GetPatientById(ctx, *user.GetPatientId())
 	if err != nil {
 		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
 		return false

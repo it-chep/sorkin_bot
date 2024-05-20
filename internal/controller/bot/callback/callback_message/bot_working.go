@@ -82,6 +82,8 @@ func (c *CallbackBotMessage) Execute(ctx context.Context, messageDTO tg.MessageD
 		c.chooseSchedules(ctx, messageDTO, userEntity, callbackData)
 	case state_machine.CreateAppointment:
 		c.preCreateAppointment(ctx, messageDTO, userEntity, callbackData)
+	case state_machine.FastAppointment:
+		c.fastAppointment(ctx, messageDTO, userEntity, callbackData)
 	case state_machine.ChooseDoctor:
 		c.chooseDoctor(ctx, messageDTO, userEntity, callbackData)
 	case state_machine.DetailMyAppointment:

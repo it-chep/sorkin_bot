@@ -108,7 +108,7 @@ func (t TelegramWebhookController) ForkCommands(ctx context.Context, update tgbo
 		command.Execute(ctx, tgMessage)
 	case "fast_appointment":
 		// service по работе с fast appointment
-		command := fast_appointment.NewFastAppointmentBotCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.appointmentService, t.messageService)
+		command := fast_appointment.NewFastAppointmentBotCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.appointmentService, t.messageService, t.botService)
 		command.Execute(ctx, tgMessage)
 	case "appointment":
 		// service по работе с appointment

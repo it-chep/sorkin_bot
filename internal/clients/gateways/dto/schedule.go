@@ -14,12 +14,13 @@ type ScheduleDTO struct {
 	categoryId     int
 	profession     string
 	room           string
+	user           string
 	isBusy         bool
 	isPast         bool
 }
 
 func NewScheduleDTO(clinicId, doctorId, categoryId int,
-	date, timeStart, timeStartShort, timeEnd, timeEndShort, category, profession, room string,
+	date, timeStart, timeStartShort, timeEnd, timeEndShort, category, profession, room, user string,
 	isBusy, isPast bool,
 ) ScheduleDTO {
 	return ScheduleDTO{
@@ -34,6 +35,7 @@ func NewScheduleDTO(clinicId, doctorId, categoryId int,
 		categoryId:     categoryId,
 		profession:     profession,
 		room:           room,
+		user:           user,
 		isBusy:         isBusy,
 		isPast:         isPast,
 	}
@@ -42,6 +44,6 @@ func NewScheduleDTO(clinicId, doctorId, categoryId int,
 func (d ScheduleDTO) ToDomain() appointment.Schedule {
 	return appointment.NewSchedule(
 		d.clinicId, d.doctorId, d.categoryId, d.date, d.timeStart, d.timeStartShort, d.timeEnd,
-		d.timeEndShort, d.category, d.profession, d.room, d.isBusy, d.isPast,
+		d.timeEndShort, d.category, d.profession, d.room, d.user, d.isBusy, d.isPast,
 	)
 }

@@ -17,6 +17,6 @@ func NewUpdateAppointmentStatusUseCase(writeRepo writeRepo, logger *slog.Logger)
 	}
 }
 
-func (uc UpdateAppointmentStatusUseCase) Execute(ctx context.Context, tgId int64) error {
-	return uc.writeRepo.UpdateStatusDraftAppointment(ctx, tgId)
+func (uc UpdateAppointmentStatusUseCase) Execute(ctx context.Context, tgId int64, appointmentId int) error {
+	return uc.writeRepo.UpdateStatusDraftAppointment(ctx, tgId, appointmentId)
 }

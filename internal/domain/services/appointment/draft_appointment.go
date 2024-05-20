@@ -29,8 +29,8 @@ func (as *AppointmentService) CreateDraftAppointment(ctx context.Context, tgId i
 	}
 }
 
-func (as *AppointmentService) UpdateDraftAppointmentStatus(ctx context.Context, tgId int64) {
-	err := as.updateDraftAppointmentStatus.Execute(ctx, tgId)
+func (as *AppointmentService) UpdateDraftAppointmentStatus(ctx context.Context, tgId int64, appointmentId int) {
+	err := as.updateDraftAppointmentStatus.Execute(ctx, tgId, appointmentId)
 	if err != nil {
 		return
 	}

@@ -97,8 +97,7 @@ func (as *AppointmentService) CreateAppointment(ctx context.Context, user entity
 	elements := strings.Split(callbackData, "__")
 
 	doctorId, _ := strconv.Atoi(strings.Split(elements[0], "_")[1])
-	timeStart := strings.Split(elements[1], "_")[1]
-	timeEnd := strings.Split(elements[2], "_")[1]
+	timeStart, timeEnd := as.convertToValidDate(elements)
 
 	appointmentId, err := as.misAdapter.CreateAppointment(ctx, user, doctorId, timeStart, timeEnd)
 	if err != nil {
@@ -107,6 +106,32 @@ func (as *AppointmentService) CreateAppointment(ctx context.Context, user entity
 	}
 
 	return appointmentId
+}
+
+func (as *AppointmentService) convertToValidDate(elements []string) (timeStartValid, timeEndValid string) {
+	timeStartDirt := strings.Split(elements[1], "_")[1]
+	timeEndDirt := strings.Split(elements[2], "_")[1]
+
+	dateTimeStart := strings.Split(timeStartDirt, " ")
+	dateTimeEnd := strings.Split(timeEndDirt, " ")
+
+	date := strings.Split(dateTimeStart[0], "-")
+	day, _ := strconv.Atoi(date[2])
+	month, _ := strconv.Atoi(date[1])
+	year, _ := strconv.Atoi(date[0])
+
+	timeStart := strings.Split(dateTimeStart[1], ":")
+	hourStart, _ := strconv.Atoi(timeStart[0])
+	minuteStart, _ := strconv.Atoi(timeStart[1])
+
+	timeEnd := strings.Split(dateTimeEnd[1], ":")
+	hourEnd, _ := strconv.Atoi(timeEnd[0])
+	minuteEnd, _ := strconv.Atoi(timeEnd[1])
+
+	timeStartValid = fmt.Sprintf("%02d.%02d.%04d %02d:%02d", day, month, year, hourStart, minuteStart)
+	timeEndValid = fmt.Sprintf("%02d.%02d.%04d %02d:%02d", day, month, year, hourEnd, minuteEnd)
+
+	return timeStartValid, timeEndValid
 }
 
 func (as *AppointmentService) ConfirmAppointment(ctx context.Context, appointmentId int) (result bool) {
