@@ -32,25 +32,23 @@ func (c *CallbackBotMessage) confirmAppointment(ctx context.Context, messageDTO 
 	if err != nil {
 		return
 	}
-
 	if draftAppointmentEntity.GetDoctorId() == nil {
 		return
 	}
 
 	//todo херня, надо улучшить
-	appointmentString := fmt.Sprintf("doctorId_%d__timeStart_%s__timeEnd_%s",
-		*draftAppointmentEntity.GetDoctorId(),
-		*draftAppointmentEntity.GetTimeStart(),
-		*draftAppointmentEntity.GetTimeEnd(),
-	)
+	//appointmentString := fmt.Sprintf("doctorId_%d__timeStart_%s__timeEnd_%s",
+	//	*draftAppointmentEntity.GetDoctorId(),
+	//	*draftAppointmentEntity.GetTimeStart(),
+	//	*draftAppointmentEntity.GetTimeEnd(),
+	//)
 
-	appointmentId := c.appointmentService.CreateAppointment(ctx, userEntity, appointmentString)
-	if appointmentId != nil {
-		c.appointmentService.UpdateDraftAppointmentStatus(ctx, userEntity.GetTgId(), *appointmentId)
-	}
+	//appointmentId := c.appointmentService.CreateAppointment(ctx, userEntity, appointmentString)
+	//if appointmentId != nil {
+	//	c.appointmentService.UpdateDraftAppointmentStatus(ctx, userEntity.GetTgId(), *appointmentId)
+	//}
 
 	c.bot.RemoveMessage(c.tgUser.TgID, int(messageDTO.MessageID))
-	c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.Start)
 
 	msgText, _ := c.messageService.GetMessage(ctx, userEntity, "successfully created appointment")
 	msg := tgbotapi.NewMessage(c.tgUser.TgID, fmt.Sprintf(msgText, *draftAppointmentEntity.GetTimeStart()))

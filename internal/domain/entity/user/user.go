@@ -84,5 +84,9 @@ func (usr *User) SetLanguageCode(languageCode string) {
 	usr.languageCode = &languageCode
 }
 
+func (usr *User) SetBirthDate(birthDate string) {
+	usr.birthDate = &birthDate
+}
+
 type Appointment struct {
 }

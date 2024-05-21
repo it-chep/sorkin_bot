@@ -29,7 +29,18 @@ func (as *AppointmentService) CreatePatient(ctx context.Context, user entity.Use
 		BirthDate: *user.GetBirthDate(),
 		Phone:     *user.GetPhone(),
 	}
+
+	if as.GetPatient(ctx, user) {
+		return true
+	}
+
 	patientId, err := as.misAdapter.CreatePatient(ctx, userDTO)
+
+	if err != nil {
+		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
+		return false
+	}
+
 	err = as.userService.UpdatePatientId(ctx, user, patientId)
 
 	if err != nil {

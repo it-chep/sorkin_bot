@@ -46,7 +46,9 @@ func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.Mes
 	var msg tgbotapi.MessageConfig
 	// так как мы не изменяем бизнес сущность, а бот меняет состояние, то нахождение сущность в слое controllers некритично
 	userEntity, _ := c.userService.GetUser(ctx, c.tgUser.TgID)
-
+	if userEntity.GetState() == nil {
+		return
+	}
 	switch *userEntity.GetState() {
 	case "":
 		msgText, _ := c.messageService.GetMessage(ctx, userEntity, "wait speciality")

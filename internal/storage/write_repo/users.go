@@ -24,8 +24,8 @@ func NewUserStorage(client postgres.Client, logger *slog.Logger) UserStorage {
 func (ws UserStorage) CreateUser(ctx context.Context, user entity.User) (userID int64, err error) {
 	op := "internal/storage/write_repo/CreateUser"
 	q := `
-		insert into tg_users (tg_id, name, surname, username, registration_time) 
-		values ($1, $2, $3, $4, $5) returning id;
+		insert into tg_users (tg_id, name, surname, username, registration_time, last_state) 
+		values ($1, $2, $3, $4, $5, '') returning id;
 	`
 	currentTime := time.Now()
 	registrationTime := fmt.Sprintf("%02d.%02d.%d %02d:%02d", currentTime.Day(), currentTime.Month(), currentTime.Year(), currentTime.Hour(), currentTime.Minute())
@@ -77,6 +77,18 @@ func (ws UserStorage) UpdateUserVarcharField(ctx context.Context, user entity.Us
 	`, field)
 
 	_, err = ws.client.Exec(ctx, q, value, user.GetTgId())
+	if err != nil {
+		ws.logger.Error(fmt.Sprintf("%s op %s", err, op))
+		return err
+	}
+	return nil
+}
+
+func (ws UserStorage) UpdateUserFullName(ctx context.Context, user entity.User, name, surname, thirdName string) (err error) {
+	op := "internal.storage.write_repo.UpdateUserFullName"
+	q := `update tg_users set name = $1, surname = $2, third_name = $3 where tg_id = $4;`
+
+	_, err = ws.client.Exec(ctx, q, name, surname, thirdName, user.GetTgId())
 	if err != nil {
 		ws.logger.Error(fmt.Sprintf("%s op %s", err, op))
 		return err

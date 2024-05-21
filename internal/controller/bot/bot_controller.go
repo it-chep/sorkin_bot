@@ -161,10 +161,12 @@ func (t TelegramWebhookController) getUserFromWebhook(update tgbotapi.Update) tg
 		t.logger.Error(fmt.Sprintf("Error marshaling user to JSON: %s", err))
 		return tg.TgUserDTO{}
 	}
+
 	if err = json.Unmarshal(userJSON, &tgUser); err != nil {
 		t.logger.Error(fmt.Sprintf("Error decoding JSON: %s", err))
 		return tg.TgUserDTO{}
 	}
+
 	return tgUser
 }
 
@@ -184,9 +186,11 @@ func (t TelegramWebhookController) getMessageFromWebhook(update tgbotapi.Update)
 		t.logger.Error(fmt.Sprintf("Error marshaling user to JSON: %s", err))
 		return tg.MessageDTO{}
 	}
+
 	if err = json.Unmarshal(userJSON, &tgMessage); err != nil {
 		t.logger.Error(fmt.Sprintf("Error decoding JSON: %s", err))
 		return tg.MessageDTO{}
 	}
+
 	return tgMessage
 }

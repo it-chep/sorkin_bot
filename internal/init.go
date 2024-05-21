@@ -23,9 +23,9 @@ import (
 	"sorkin_bot/internal/domain/usecases/user/change_user_status"
 	"sorkin_bot/internal/domain/usecases/user/create_user"
 	"sorkin_bot/internal/domain/usecases/user/update_user_birth_date"
+	"sorkin_bot/internal/domain/usecases/user/update_user_full_name"
 	"sorkin_bot/internal/domain/usecases/user/update_user_patient_id"
 	"sorkin_bot/internal/domain/usecases/user/update_user_phone"
-	"sorkin_bot/internal/domain/usecases/user/update_user_third_name"
 	"sorkin_bot/internal/storage/read_repo"
 	"sorkin_bot/internal/storage/write_repo"
 	"sorkin_bot/internal/worker_pool"
@@ -52,7 +52,7 @@ type useCases struct {
 	saveMessageUseCase                    save_message_log.SaveMessageLogUseCase
 	updateUserPatientIdUseCase            update_user_patient_id.UpdateUserPatientIdUseCase
 	updateUserPhoneUseCase                update_user_phone.UpdateUserPhoneUseCase
-	updateUserThirdNameUseCase            update_user_third_name.UpdateUserThirdNameUseCase
+	updateUserThirdNameUseCase            update_user_full_name.UpdateUpdateFullNameUseCase
 	updateUserBirthDateUseCase            update_user_birth_date.UpdateUserBirthDateUseCase
 	createDraftAppointmentUseCase         create_draft_appointment.CreateDraftAppointmentUseCase
 	updateDraftAppointmentStatusUseCase   update_appointment_status.UpdateAppointmentStatusUseCase

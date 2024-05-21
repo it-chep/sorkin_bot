@@ -46,7 +46,7 @@ type userService interface {
 	UpdatePatientId(ctx context.Context, user entity.User, patientId *int) (err error)
 	UpdateBirthDate(ctx context.Context, dto tg.TgUserDTO, birthDate string) (user entity.User, err error)
 	UpdatePhone(ctx context.Context, dto tg.TgUserDTO, phone string) (user entity.User, err error)
-	UpdateThirdName(ctx context.Context, dto tg.TgUserDTO, thirdName string) (user entity.User, err error)
+	UpdateFullName(ctx context.Context, dto tg.TgUserDTO, fullName string) (user entity.User, err error)
 	GetUser(ctx context.Context, tgId int64) (user entity.User, err error)
 	ChangeLanguage(ctx context.Context, dto tg.TgUserDTO, languageCode string) (user entity.User, err error)
 	ChangeState(ctx context.Context, tgId int64, state string) (user entity.User, err error)

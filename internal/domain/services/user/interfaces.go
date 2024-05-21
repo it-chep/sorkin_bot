@@ -33,6 +33,6 @@ type UpdateUserBirthDateUseCase interface {
 	Execute(ctx context.Context, user entity.User, birthDate string) (err error)
 }
 
-type UpdateUserThirdNameUseCase interface {
-	Execute(ctx context.Context, user entity.User, thirdName string) (err error)
+type UpdateUserFullNameUseCase interface {
+	Execute(ctx context.Context, user entity.User, fullName string) (err error)
 }

@@ -14,7 +14,7 @@ func (c TextBotMessage) getName(ctx context.Context, user entity.User, messageDT
 	var msg tgbotapi.MessageConfig
 
 	if c.validateNameMessage(messageDTO.Text) {
-		_, err := c.userService.UpdateThirdName(ctx, c.tgUser, strings.Split(messageDTO.Text, " ")[2])
+		_, err := c.userService.UpdateFullName(ctx, c.tgUser, messageDTO.Text)
 		if err != nil {
 			msg = tgbotapi.NewMessage(c.tgUser.TgID, message.ServerError)
 			c.bot.SendMessage(msg, messageDTO)

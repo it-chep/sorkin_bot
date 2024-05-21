@@ -71,7 +71,7 @@ func (c *CallbackBotMessage) saveDraftAppointment(ctx context.Context, messageDT
 	fullTimeStart := scheduleItems[2]
 	fullTimeEnd := scheduleItems[3]
 	date := scheduleItems[4]
-
+	c.logger.Info("", scheduleItems)
 	c.appointmentService.UpdateDraftAppointmentDate(ctx, userEntity.GetTgId(), fullTimeStart, fullTimeEnd, date)
 
 	if userEntity.GetPhone() == nil {
@@ -88,4 +88,6 @@ func (c *CallbackBotMessage) saveDraftAppointment(ctx context.Context, messageDT
 	msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
 	msg.ReplyMarkup = keyboard
 	c.bot.SendMessage(msg, messageDTO)
+
+	c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.CreateAppointment)
 }

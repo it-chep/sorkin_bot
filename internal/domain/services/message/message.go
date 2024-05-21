@@ -44,6 +44,10 @@ func (ms MessageService) GetMessage(ctx context.Context, user userEntity.User, n
 }
 
 func (ms MessageService) translateMessage(user userEntity.User, message tgEntity.Message) (translatedMessage string, err error) {
+	if user.GetLanguageCode() == nil {
+		return message.GetEngText(), nil
+	}
+
 	languageCode := *user.GetLanguageCode()
 	switch languageCode {
 	case "RU":

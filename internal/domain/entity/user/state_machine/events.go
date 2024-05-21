@@ -101,3 +101,9 @@ func enterGetBirthDate(ctx context.Context, e *fsm.Event) {
 		changeState(ctx, e)
 	}
 }
+
+func enterStart(ctx context.Context, e *fsm.Event) {
+	if len(e.Args) > 1 {
+		changeState(ctx, e)
+	}
+}

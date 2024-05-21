@@ -18,7 +18,7 @@ type UserService struct {
 	updateUserPhoneUseCase     UpdateUserPhoneUseCase
 	updateUserPatientIdUseCase UpdateUserPatientIdUseCase
 	updateUserBirthDateUseCase UpdateUserBirthDateUseCase
-	updateUserThirdNameUseCase UpdateUserThirdNameUseCase
+	updateUserFullNameUseCase  UpdateUserFullNameUseCase
 }
 
 func NewUserService(
@@ -28,7 +28,7 @@ func NewUserService(
 	updateUserPhoneUseCase UpdateUserPhoneUseCase,
 	updateUserPatientIdUseCase UpdateUserPatientIdUseCase,
 	updateUserBirthDateUseCase UpdateUserBirthDateUseCase,
-	updateUserThirdNameUseCase UpdateUserThirdNameUseCase,
+	updateUserFullNameUseCase UpdateUserFullNameUseCase,
 	readRepo ReadUserStorage,
 	logger *slog.Logger,
 ) UserService {
@@ -41,7 +41,7 @@ func NewUserService(
 		updateUserPhoneUseCase:     updateUserPhoneUseCase,
 		updateUserPatientIdUseCase: updateUserPatientIdUseCase,
 		updateUserBirthDateUseCase: updateUserBirthDateUseCase,
-		updateUserThirdNameUseCase: updateUserThirdNameUseCase,
+		updateUserFullNameUseCase:  updateUserFullNameUseCase,
 	}
 }
 
@@ -70,7 +70,12 @@ func (u UserService) RegisterNewUser(ctx context.Context, dto tg.TgUserDTO) (use
 		return user, nil
 	}
 
-	newUser := dto.ToDomain()
+	newUser := dto.ToDomain(
+		[]entity.UserOpt{
+			entity.WithUsrUsername(&dto.UserName),
+			entity.WithUsrLastName(&dto.LastName),
+		},
+	)
 
 	u.logger.Info("user was not found, trying to register new user", user, op)
 
@@ -147,7 +152,7 @@ func (u UserService) UpdatePhone(ctx context.Context, dto tg.TgUserDTO, phone st
 	return user, nil
 }
 
-func (u UserService) UpdateThirdName(ctx context.Context, dto tg.TgUserDTO, thirdName string) (user entity.User, err error) {
+func (u UserService) UpdateFullName(ctx context.Context, dto tg.TgUserDTO, fullName string) (user entity.User, err error) {
 	op := "sorkin_bot.internal.domain.services.user.users.UpdateThirdName"
 	user, err = u.readRepo.GetUserByTgID(ctx, dto.TgID)
 
@@ -156,7 +161,7 @@ func (u UserService) UpdateThirdName(ctx context.Context, dto tg.TgUserDTO, thir
 		return entity.User{}, err
 	}
 
-	err = u.updateUserThirdNameUseCase.Execute(ctx, user, thirdName)
+	err = u.updateUserFullNameUseCase.Execute(ctx, user, fullName)
 	if err != nil {
 		u.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
 		return entity.User{}, err

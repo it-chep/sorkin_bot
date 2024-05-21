@@ -110,9 +110,10 @@ type TgUserDTO struct {
 	SupportsInlineQueries bool   `json:"supports_inline_queries,omitempty"`
 }
 
-func (tg *TgUserDTO) ToDomain() entity.User {
+func (tg *TgUserDTO) ToDomain(opts []entity.UserOpt) entity.User {
 	return *entity.NewUser(
 		tg.TgID,
 		tg.FirstName,
+		opts...,
 	)
 }

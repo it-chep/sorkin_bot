@@ -22,6 +22,7 @@ func (c TextBotMessage) getBirthDate(ctx context.Context, user entity.User, mess
 			c.bot.SendMessage(msg, messageDTO)
 			return
 		}
+		user.SetBirthDate(messageDTO.Text)
 	} else {
 		messageText, _ := c.messageService.GetMessage(ctx, user, "invalid birth date")
 		msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)

@@ -24,9 +24,9 @@ import (
 	"sorkin_bot/internal/domain/usecases/user/change_user_status"
 	"sorkin_bot/internal/domain/usecases/user/create_user"
 	"sorkin_bot/internal/domain/usecases/user/update_user_birth_date"
+	"sorkin_bot/internal/domain/usecases/user/update_user_full_name"
 	"sorkin_bot/internal/domain/usecases/user/update_user_patient_id"
 	"sorkin_bot/internal/domain/usecases/user/update_user_phone"
-	"sorkin_bot/internal/domain/usecases/user/update_user_third_name"
 	"sorkin_bot/internal/storage/read_repo"
 	"sorkin_bot/internal/storage/write_repo"
 	"sorkin_bot/internal/worker_pool"
@@ -97,7 +97,7 @@ func (app *App) InitUseCases(ctx context.Context) *App {
 	app.useCases.updateUserPhoneUseCase = update_user_phone.NewUpdateUserPhoneUseCase(app.storages.writeUserStorage, app.logger)
 	app.useCases.updateUserPatientIdUseCase = update_user_patient_id.NewUpdateUserPatientIdUseCase(app.storages.writeUserStorage, app.logger)
 	app.useCases.updateUserBirthDateUseCase = update_user_birth_date.NewUpdateUserBirthDateUseCase(app.storages.writeUserStorage, app.logger)
-	app.useCases.updateUserThirdNameUseCase = update_user_third_name.NewUpdateUserThirdNameUseCase(app.storages.writeUserStorage, app.logger)
+	app.useCases.updateUserThirdNameUseCase = update_user_full_name.NewUpdateFullNameUseCase(app.storages.writeUserStorage, app.logger)
 	app.useCases.createDraftAppointmentUseCase = create_draft_appointment.NewCreateDraftAppointmentUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
 	app.useCases.updateDraftAppointmentStatusUseCase = update_appointment_status.NewUpdateAppointmentStatusUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
 	app.useCases.updateDraftAppointmentIntFieldUseCase = update_int_appointment_field.NewUpdateIntAppointmentFieldUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
