@@ -24,7 +24,7 @@ func (as *AppointmentService) GetTranslatedSpecialities(
 ) (translatedSpecialities map[int]string, unTranslatedSpecialities []string, err error) {
 	var translatedSpeciality string
 	op := "sorkin_bot.internal.domain.services.appointment.speciality.GetTranslatedSpecialities"
-	translations, err := as.readMessageRepo.GetTranslationsBySlug(ctx, "doctor")
+	translations, err := as.readMessageRepo.GetTranslationsBySlugKeySlug(ctx, "Врач")
 	translatedSpecialities = make(map[int]string)
 	unTranslatedSpecialities = make([]string, 0)
 
@@ -41,14 +41,7 @@ func (as *AppointmentService) GetTranslatedSpecialities(
 			unTranslatedSpecialities = append(unTranslatedSpecialities, speciality.GetDoctorName())
 		}
 
-		switch langCode {
-		case "RU":
-			translatedSpeciality = translationEntity.GetRuText()
-		case "EN":
-			translatedSpeciality = translationEntity.GetEngText()
-		case "PT":
-			translatedSpeciality = translationEntity.GetPtBrText()
-		}
+		translatedSpeciality = as.GetSpecialityTranslate(langCode, translationEntity)
 
 		if translatedSpeciality == "" || !translations[speciality.GetDoctorName()].GetUses() {
 			continue
@@ -68,14 +61,7 @@ func (as *AppointmentService) TranslateSpecialityByID(ctx context.Context, user 
 	}
 
 	langCode := *user.GetLanguageCode()
-	switch langCode {
-	case "RU":
-		translatedSpeciality = translationEntity.GetRuText()
-	case "EN":
-		translatedSpeciality = translationEntity.GetEngText()
-	case "PT":
-		translatedSpeciality = translationEntity.GetPtBrText()
-	}
+	translatedSpeciality = as.GetSpecialityTranslate(langCode, translationEntity)
 
 	return translatedSpeciality, nil
 }
@@ -85,20 +71,13 @@ func (as *AppointmentService) TranslateManyByIds(ctx context.Context, user entit
 	if err != nil {
 		return nil, err
 	}
-	var translatedSpeciality string
+
 	translatedSpecialities = make(map[int]string)
 
 	for _, translationEntity := range translations {
 
 		langCode := *user.GetLanguageCode()
-		switch langCode {
-		case "RU":
-			translatedSpeciality = translationEntity.GetRuText()
-		case "EN":
-			translatedSpeciality = translationEntity.GetEngText()
-		case "PT":
-			translatedSpeciality = translationEntity.GetPtBrText()
-		}
+		translatedSpeciality := as.GetSpecialityTranslate(langCode, translationEntity)
 
 		if translationEntity.GetSourceId() != nil {
 			translatedSpecialities[*translationEntity.GetSourceId()] = translatedSpeciality
@@ -106,4 +85,18 @@ func (as *AppointmentService) TranslateManyByIds(ctx context.Context, user entit
 
 	}
 	return translatedSpecialities, err
+}
+
+func (as *AppointmentService) GetSpecialityTranslate(langCode string, translationEntity appointment.TranslationEntity) (translatedSpeciality string) {
+
+	switch langCode {
+	case "RU":
+		translatedSpeciality = translationEntity.GetRuText()
+	case "EN":
+		translatedSpeciality = translationEntity.GetEngText()
+	case "PT":
+		translatedSpeciality = translationEntity.GetPtBrText()
+	}
+
+	return translatedSpeciality
 }

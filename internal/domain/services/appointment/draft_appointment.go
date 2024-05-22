@@ -56,3 +56,11 @@ func (as *AppointmentService) CleanDraftAppointment(ctx context.Context, tgId in
 		return
 	}
 }
+
+func (as *AppointmentService) FastUpdateDraftAppointment(ctx context.Context, tgId int64, doctorId int, timeStart, timeEnd string) {
+	draftAppointment := appointment.NewDraftAppointment(nil, &doctorId, &tgId, &timeStart, &timeEnd, nil)
+	err := as.fastUpdateDraftAppointmentUseCase.Execute(ctx, tgId, draftAppointment)
+	if err != nil {
+		return
+	}
+}

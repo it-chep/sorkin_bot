@@ -29,3 +29,23 @@ func (mg *MisRenoGateway) GetDoctors(ctx context.Context, specialityId int) (doc
 
 	return doctors, nil
 }
+
+func (mg *MisRenoGateway) GetDoctorInfo(ctx context.Context, doctorId int) (doctor dto.DoctorDTO, err error) {
+	op := "sorkin_bot.internal.domain.services.appointment.doctors.GetDoctorInfo"
+	var response mis_dto.GetUsersResponse
+	var request = mis_dto.GetUserRequest{
+		DoctorId: doctorId,
+	}
+
+	responseBody := mg.sendToMIS(ctx, mis_dto.GetUsersMethod, JsonMarshaller(request, op, mg.logger))
+
+	err = json.Unmarshal(responseBody, &response)
+	if err != nil {
+		mg.logger.Info(fmt.Sprintf("error while unmarshalling json %s \nplace: %s", err, op))
+		return doctor, err
+	}
+
+	//response.Data
+
+	return doctor, nil
+}

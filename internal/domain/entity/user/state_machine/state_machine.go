@@ -32,6 +32,8 @@ const (
 	DetailMyAppointment = "detailMyAppointment"
 	CancelAppointment   = "cancelAppointment"
 	ChooseAppointment   = "chooseAppointment"
+	MoveAppointment     = "moveAppointment"
+	GetDoctorInfo       = "getDoctorInfo"
 )
 
 func NewUserStateMachine(userService user.UserService) *UserStateMachine {
@@ -49,12 +51,14 @@ func NewUserStateMachine(userService user.UserService) *UserStateMachine {
 			{Name: GetPhone, Src: []string{ChooseSchedule}, Dst: GetPhone},
 			{Name: GetName, Src: []string{GetPhone}, Dst: GetName},
 			{Name: GetBirthDate, Src: []string{GetName}, Dst: GetBirthDate},
-			{Name: CreateAppointment, Src: []string{GetName, ChooseSchedule}, Dst: CreateAppointment},
+			{Name: CreateAppointment, Src: []string{GetName, ChooseSchedule, FastAppointment}, Dst: CreateAppointment},
 			{Name: MyAppointments, Src: []string{ChooseSpeciality}, Dst: MyAppointments},
-			{Name: DetailMyAppointment, Src: []string{MyAppointments}, Dst: DetailMyAppointment},
+			{Name: DetailMyAppointment, Src: []string{ChooseAppointment}, Dst: DetailMyAppointment},
 			{Name: ChooseAppointment, Src: []string{Start}, Dst: ChooseAppointment},
 			{Name: CancelAppointment, Src: []string{ChooseAppointment}, Dst: CancelAppointment},
-			{Name: Start, Src: []string{Start, CreateAppointment, ChooseAppointment, MyAppointments}, Dst: Start},
+			{Name: Start, Src: []string{Start, CreateAppointment, ChooseAppointment, MyAppointments, DetailMyAppointment, MoveAppointment}, Dst: Start},
+			{Name: MoveAppointment, Src: []string{DetailMyAppointment}, Dst: MoveAppointment},
+			{Name: GetDoctorInfo, Src: []string{GetDoctorInfo, CreateAppointment, DetailMyAppointment, ChooseDoctor, ChooseSchedule}, Dst: GetDoctorInfo},
 		},
 		fsm.Callbacks{
 			fmt.Sprintf("enter_%s", ChooseLanguage):      enterChooseLanguage,
@@ -71,9 +75,10 @@ func NewUserStateMachine(userService user.UserService) *UserStateMachine {
 			fmt.Sprintf("enter_%s", CancelAppointment):   enterCancelAppointment,
 			fmt.Sprintf("enter_%s", ChooseAppointment):   enterChooseAppointment,
 			fmt.Sprintf("enter_%s", Start):               enterStart,
+			fmt.Sprintf("enter_%s", MoveAppointment):     enterMoveAppointment,
+			fmt.Sprintf("enter_%s", GetDoctorInfo):       enterGetDoctorInfo,
 		},
 	)
-
 	return machine
 }
 

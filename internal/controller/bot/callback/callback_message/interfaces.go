@@ -20,6 +20,7 @@ type draftAppointment interface {
 	UpdateDraftAppointmentDate(ctx context.Context, tgId int64, timeStart, timeEnd, date string)
 	UpdateDraftAppointmentIntField(ctx context.Context, tgId int64, intVal int, fieldName string)
 	CleanDraftAppointment(ctx context.Context, tgId int64)
+	FastUpdateDraftAppointment(ctx context.Context, tgId int64, doctorId int, timeStart, timeEnd string)
 }
 
 type appointmentService interface {
@@ -74,7 +75,7 @@ type botService interface {
 		offset int,
 	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
 
-	ConfigureConfirmAppointmentMessage(ctx context.Context, userEntity entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
+	ConfigureConfirmAppointmentMessage(ctx context.Context, userEntity entity.User, doctorId int) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
 
 	ConfigureGetPhoneMessage(ctx context.Context, userEntity entity.User) (msgText string, keyboard tgbotapi.ReplyKeyboardMarkup)
 }

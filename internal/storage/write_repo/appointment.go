@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"sorkin_bot/internal/domain/entity/appointment"
 	"sorkin_bot/pkg/client/postgres"
 )
 
@@ -71,6 +72,31 @@ func (rs AppointmentStorage) UpdateStatusDraftAppointment(ctx context.Context, t
 	`
 
 	_, err = rs.client.Exec(ctx, q, appointmentId, tgId)
+	if err != nil {
+		rs.logger.Error(fmt.Sprintf("Error while executing row: %s, op: %s", err, op))
+		return err
+	}
+
+	return nil
+}
+
+func (rs AppointmentStorage) FastUpdateDraftAppointment(
+	ctx context.Context, tgId int64,
+	draftAppointment appointment.DraftAppointment,
+) (err error) {
+	op := "internal/storage/read_repo/appointment/UpdateStatusDraftAppointment"
+	q := `
+		update appointment set doctor_id = $1, time_start = $2, time_end = $3 where tg_id = $4 and draft = true;
+	`
+
+	_, err = rs.client.Exec(
+		ctx, q,
+		draftAppointment.GetDoctorId(),
+		draftAppointment.GetTimeStart(),
+		draftAppointment.GetTimeEnd(),
+		tgId,
+	)
+
 	if err != nil {
 		rs.logger.Error(fmt.Sprintf("Error while executing row: %s, op: %s", err, op))
 		return err

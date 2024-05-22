@@ -13,16 +13,17 @@ import (
 )
 
 type AppointmentService struct {
-	misAdapter                     *adapter.AppointmentServiceAdapter
-	userService                    user.UserService
-	logger                         *slog.Logger
-	readMessageRepo                ReadMessageRepo
-	readDraftAppointmentRepo       ReadDraftAppointmentRepo
-	createDraftAppointmentUseCase  CreateDraftAppointmentUseCase
-	updateDraftAppointmentDate     UpdateDraftAppointmentDate
-	updateDraftAppointmentStatus   UpdateDraftAppointmentStatus
-	updateDraftAppointmentIntField UpdateDraftAppointmentIntField
-	cleanDraftAppointmentUseCase   CleanDraftAppointmentUseCase
+	misAdapter                        *adapter.AppointmentServiceAdapter
+	userService                       user.UserService
+	logger                            *slog.Logger
+	readMessageRepo                   ReadMessageRepo
+	readDraftAppointmentRepo          ReadDraftAppointmentRepo
+	createDraftAppointmentUseCase     CreateDraftAppointmentUseCase
+	updateDraftAppointmentDate        UpdateDraftAppointmentDate
+	updateDraftAppointmentStatus      UpdateDraftAppointmentStatus
+	updateDraftAppointmentIntField    UpdateDraftAppointmentIntField
+	cleanDraftAppointmentUseCase      CleanDraftAppointmentUseCase
+	fastUpdateDraftAppointmentUseCase FastUpdateDraftAppointmentUseCase
 }
 
 func NewAppointmentService(
@@ -36,24 +37,25 @@ func NewAppointmentService(
 	updateDraftAppointmentStatus UpdateDraftAppointmentStatus,
 	updateDraftAppointmentIntField UpdateDraftAppointmentIntField,
 	cleanDraftAppointmentUseCase CleanDraftAppointmentUseCase,
+	fastUpdateDraftAppointmentUseCase FastUpdateDraftAppointmentUseCase,
 ) AppointmentService {
 	return AppointmentService{
-		misAdapter:                     misAdapter,
-		userService:                    userService,
-		readMessageRepo:                readMessageRepo,
-		readDraftAppointmentRepo:       readDraftAppointmentRepo,
-		logger:                         logger,
-		createDraftAppointmentUseCase:  createDraftAppointmentUseCase,
-		updateDraftAppointmentDate:     updateDraftAppointmentDate,
-		updateDraftAppointmentStatus:   updateDraftAppointmentStatus,
-		updateDraftAppointmentIntField: updateDraftAppointmentIntField,
-		cleanDraftAppointmentUseCase:   cleanDraftAppointmentUseCase,
+		misAdapter:                        misAdapter,
+		userService:                       userService,
+		readMessageRepo:                   readMessageRepo,
+		readDraftAppointmentRepo:          readDraftAppointmentRepo,
+		logger:                            logger,
+		createDraftAppointmentUseCase:     createDraftAppointmentUseCase,
+		updateDraftAppointmentDate:        updateDraftAppointmentDate,
+		updateDraftAppointmentStatus:      updateDraftAppointmentStatus,
+		updateDraftAppointmentIntField:    updateDraftAppointmentIntField,
+		cleanDraftAppointmentUseCase:      cleanDraftAppointmentUseCase,
+		fastUpdateDraftAppointmentUseCase: fastUpdateDraftAppointmentUseCase,
 	}
 }
 
 func (as *AppointmentService) GetAppointments(ctx context.Context, user entity.User) (appointments []appointment.Appointment) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.GetAppointments"
-	var err error
 	if user.GetPatientId() == nil {
 		return
 	}
@@ -62,11 +64,6 @@ func (as *AppointmentService) GetAppointments(ctx context.Context, user entity.U
 
 	for _, appointmentEntity := range appointments {
 		as.logger.Info(fmt.Sprintf("%d %s %s", appointmentEntity.GetAppointmentId(), appointmentEntity.GetTimeStart(), op))
-	}
-
-	if err != nil {
-		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
-		return
 	}
 
 	return appointments

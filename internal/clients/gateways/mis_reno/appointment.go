@@ -192,7 +192,7 @@ func (mg *MisRenoGateway) CancelAppointment(ctx context.Context, movedTo string,
 	if err != nil {
 		return false, err
 	}
-	return response.Data.True, err
+	return true, err
 }
 
 func (mg *MisRenoGateway) ConfirmAppointment(ctx context.Context, appointmentId int) (result bool, err error) {
@@ -209,14 +209,14 @@ func (mg *MisRenoGateway) ConfirmAppointment(ctx context.Context, appointmentId 
 		return false, err
 	}
 
-	return response.Data.True, nil
+	return true, nil
 }
 
 func (mg *MisRenoGateway) MyAppointments(ctx context.Context, patientId int, registrationTime string) (appointments []dto.AppointmentDTO, err error) {
 	// Полуаем записи по пользователю и отдаем ему только даты записей
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.MyAppointments"
 	var response mis_dto.GetAppointmentsResponse
-	currentTime := time.Now()
+	currentTime := time.Now().UTC()
 
 	// todo рассматриваем только записи из бота, то есть человек будет получать только доступ к тем записям, которые были созданы им из бота
 	var request = mis_dto.GetAppointmentsRequest{
@@ -232,6 +232,7 @@ func (mg *MisRenoGateway) MyAppointments(ctx context.Context, patientId int, reg
 	if err != nil {
 		return appointments, err
 	}
+	mg.logger.Info("response: ", string(responseBody), request)
 
 	for _, appointment := range response.Data {
 		appointments = append(appointments, appointment.ToDTO())

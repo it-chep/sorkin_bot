@@ -68,10 +68,10 @@ func (c *CallbackBotMessage) moreLessSchedules(ctx context.Context, messageDTO t
 
 func (c *CallbackBotMessage) saveDraftAppointment(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, callbackData string) {
 	scheduleItems := strings.Split(callbackData, "_")
+	doctorId, _ := strconv.Atoi(scheduleItems[1])
 	fullTimeStart := scheduleItems[2]
 	fullTimeEnd := scheduleItems[3]
 	date := scheduleItems[4]
-	c.logger.Info("", scheduleItems)
 	c.appointmentService.UpdateDraftAppointmentDate(ctx, userEntity.GetTgId(), fullTimeStart, fullTimeEnd, date)
 
 	if userEntity.GetPhone() == nil {
@@ -84,7 +84,7 @@ func (c *CallbackBotMessage) saveDraftAppointment(ctx context.Context, messageDT
 		return
 	}
 
-	msgText, keyboard := c.botService.ConfigureConfirmAppointmentMessage(ctx, userEntity)
+	msgText, keyboard := c.botService.ConfigureConfirmAppointmentMessage(ctx, userEntity, doctorId)
 	msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
 	msg.ReplyMarkup = keyboard
 	c.bot.SendMessage(msg, messageDTO)

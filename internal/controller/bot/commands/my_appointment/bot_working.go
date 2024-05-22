@@ -38,18 +38,30 @@ func (c MyAppointmentsCommand) Execute(ctx context.Context, messageDTO tg.Messag
 	msg := tgbotapi.NewMessage(c.tgUser.TgID, "Выберите запись")
 
 	appointments := c.appointmentService.GetAppointments(ctx, userEntity)
+
+	if len(appointments) == 0 {
+		c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.Start)
+		msgText, _ := c.messageService.GetMessage(ctx, userEntity, "Start")
+		msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
+		c.bot.SendMessage(msg, messageDTO)
+		return
+	}
+
 	for _, appointmentEntity := range appointments {
+		appointmentEntity.GetTimeStart()
+		buttonDoc, _ := c.messageService.GetMessage(ctx, userEntity, "doc information button")
+		docBtn := tgbotapi.NewInlineKeyboardButtonData(buttonDoc, fmt.Sprintf("doc_info_%d", appointmentEntity.GetDoctorId()))
+
 		btn := tgbotapi.NewInlineKeyboardButtonData(
-			fmt.Sprintf("%s - %s", appointmentEntity.GetTimeStart(), appointmentEntity.GetTimeEnd()),
-			fmt.Sprintf("%d", appointmentEntity.GetAppointmentId()),
+			fmt.Sprintf("%s: %s - %s", appointmentEntity.GetDate(), appointmentEntity.GetTimeStartShort(), appointmentEntity.GetTimeEndShort()),
+			fmt.Sprintf("appointmentId_%d", appointmentEntity.GetAppointmentId()),
 		)
-		row := tgbotapi.NewInlineKeyboardRow(btn)
+
+		row := tgbotapi.NewInlineKeyboardRow(docBtn, btn)
 		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 	}
 
 	msg.ReplyMarkup = keyboard
-
 	c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.ChooseAppointment)
-
 	c.bot.SendMessage(msg, messageDTO)
 }

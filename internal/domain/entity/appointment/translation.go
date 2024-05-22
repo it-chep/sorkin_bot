@@ -1,22 +1,24 @@
 package appointment
 
 type TranslationEntity struct {
-	slug     string
-	ruText   string
-	engText  string
-	ptBrText string
-	uses     bool
-	sourceId *int
+	slug       string
+	ruText     string
+	engText    string
+	ptBrText   string
+	uses       bool
+	sourceId   *int
+	profession string
 }
 
-func NewTranslationEntity(slug, ruText, engText, ptBrText string, uses bool, sourceId *int) TranslationEntity {
+func NewTranslationEntity(slug, profession, ruText, engText, ptBrText string, uses bool, sourceId *int) TranslationEntity {
 	return TranslationEntity{
-		slug:     slug,
-		ruText:   ruText,
-		engText:  engText,
-		ptBrText: ptBrText,
-		uses:     uses,
-		sourceId: sourceId,
+		slug:       slug,
+		ruText:     ruText,
+		engText:    engText,
+		ptBrText:   ptBrText,
+		uses:       uses,
+		sourceId:   sourceId,
+		profession: profession,
 	}
 }
 
@@ -38,4 +40,8 @@ func (te TranslationEntity) GetUses() bool {
 
 func (te TranslationEntity) GetSourceId() *int {
 	return te.sourceId
+}
+
+func (te TranslationEntity) GetProfession() string {
+	return te.profession
 }

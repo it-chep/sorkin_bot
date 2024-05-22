@@ -107,3 +107,15 @@ func enterStart(ctx context.Context, e *fsm.Event) {
 		changeState(ctx, e)
 	}
 }
+
+func enterMoveAppointment(ctx context.Context, e *fsm.Event) {
+	if len(e.Args) > 1 {
+		changeState(ctx, e)
+	}
+}
+
+func enterGetDoctorInfo(ctx context.Context, e *fsm.Event) {
+	if len(e.Args) > 1 {
+		changeState(ctx, e)
+	}
+}

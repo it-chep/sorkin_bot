@@ -15,6 +15,7 @@ import (
 	"sorkin_bot/internal/domain/services/user"
 	"sorkin_bot/internal/domain/usecases/appointment/clean_draft_appointment"
 	"sorkin_bot/internal/domain/usecases/appointment/create_draft_appointment"
+	"sorkin_bot/internal/domain/usecases/appointment/fast_update_draft_appointment_use_case"
 	"sorkin_bot/internal/domain/usecases/appointment/update_appointment_date"
 	"sorkin_bot/internal/domain/usecases/appointment/update_appointment_status"
 	"sorkin_bot/internal/domain/usecases/appointment/update_int_appointment_field"
@@ -59,6 +60,7 @@ type useCases struct {
 	updateDraftAppointmentIntFieldUseCase update_int_appointment_field.UpdateIntAppointmentFieldUseCase
 	updateDraftAppointmentDateUseCase     update_appointment_date.UpdateAppointmentDate
 	cleanDraftAppointmentUseCase          clean_draft_appointment.CleanDraftAppointmentUseCase
+	fastUpdateDraftAppointmentUseCase     fast_update_draft_appointment_use_case.FastUpdateDraftAppointmentUseCase
 }
 
 type storages struct {

@@ -1,5 +1,7 @@
 package appointment
 
+import "strings"
+
 type Appointment struct {
 	id               int
 	timeStart        string
@@ -57,12 +59,31 @@ func (a Appointment) GetAppointmentId() int {
 	return a.id
 }
 
+func (a Appointment) GetDoctorId() int {
+	return a.doctorId
+}
+
+func (a Appointment) GetDate() string {
+	date := strings.Split(a.timeEnd, " ")[0]
+	return date
+}
+
 func (a Appointment) GetTimeStart() string {
 	return a.timeStart
 }
 
+func (a Appointment) GetTimeStartShort() string {
+	timeShort := strings.Split(a.timeStart, " ")[1]
+	return timeShort
+}
+
 func (a Appointment) GetTimeEnd() string {
 	return a.timeEnd
+}
+
+func (a Appointment) GetTimeEndShort() string {
+	timeShort := strings.Split(a.timeEnd, " ")[1]
+	return timeShort
 }
 
 type DraftAppointment struct {

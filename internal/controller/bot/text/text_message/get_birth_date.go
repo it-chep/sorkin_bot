@@ -29,8 +29,12 @@ func (c TextBotMessage) getBirthDate(ctx context.Context, user entity.User, mess
 		c.bot.SendMessage(msg, messageDTO)
 		return
 	}
+	draftAppointment, err := c.appointmentService.GetDraftAppointment(ctx, c.tgUser.TgID)
+	if err != nil {
+		return
+	}
 
-	messageText, keyboard := c.botService.ConfigureConfirmAppointmentMessage(ctx, user)
+	messageText, keyboard := c.botService.ConfigureConfirmAppointmentMessage(ctx, user, *draftAppointment.GetDoctorId())
 	msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
 	msg.ReplyMarkup = keyboard
 	c.bot.SendMessage(msg, messageDTO)

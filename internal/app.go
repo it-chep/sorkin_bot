@@ -16,6 +16,7 @@ import (
 	"sorkin_bot/internal/domain/services/user"
 	"sorkin_bot/internal/domain/usecases/appointment/clean_draft_appointment"
 	"sorkin_bot/internal/domain/usecases/appointment/create_draft_appointment"
+	"sorkin_bot/internal/domain/usecases/appointment/fast_update_draft_appointment_use_case"
 	"sorkin_bot/internal/domain/usecases/appointment/update_appointment_date"
 	"sorkin_bot/internal/domain/usecases/appointment/update_appointment_status"
 	"sorkin_bot/internal/domain/usecases/appointment/update_int_appointment_field"
@@ -103,6 +104,7 @@ func (app *App) InitUseCases(ctx context.Context) *App {
 	app.useCases.updateDraftAppointmentIntFieldUseCase = update_int_appointment_field.NewUpdateIntAppointmentFieldUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
 	app.useCases.updateDraftAppointmentDateUseCase = update_appointment_date.NewUpdateAppointmentDate(app.storages.writeDraftAppointmentStorage, app.logger)
 	app.useCases.cleanDraftAppointmentUseCase = clean_draft_appointment.NewCleanDraftAppointmentUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
+	app.useCases.fastUpdateDraftAppointmentUseCase = fast_update_draft_appointment_use_case.NewFastUpdateDraftAppointmentUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
 	return app
 }
 
@@ -130,6 +132,7 @@ func (app *App) InitServices(ctx context.Context) *App {
 		app.useCases.updateDraftAppointmentStatusUseCase,
 		app.useCases.updateDraftAppointmentIntFieldUseCase,
 		app.useCases.cleanDraftAppointmentUseCase,
+		app.useCases.fastUpdateDraftAppointmentUseCase,
 	)
 	app.services.messageService = message.NewMessageService(
 		app.useCases.saveMessageUseCase,
@@ -140,6 +143,8 @@ func (app *App) InitServices(ctx context.Context) *App {
 	app.services.botService = bot.NewBotService(
 		app.logger,
 		app.services.messageService,
+		&app.services.appointmentService,
+		app.storages.readTranslationStorage,
 	)
 
 	return app

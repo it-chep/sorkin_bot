@@ -32,6 +32,7 @@ create table if not exists translations
     id_in_source_system bigint unique,
     uses                boolean default false,
     slug                text unique,
+    profession          text,
     ru_text             text,
     eng_text            text,
     pt_Br_text          text

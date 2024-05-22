@@ -35,7 +35,7 @@ func (c TextBotMessage) getName(ctx context.Context, user entity.User, messageDT
 func (c TextBotMessage) validateNameMessage(name string) (valid bool) {
 	nameItems := strings.Split(name, " ")
 
-	validNameItemsLength := len(nameItems) == 3
+	validNameItemsLength := len(nameItems) == 2
 	if validNameItemsLength {
 		return true
 	}

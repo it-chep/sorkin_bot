@@ -23,10 +23,10 @@ func NewTranslationRepo(client postgres.Client, logger *slog.Logger) Translation
 	}
 }
 
-func (tr TranslationStorage) GetTranslationsBySlug(ctx context.Context, slug string) (translations map[string]appointment.TranslationEntity, err error) {
+func (tr TranslationStorage) GetTranslationsBySlugKeySlug(ctx context.Context, slug string) (translations map[string]appointment.TranslationEntity, err error) {
 	var translationsDao []dao.TranslationDao
-	op := "sorkin_bot.internal.storage.read_repo.translations.GetTranslationsBySlug"
-	q := `select slug, ru_text, eng_text, pt_br_text, uses from translations where slug like  $1 || '%';`
+	op := "sorkin_bot.internal.storage.read_repo.translations.GetTranslationsBySlugKeySlug"
+	q := `select slug, ru_text, eng_text, pt_br_text, uses, profession from translations where slug like  $1 || '%' and uses = true;`
 
 	err = pgxscan.Select(ctx, tr.client, &translationsDao, q, slug)
 	if err != nil {
@@ -36,7 +36,25 @@ func (tr TranslationStorage) GetTranslationsBySlug(ctx context.Context, slug str
 
 	translations = make(map[string]appointment.TranslationEntity)
 	for _, translation := range translationsDao {
-		translations[translation.RuText] = translation.ToDomain()
+		translations[translation.Slug] = translation.ToDomain()
+	}
+	return translations, nil
+}
+
+func (tr TranslationStorage) GetTranslationsBySlugKeyProfession(ctx context.Context, slug string) (translations map[string]appointment.TranslationEntity, err error) {
+	var translationsDao []dao.TranslationDao
+	op := "sorkin_bot.internal.storage.read_repo.translations.GetTranslationsBySlugKeySlug"
+	q := `select slug, ru_text, eng_text, pt_br_text, uses, profession from translations where slug like  $1 || '%' and uses = true;`
+
+	err = pgxscan.Select(ctx, tr.client, &translationsDao, q, slug)
+	if err != nil {
+		tr.logger.Error(fmt.Sprintf("Error while scanning row: %s op: %s", err, op))
+		return translations, err
+	}
+
+	translations = make(map[string]appointment.TranslationEntity)
+	for _, translation := range translationsDao {
+		translations[translation.Profession] = translation.ToDomain()
 	}
 	return translations, nil
 }

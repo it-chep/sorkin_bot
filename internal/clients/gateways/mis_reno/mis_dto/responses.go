@@ -149,10 +149,8 @@ type CreateAppointmentResponse struct {
 }
 
 type ConfirmAndCancelAppointmentResponse struct {
-	Error int `json:"error"`
-	Data  struct {
-		True bool `json:"true"`
-	} `json:"data"`
+	Error int    `json:"error"`
+	Data  string `json:"data"`
 }
 
 type MisAppointment struct {

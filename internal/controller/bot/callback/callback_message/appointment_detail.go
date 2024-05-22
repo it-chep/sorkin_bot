@@ -8,16 +8,17 @@ import (
 	"sorkin_bot/internal/domain/entity/user/state_machine"
 	"sorkin_bot/internal/domain/services/message"
 	"strconv"
+	"strings"
 )
 
-func (c *CallbackBotMessage) GetAppointmentDetail(ctx context.Context, messageDTO tg.MessageDTO, callbackData string) {
+func (c *CallbackBotMessage) getAppointmentDetail(ctx context.Context, messageDTO tg.MessageDTO, callbackData string) {
 	var msg tgbotapi.MessageConfig
 	userEntity, _ := c.userService.GetUser(ctx, c.tgUser.TgID)
 	//todo возможно добавить сообщение, что я загружаю ваши записи, пожалуйста подождите
 	//msg = tgbotapi.NewMessage(c.tgUser.TgID)
 	//c.bot.SendMessage(msg, messageDTO)
 
-	appointmentId, err := strconv.Atoi(callbackData)
+	appointmentId, err := strconv.Atoi(strings.Split(callbackData, "_")[1])
 	if err != nil {
 		msg = tgbotapi.NewMessage(c.tgUser.TgID, message.ServerError)
 		c.bot.SendMessage(msg, messageDTO)
