@@ -74,6 +74,8 @@ func (c *CallbackBotMessage) Execute(ctx context.Context, messageDTO tg.MessageD
 	}
 
 	switch *userEntity.GetState() {
+	case "":
+		c.mainMenu(ctx, messageDTO, userEntity, callbackData)
 	case state_machine.ChooseSpeciality:
 		c.chooseSpeciality(ctx, messageDTO, userEntity, callbackData)
 	case state_machine.ChooseAppointment:
