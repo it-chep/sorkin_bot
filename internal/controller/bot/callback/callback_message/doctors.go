@@ -17,7 +17,7 @@ func (c *CallbackBotMessage) getDoctors(ctx context.Context, messageDTO tg.Messa
 	msgText, err := c.messageService.GetMessage(ctx, userEntity, "your speciality")
 
 	if err != nil {
-		c.bot.SendMessage(tgbotapi.NewMessage(c.tgUser.TgID, msgText), messageDTO)
+		c.bot.SendMessage(tgbotapi.NewMessage(userEntity.GetTgId(), msgText), messageDTO)
 		return
 	}
 
@@ -27,18 +27,19 @@ func (c *CallbackBotMessage) getDoctors(ctx context.Context, messageDTO tg.Messa
 	}
 
 	c.bot.RemoveMessage(c.tgUser.TgID, int(messageDTO.MessageID))
-	c.bot.SendMessage(tgbotapi.NewMessage(c.tgUser.TgID, fmt.Sprintf(msgText, specialityText)), messageDTO)
-	msgText, keyboard := c.botService.ConfigureGetDoctorMessage(ctx, userEntity, doctors, 0)
-	msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
+	c.bot.SendMessage(tgbotapi.NewMessage(userEntity.GetTgId(), fmt.Sprintf(msgText, specialityText)), messageDTO)
 
-	if keyboard.InlineKeyboard != nil {
-		msg.ReplyMarkup = keyboard
-		c.bot.SendMessage(msg, messageDTO)
-		c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.ChooseDoctor)
+	if len(doctors) != 0 {
+		c.botGateway.SendGetDoctorsMessage(ctx, userEntity, messageDTO, doctors, ZeroOffset)
+		go c.machine.SetState(userEntity, state_machine.ChooseDoctor)
 	} else {
+		msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
+		msgText, err = c.messageService.GetMessage(ctx, userEntity, "empty doctors")
+
 		c.bot.SendMessage(msg, messageDTO)
 		c.moreLessSpeciality(ctx, messageDTO, userEntity, "")
-		c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.ChooseSpeciality)
+
+		go c.machine.SetState(userEntity, state_machine.ChooseSpeciality)
 	}
 }
 
@@ -48,7 +49,7 @@ func (c *CallbackBotMessage) chooseDoctor(ctx context.Context, messageDTO tg.Mes
 	} else {
 		doctorId, _ := strconv.Atoi(callbackData)
 		c.getSchedules(ctx, messageDTO, userEntity, callbackData)
-		c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.ChooseSchedule)
+		go c.machine.SetState(userEntity, state_machine.ChooseSchedule)
 		go c.appointmentService.UpdateDraftAppointmentIntField(ctx, userEntity.GetTgId(), doctorId, "doctor_id")
 	}
 }
@@ -63,11 +64,5 @@ func (c *CallbackBotMessage) moreLessDoctors(ctx context.Context, messageDTO tg.
 
 	doctors := c.appointmentService.GetDoctors(ctx, userEntity.GetTgId(), offset, nil)
 
-	msgText, keyboard := c.botService.ConfigureGetDoctorMessage(ctx, userEntity, doctors, offset)
-	msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
-	// todo протестить не будет ли бага
-	msg.ReplyMarkup = keyboard
-
-	c.bot.RemoveMessage(c.tgUser.TgID, int(messageDTO.MessageID))
-	c.bot.SendMessage(msg, messageDTO)
+	c.botGateway.SendGetDoctorsMessage(ctx, userEntity, messageDTO, doctors, offset)
 }

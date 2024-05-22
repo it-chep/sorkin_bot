@@ -135,53 +135,65 @@ func (u UserService) ChangeState(ctx context.Context, tgId int64, state string) 
 	return user, nil
 }
 
-func (u UserService) UpdatePhone(ctx context.Context, dto tg.TgUserDTO, phone string) (user entity.User, err error) {
+func (u UserService) UpdatePhone(ctx context.Context, dto tg.TgUserDTO, phone string) (user entity.User, result bool, err error) {
 	op := "sorkin_bot.internal.domain.services.user.users.UpdatePhone"
 	user, err = u.readRepo.GetUserByTgID(ctx, dto.TgID)
 
 	if err != nil {
 		u.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
-		return entity.User{}, err
+		return entity.User{}, false, err
+	}
+
+	if !u.validatePhoneMessage(phone) {
+		return user, false, nil
 	}
 
 	err = u.updateUserPhoneUseCase.Execute(ctx, user, phone)
 	if err != nil {
 		u.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
-		return entity.User{}, err
+		return entity.User{}, false, err
 	}
-	return user, nil
+	return user, false, nil
 }
 
-func (u UserService) UpdateFullName(ctx context.Context, dto tg.TgUserDTO, fullName string) (user entity.User, err error) {
+func (u UserService) UpdateFullName(ctx context.Context, dto tg.TgUserDTO, fullName string) (user entity.User, result bool, err error) {
 	op := "sorkin_bot.internal.domain.services.user.users.UpdateThirdName"
 	user, err = u.readRepo.GetUserByTgID(ctx, dto.TgID)
 
 	if err != nil {
 		u.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
-		return entity.User{}, err
+		return entity.User{}, false, err
+	}
+
+	if !u.validateNameMessage(fullName) {
+		return user, false, nil
 	}
 
 	err = u.updateUserFullNameUseCase.Execute(ctx, user, fullName)
 	if err != nil {
 		u.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
-		return entity.User{}, err
+		return entity.User{}, false, err
 	}
-	return user, nil
+	return user, true, nil
 }
 
-func (u UserService) UpdateBirthDate(ctx context.Context, dto tg.TgUserDTO, birthDate string) (user entity.User, err error) {
+func (u UserService) UpdateBirthDate(ctx context.Context, dto tg.TgUserDTO, birthDate string) (user entity.User, result bool, err error) {
 	op := "sorkin_bot.internal.domain.services.user.users.UpdateBirthDate"
 	user, err = u.readRepo.GetUserByTgID(ctx, dto.TgID)
 
 	if err != nil {
 		u.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
-		return entity.User{}, err
+		return entity.User{}, false, err
+	}
+
+	if !u.validateBirthDateMessage(birthDate) {
+		return user, false, nil
 	}
 
 	err = u.updateUserBirthDateUseCase.Execute(ctx, user, birthDate)
 	if err != nil {
 		u.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
-		return entity.User{}, err
+		return entity.User{}, false, err
 	}
-	return user, nil
+	return user, true, nil
 }

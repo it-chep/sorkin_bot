@@ -2,7 +2,6 @@ package bot
 
 import (
 	"context"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/internal/domain/entity/appointment"
 	entity "sorkin_bot/internal/domain/entity/user"
@@ -58,9 +57,9 @@ type appointmentService interface {
 
 type UpdateUser interface {
 	UpdatePatientId(ctx context.Context, user entity.User, patientId *int) (err error)
-	UpdateBirthDate(ctx context.Context, dto tg.TgUserDTO, birthDate string) (user entity.User, err error)
-	UpdateFullName(ctx context.Context, dto tg.TgUserDTO, fullName string) (user entity.User, err error)
-	UpdatePhone(ctx context.Context, dto tg.TgUserDTO, phone string) (user entity.User, err error)
+	UpdateBirthDate(ctx context.Context, dto tg.TgUserDTO, birthDate string) (user entity.User, result bool, err error)
+	UpdateFullName(ctx context.Context, dto tg.TgUserDTO, fullName string) (user entity.User, result bool, err error)
+	UpdatePhone(ctx context.Context, dto tg.TgUserDTO, phone string) (user entity.User, result bool, err error)
 }
 
 type CRUDUser interface {
@@ -79,36 +78,22 @@ type messageService interface {
 	GetMessage(ctx context.Context, user entity.User, name string) (messageText string, err error)
 }
 
-type botService interface {
-	ConfigureChangeLanguageMessage(ctx context.Context, user entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
-	ConfigureGetSpecialityMessage(
+type botGateway interface {
+	SendGetDoctorsMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, doctors map[int]string, offset int)
+	SendChooseSpecialityMessage(
 		ctx context.Context,
-		userEntity entity.User,
+		idToDelete int,
 		translatedSpecialities map[int]string,
-		offset int,
-	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
-
-	ConfigureGetDoctorMessage(
-		ctx context.Context,
-		userEntity entity.User,
-		doctors map[int]string,
-		offset int,
-	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
-
-	ConfigureGetScheduleMessage(
-		ctx context.Context,
-		userEntity entity.User,
-		schedules []appointment.Schedule,
-		offset int,
-	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
-
-	ConfigureConfirmAppointmentMessage(ctx context.Context, userEntity entity.User, doctorId int) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
-
-	ConfigureGetPhoneMessage(ctx context.Context, userEntity entity.User) (msgText string, keyboard tgbotapi.ReplyKeyboardMarkup)
-
-	ConfigureFastAppointmentMessage(
-		ctx context.Context,
-		userEntity entity.User,
-		schedulesMap map[int]appointment.Schedule,
-	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
+		user entity.User,
+		messageDTO tg.MessageDTO,
+	)
+	SendStartMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendChangeLanguageMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendGetPhoneMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendMyAppointmentsMessage(ctx context.Context, user entity.User, appointments []appointment.Appointment, messageDTO tg.MessageDTO)
+	SendConfirmAppointmentMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, doctorId int)
+	SendFastAppointmentMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendDetailAppointmentMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, appointmentId int)
+	SendSchedulesMessage(ctx context.Context, userEntity entity.User, messageDTO tg.MessageDTO, schedules []appointment.Schedule, offset int)
+	SendSpecialityMessage(ctx context.Context, userEntity entity.User, messageDTO tg.MessageDTO, specialities map[int]string, offset int)
 }

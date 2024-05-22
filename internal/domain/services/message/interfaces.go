@@ -2,6 +2,7 @@ package message
 
 import (
 	"context"
+	"sorkin_bot/internal/domain/entity/appointment"
 	entity "sorkin_bot/internal/domain/entity/tg"
 )
 
@@ -15,4 +16,8 @@ type readLogsRepo interface {
 
 type SaveMessageUseCase interface {
 	Execute(ctx context.Context, messageLog entity.MessageLog) (err error)
+}
+
+type readTranslationStorage interface {
+	GetTranslationsBySlugKeyProfession(ctx context.Context, slug string) (translations map[string]appointment.TranslationEntity, err error)
 }

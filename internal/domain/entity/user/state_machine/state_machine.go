@@ -56,7 +56,7 @@ func NewUserStateMachine(userService user.UserService) *UserStateMachine {
 			{Name: DetailMyAppointment, Src: []string{ChooseAppointment}, Dst: DetailMyAppointment},
 			{Name: ChooseAppointment, Src: []string{Start}, Dst: ChooseAppointment},
 			{Name: CancelAppointment, Src: []string{ChooseAppointment}, Dst: CancelAppointment},
-			{Name: Start, Src: []string{Start, CreateAppointment, ChooseAppointment, MyAppointments, DetailMyAppointment, MoveAppointment}, Dst: Start},
+			{Name: Start, Src: []string{Start, ChooseLanguage, CreateAppointment, ChooseAppointment, MyAppointments, DetailMyAppointment, MoveAppointment}, Dst: Start},
 			{Name: MoveAppointment, Src: []string{DetailMyAppointment}, Dst: MoveAppointment},
 			{Name: GetDoctorInfo, Src: []string{GetDoctorInfo, CreateAppointment, DetailMyAppointment, ChooseDoctor, ChooseSchedule}, Dst: GetDoctorInfo},
 		},
@@ -82,7 +82,7 @@ func NewUserStateMachine(userService user.UserService) *UserStateMachine {
 	return machine
 }
 
-func (machine *UserStateMachine) SetState(user entity.User, from, to string) {
+func (machine *UserStateMachine) SetState(user entity.User, to string) {
 	ctx := context.Background()
 	err := machine.FSM.Event(ctx, to, user, machine.userService)
 	if err != nil {

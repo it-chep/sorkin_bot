@@ -24,10 +24,7 @@ func (c *CallbackBotMessage) preCreateAppointment(ctx context.Context, messageDT
 
 func (c *CallbackBotMessage) rejectAppointment(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User) {
 	c.bot.RemoveMessage(c.tgUser.TgID, int(messageDTO.MessageID))
-	msgText, _ := c.messageService.GetMessage(ctx, userEntity, "Start")
-	msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
-	c.bot.SendMessage(msg, messageDTO)
-	c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.Start)
+	c.botGateway.SendStartMessage(ctx, userEntity, messageDTO)
 }
 
 func (c *CallbackBotMessage) confirmAppointment(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User) {
@@ -57,10 +54,7 @@ func (c *CallbackBotMessage) confirmAppointment(ctx context.Context, messageDTO 
 	msg := tgbotapi.NewMessage(c.tgUser.TgID, fmt.Sprintf(msgText, *draftAppointmentEntity.GetTimeStart()))
 	c.bot.SendMessage(msg, messageDTO)
 
-	msgText, _ = c.messageService.GetMessage(ctx, userEntity, "Start")
-	msg = tgbotapi.NewMessage(c.tgUser.TgID, msgText)
-	c.bot.SendMessage(msg, messageDTO)
-	c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.Start)
+	c.botGateway.SendStartMessage(ctx, userEntity, messageDTO)
 }
 
 func (c *CallbackBotMessage) fastAppointment(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, callbackData string) {
@@ -72,25 +66,16 @@ func (c *CallbackBotMessage) fastAppointment(ctx context.Context, messageDTO tg.
 		c.appointmentService.FastUpdateDraftAppointment(ctx, userEntity.GetTgId(), doctorId, timeStart, timeEnd)
 
 		if userEntity.GetPhone() != nil {
-			c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.CreateAppointment)
-
-			msgText, keyboard := c.botService.ConfigureConfirmAppointmentMessage(ctx, userEntity, doctorId)
-			msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
-			msg.ReplyMarkup = keyboard
-			c.bot.SendMessage(msg, messageDTO)
+			c.botGateway.SendConfirmAppointmentMessage(ctx, userEntity, messageDTO, doctorId)
+			go c.machine.SetState(userEntity, state_machine.CreateAppointment)
 		} else {
-			c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.GetPhone)
-
-			// todo вынести в отдельный метод, а то повторяется в schedules
-			msgText, keyboard := c.botService.ConfigureGetPhoneMessage(ctx, userEntity)
-			msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
-			msg.ReplyMarkup = keyboard
-			c.bot.SendMessage(msg, messageDTO)
+			c.botGateway.SendGetPhoneMessage(ctx, userEntity, messageDTO)
+			go c.machine.SetState(userEntity, state_machine.GetPhone)
 		}
 	}
 }
 
 func (c *CallbackBotMessage) getDoctorInfo(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, callbackData string) {
-	c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.GetDoctorInfo)
+	c.machine.SetState(userEntity, state_machine.GetDoctorInfo)
 
 }

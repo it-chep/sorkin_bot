@@ -2,7 +2,6 @@ package callback
 
 import (
 	"context"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/internal/domain/entity/appointment"
 	entity "sorkin_bot/internal/domain/entity/user"
@@ -53,29 +52,20 @@ type messageService interface {
 	GetMessage(ctx context.Context, user entity.User, name string) (messageText string, err error)
 }
 
-type botService interface {
-	ConfigureGetSpecialityMessage(
+type botGateway interface {
+	SendStartMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendChangeLanguageMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendMyAppointmentsMessage(ctx context.Context, user entity.User, appointments []appointment.Appointment, messageDTO tg.MessageDTO)
+	SendFastAppointmentMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendGetDoctorsMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, doctors map[int]string, offset int)
+	SendConfirmAppointmentMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, doctorId int)
+	SendGetPhoneMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendSchedulesMessage(ctx context.Context, userEntity entity.User, messageDTO tg.MessageDTO, schedules []appointment.Schedule, offset int)
+	SendSpecialityMessage(
 		ctx context.Context,
 		userEntity entity.User,
-		translatedSpecialities map[int]string,
+		messageDTO tg.MessageDTO,
+		specialities map[int]string,
 		offset int,
-	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
-
-	ConfigureGetDoctorMessage(
-		ctx context.Context,
-		userEntity entity.User,
-		doctors map[int]string,
-		offset int,
-	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
-
-	ConfigureGetScheduleMessage(
-		ctx context.Context,
-		userEntity entity.User,
-		schedules []appointment.Schedule,
-		offset int,
-	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
-
-	ConfigureConfirmAppointmentMessage(ctx context.Context, userEntity entity.User, doctorId int) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
-
-	ConfigureGetPhoneMessage(ctx context.Context, userEntity entity.User) (msgText string, keyboard tgbotapi.ReplyKeyboardMarkup)
+	)
 }

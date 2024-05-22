@@ -58,7 +58,6 @@ func (c *CallbackBotMessage) getAppointmentDetail(ctx context.Context, messageDT
 		msg = tgbotapi.NewMessage(c.tgUser.TgID, emptyMessageText)
 	}
 
-	c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.DetailMyAppointment)
-
 	c.bot.SendMessage(msg, messageDTO)
+	go c.machine.SetState(userEntity, state_machine.DetailMyAppointment)
 }

@@ -17,61 +17,47 @@ var languagesMap = map[string]bool{
 	"PT": true,
 }
 
+const (
+	ZeroOffset int = 0
+)
+
 type CallbackBotMessage struct {
 	logger             *slog.Logger
 	bot                telegram.Bot
+	botGateway         botGateway
 	tgUser             tg.TgUserDTO
 	machine            *state_machine.UserStateMachine
 	userService        userService
 	messageService     messageService
 	appointmentService appointmentService
-	botService         botService
 }
 
 func NewCallbackBot(
 	logger *slog.Logger,
 	bot telegram.Bot,
+	botGateway botGateway,
 	tgUser tg.TgUserDTO,
 	machine *state_machine.UserStateMachine,
 	userService userService,
 	messageService messageService,
 	appointmentService appointmentService,
-	botService botService,
 ) CallbackBotMessage {
 	return CallbackBotMessage{
 		logger:             logger,
 		bot:                bot,
+		botGateway:         botGateway,
 		tgUser:             tgUser,
 		machine:            machine,
 		userService:        userService,
 		messageService:     messageService,
 		appointmentService: appointmentService,
-		botService:         botService,
 	}
 }
 
 // Execute место связи telegram и бизнес логи
 func (c *CallbackBotMessage) Execute(ctx context.Context, messageDTO tg.MessageDTO, callbackData string) {
-	op := "sorkin_bot.internal.controller.bot.callback.callback_message.bot_working.Execute"
-	var msg tgbotapi.MessageConfig
-	var msgText string
-	var err error
 
 	userEntity, _ := c.userService.GetUser(ctx, c.tgUser.TgID)
-	if _, ok := languagesMap[callbackData]; ok {
-		userEntity, err = c.userService.ChangeLanguage(ctx, c.tgUser, callbackData)
-		if err != nil {
-			return
-		}
-		userEntity.SetLanguageCode(callbackData)
-		msgText, err = c.messageService.GetMessage(ctx, userEntity, "successfully changed language")
-		if err != nil {
-			c.logger.Error(fmt.Sprintf("error: %s,  place: %s", err, op))
-			msgText = message.ServerError
-		}
-		msg = tgbotapi.NewMessage(c.tgUser.TgID, msgText)
-		c.bot.SendMessage(msg, messageDTO)
-	}
 
 	switch *userEntity.GetState() {
 	case "":
@@ -90,7 +76,22 @@ func (c *CallbackBotMessage) Execute(ctx context.Context, messageDTO tg.MessageD
 		c.chooseDoctor(ctx, messageDTO, userEntity, callbackData)
 	case state_machine.DetailMyAppointment:
 		c.detailMyAppointment(ctx, messageDTO, callbackData)
-		//case state_machine.MoveAppointment:
-		//	c.moveAppointment(ctx, messageDTO, callbackData)
+	case state_machine.ChooseLanguage:
+		c.chooseLanguage(ctx, messageDTO, callbackData)
 	}
+}
+
+func (c *CallbackBotMessage) chooseLanguage(ctx context.Context, messageDTO tg.MessageDTO, callbackData string) {
+	userEntity, err := c.userService.ChangeLanguage(ctx, c.tgUser, callbackData)
+	if err != nil {
+		return
+	}
+	userEntity.SetLanguageCode(callbackData)
+	msgText, err := c.messageService.GetMessage(ctx, userEntity, "successfully changed language")
+	if err != nil {
+		c.logger.Error(fmt.Sprintf("error: %s,  place: CallbackBotMessage/chooseLanguage", err))
+		msgText = message.ServerError
+	}
+	msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
+	c.bot.SendMessage(msg, messageDTO)
 }

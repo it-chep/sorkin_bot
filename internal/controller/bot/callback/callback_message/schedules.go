@@ -27,12 +27,8 @@ func (c *CallbackBotMessage) getSchedules(ctx context.Context, messageDTO tg.Mes
 		return
 	}
 
-	msgText, keyboard := c.botService.ConfigureGetScheduleMessage(ctx, userEntity, schedules, 0)
-
 	c.bot.RemoveMessage(c.tgUser.TgID, messageId)
-	msg = tgbotapi.NewMessage(c.tgUser.TgID, msgText)
-	msg.ReplyMarkup = keyboard
-	c.bot.SendMessage(msg, messageDTO)
+	c.botGateway.SendSchedulesMessage(ctx, userEntity, messageDTO, schedules, ZeroOffset)
 }
 
 func (c *CallbackBotMessage) chooseSchedules(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, callbackData string) {
@@ -57,13 +53,9 @@ func (c *CallbackBotMessage) moreLessSchedules(ctx context.Context, messageDTO t
 	if err != nil {
 		return
 	}
-	msgText, keyboard := c.botService.ConfigureGetScheduleMessage(ctx, userEntity, schedules, offset)
-	msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
-	// todo протестить не будет ли бага
-	msg.ReplyMarkup = keyboard
 
 	c.bot.RemoveMessage(c.tgUser.TgID, int(messageDTO.MessageID))
-	c.bot.SendMessage(msg, messageDTO)
+	c.botGateway.SendSchedulesMessage(ctx, userEntity, messageDTO, schedules, offset)
 }
 
 func (c *CallbackBotMessage) saveDraftAppointment(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, callbackData string) {
@@ -72,22 +64,15 @@ func (c *CallbackBotMessage) saveDraftAppointment(ctx context.Context, messageDT
 	fullTimeStart := scheduleItems[2]
 	fullTimeEnd := scheduleItems[3]
 	date := scheduleItems[4]
+
 	c.appointmentService.UpdateDraftAppointmentDate(ctx, userEntity.GetTgId(), fullTimeStart, fullTimeEnd, date)
 
 	if userEntity.GetPhone() == nil {
-		c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.GetPhone)
-
-		msgText, keyboard := c.botService.ConfigureGetPhoneMessage(ctx, userEntity)
-		msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
-		msg.ReplyMarkup = keyboard
-		c.bot.SendMessage(msg, messageDTO)
+		c.botGateway.SendGetPhoneMessage(ctx, userEntity, messageDTO)
+		go c.machine.SetState(userEntity, state_machine.GetPhone)
 		return
 	}
 
-	msgText, keyboard := c.botService.ConfigureConfirmAppointmentMessage(ctx, userEntity, doctorId)
-	msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
-	msg.ReplyMarkup = keyboard
-	c.bot.SendMessage(msg, messageDTO)
-
-	c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.CreateAppointment)
+	c.botGateway.SendConfirmAppointmentMessage(ctx, userEntity, messageDTO, doctorId)
+	go c.machine.SetState(userEntity, state_machine.CreateAppointment)
 }

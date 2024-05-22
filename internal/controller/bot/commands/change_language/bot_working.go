@@ -2,29 +2,26 @@ package change_language
 
 import (
 	"context"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
 	"sorkin_bot/internal/controller/dto/tg"
-	"sorkin_bot/pkg/client/telegram"
+	"sorkin_bot/internal/domain/entity/user/state_machine"
 )
 
 type ChangeLanguageCommand struct {
-	logger         *slog.Logger
-	bot            telegram.Bot
-	tgUser         tg.TgUserDTO
-	userService    userService
-	messageService messageService
-	botService     botService
+	logger      *slog.Logger
+	botGateway  botGateway
+	tgUser      tg.TgUserDTO
+	machine     *state_machine.UserStateMachine
+	userService userService
 }
 
-func NewChangeLanguageCommand(logger *slog.Logger, bot telegram.Bot, tgUser tg.TgUserDTO, userService userService, messageService messageService, botService botService) ChangeLanguageCommand {
+func NewChangeLanguageCommand(logger *slog.Logger, botGateway botGateway, tgUser tg.TgUserDTO, machine *state_machine.UserStateMachine, userService userService) ChangeLanguageCommand {
 	return ChangeLanguageCommand{
-		logger:         logger,
-		bot:            bot,
-		tgUser:         tgUser,
-		userService:    userService,
-		messageService: messageService,
-		botService:     botService,
+		logger:      logger,
+		botGateway:  botGateway,
+		tgUser:      tgUser,
+		machine:     machine,
+		userService: userService,
 	}
 }
 
@@ -34,10 +31,6 @@ func (c ChangeLanguageCommand) Execute(ctx context.Context, messageDTO tg.Messag
 		return
 	}
 
-	msgText, keyboard := c.botService.ConfigureChangeLanguageMessage(ctx, userEntity)
-	msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
-
-	msg.ReplyMarkup = keyboard
-
-	c.bot.SendMessage(msg, messageDTO)
+	c.botGateway.SendChangeLanguageMessage(ctx, userEntity, messageDTO)
+	go c.machine.SetState(userEntity, state_machine.ChooseLanguage)
 }

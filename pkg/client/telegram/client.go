@@ -1,7 +1,6 @@
 package telegram
 
 import (
-	"context"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
@@ -10,12 +9,11 @@ import (
 )
 
 type Bot struct {
-	Bot            *tgbotapi.BotAPI
-	logger         *slog.Logger
-	messageService MessageService
+	Bot    *tgbotapi.BotAPI
+	logger *slog.Logger
 }
 
-func NewTelegramBot(cfg config.Config, logger *slog.Logger, messageService MessageService) *Bot {
+func NewTelegramBot(cfg config.Config, logger *slog.Logger) *Bot {
 	bot, err := tgbotapi.NewBotAPI(cfg.Bot.Token)
 	bot.Debug = true
 	if err != nil {
@@ -39,18 +37,25 @@ func NewTelegramBot(cfg config.Config, logger *slog.Logger, messageService Messa
 		panic("error while getting webhook")
 	}
 	return &Bot{
-		Bot:            bot,
-		logger:         logger,
-		messageService: messageService,
+		Bot:    bot,
+		logger: logger,
 	}
 }
 
-func (bot *Bot) SendMessage(msg tgbotapi.MessageConfig, messageDTO tg.MessageDTO) {
+func (bot *Bot) SendMessage(msg tgbotapi.MessageConfig, messageDTO tg.MessageDTO) (dto tg.MessageDTO) {
 	sentMessage, err := bot.Bot.Send(msg)
 	if err != nil {
 		bot.logger.Error(fmt.Sprintf("%s", err))
 	}
-	bot.CreateMessageLog(sentMessage, messageDTO)
+
+	dto = tg.MessageDTO{
+		MessageID:   int64(sentMessage.MessageID),
+		Date:        sentMessage.Date,
+		Text:        sentMessage.Text,
+		ForwardDate: sentMessage.ForwardDate,
+	}
+
+	return dto
 }
 
 // SendMessageAndGetId todo может подумать над объединением в 1 метод SendMessage
@@ -59,7 +64,7 @@ func (bot *Bot) SendMessageAndGetId(msg tgbotapi.MessageConfig, messageDTO tg.Me
 	if err != nil {
 		bot.logger.Error(fmt.Sprintf("%s", err))
 	}
-	bot.CreateMessageLog(sentMessage, messageDTO)
+	//bot.CreateMessageLog(sentMessage, messageDTO)
 	return sentMessage.MessageID
 }
 
@@ -71,13 +76,14 @@ func (bot *Bot) RemoveMessage(chatId int64, messageId int) {
 	}
 }
 
-func (bot *Bot) CreateMessageLog(sentMessage tgbotapi.Message, messageDTO tg.MessageDTO) {
-	messageDTO.MessageID = int64(sentMessage.MessageID)
-	messageDTO.Text = sentMessage.Text
-	go func() {
-		err := bot.messageService.SaveMessageLog(context.Background(), messageDTO)
-		if err != nil {
-			bot.logger.Error(fmt.Sprintf("%s", err))
-		}
-	}()
-}
+//todo разобраться
+//func (bot *Bot) CreateMessageLog(sentMessage tgbotapi.Message, messageDTO tg.MessageDTO) {
+//	messageDTO.MessageID = int64(sentMessage.MessageID)
+//	messageDTO.Text = sentMessage.Text
+//	go func() {
+//		err := bot.messageService.SaveMessageLog(context.Background(), messageDTO)
+//		if err != nil {
+//			bot.logger.Error(fmt.Sprintf("%s", err))
+//		}
+//	}()
+//}

@@ -1,4 +1,4 @@
-package bot
+package keyboards
 
 import (
 	"context"
@@ -13,29 +13,27 @@ const (
 	InlineButtonsLimit = 10
 )
 
-type BotService struct {
-	logger                 *slog.Logger
-	messageService         messageService
-	appointmentService     appointmentService
-	readTranslationStorage readTranslationStorage
+type Keyboards struct {
+	logger             *slog.Logger
+	messageService     messageService
+	appointmentService appointmentService
 }
 
-func NewBotService(logger *slog.Logger, messageService messageService, appointmentService appointmentService, readTranslationStorage readTranslationStorage) BotService {
-	return BotService{
-		logger:                 logger,
-		messageService:         messageService,
-		appointmentService:     appointmentService,
-		readTranslationStorage: readTranslationStorage,
+func NewKeyboards(logger *slog.Logger, messageService messageService, appointmentService appointmentService) Keyboards {
+	return Keyboards{
+		logger:             logger,
+		messageService:     messageService,
+		appointmentService: appointmentService,
 	}
 }
 
-func (bs BotService) ConfigureGetSpecialityMessage(
+func (k Keyboards) ConfigureGetSpecialityMessage(
 	ctx context.Context,
 	userEntity entity.User,
 	translatedSpecialities map[int]string,
 	offset int,
 ) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup) {
-	msgText, err := bs.messageService.GetMessage(ctx, userEntity, "Choose speciality")
+	msgText, err := k.messageService.GetMessage(ctx, userEntity, "Choose speciality")
 	if err != nil {
 		return msgText, keyboard
 	}
@@ -59,18 +57,18 @@ func (bs BotService) ConfigureGetSpecialityMessage(
 		}
 	}
 
-	keyboard = bs.moreLessButtons(offset, lengthOfSpecialities, keyboard)
+	keyboard = k.moreLessButtons(offset, lengthOfSpecialities, keyboard)
 
 	return msgText, keyboard
 }
 
-func (bs BotService) ConfigureGetDoctorMessage(
+func (k Keyboards) ConfigureGetDoctorMessage(
 	ctx context.Context,
 	userEntity entity.User,
 	doctors map[int]string,
 	offset int,
 ) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup) {
-	msgText, err := bs.messageService.GetMessage(ctx, userEntity, "Choose doctor")
+	msgText, err := k.messageService.GetMessage(ctx, userEntity, "Choose doctor")
 	if err != nil {
 		return msgText, keyboard
 	}
@@ -94,18 +92,18 @@ func (bs BotService) ConfigureGetDoctorMessage(
 		}
 	}
 
-	keyboard = bs.moreLessButtons(offset, lengthOfDoctors, keyboard)
+	keyboard = k.moreLessButtons(offset, lengthOfDoctors, keyboard)
 
 	return msgText, keyboard
 }
 
-func (bs BotService) ConfigureGetScheduleMessage(
+func (k Keyboards) ConfigureGetScheduleMessage(
 	ctx context.Context,
 	userEntity entity.User,
 	schedules []appointment.Schedule,
 	offset int,
 ) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup) {
-	msgText, err := bs.messageService.GetMessage(ctx, userEntity, "Choose schedule")
+	msgText, err := k.messageService.GetMessage(ctx, userEntity, "Choose schedule")
 	if err != nil {
 		return msgText, keyboard
 	}
@@ -134,12 +132,12 @@ func (bs BotService) ConfigureGetScheduleMessage(
 		}
 	}
 
-	keyboard = bs.moreLessButtons(offset, lengthOfSchedules, keyboard)
+	keyboard = k.moreLessButtons(offset, lengthOfSchedules, keyboard)
 
 	return msgText, keyboard
 }
 
-func (bs BotService) moreLessButtons(offset, lengthOfItems int, keyboard tgbotapi.InlineKeyboardMarkup) tgbotapi.InlineKeyboardMarkup {
+func (k Keyboards) moreLessButtons(offset, lengthOfItems int, keyboard tgbotapi.InlineKeyboardMarkup) tgbotapi.InlineKeyboardMarkup {
 
 	// Добавляем кнопки с переключением
 	if offset > lengthOfItems {

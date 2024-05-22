@@ -6,12 +6,12 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"sorkin_bot/internal/clients/bot_gateway"
 	"sorkin_bot/internal/clients/gateways/mis_reno"
 	"sorkin_bot/internal/controller"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
 	"sorkin_bot/internal/domain/services/adapter"
 	"sorkin_bot/internal/domain/services/appointment"
-	"sorkin_bot/internal/domain/services/bot"
 	"sorkin_bot/internal/domain/services/message"
 	"sorkin_bot/internal/domain/services/user"
 	"sorkin_bot/internal/domain/usecases/appointment/clean_draft_appointment"
@@ -139,11 +139,6 @@ func (app *App) InitServices(ctx context.Context) *App {
 		app.storages.readMessageStorage,
 		app.storages.readLogsStorage,
 		app.logger,
-	)
-	app.services.botService = bot.NewBotService(
-		app.logger,
-		app.services.messageService,
-		&app.services.appointmentService,
 		app.storages.readTranslationStorage,
 	)
 
@@ -157,7 +152,12 @@ func (app *App) InitMachine(ctx context.Context) *App {
 }
 
 func (app *App) InitTelegram(ctx context.Context) *App {
-	app.bot = *telegram.NewTelegramBot(*app.config, app.logger, app.services.messageService)
+	app.bot = *telegram.NewTelegramBot(*app.config, app.logger)
+	return app
+}
+
+func (app *App) InitBotGateway(ctx context.Context) *App {
+	app.botGateway = bot_gateway.NewBotGateway(app.logger, app.bot, app.services.messageService, &app.services.appointmentService)
 	return app
 }
 
@@ -169,7 +169,7 @@ func (app *App) InitAdapters(ctx context.Context) *App {
 }
 
 func (app *App) InitControllers(ctx context.Context) *App {
-	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot, app.machine, app.services.userService, &app.services.appointmentService, app.services.messageService, app.services.botService)
+	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot, app.machine, app.services.userService, &app.services.appointmentService, app.services.messageService, app.botGateway)
 	app.controller.telegramWebhookController.InitController()
 
 	app.server = &http.Server{

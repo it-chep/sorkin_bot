@@ -12,38 +12,37 @@ import (
 type CreateAppointmentCommand struct {
 	logger             *slog.Logger
 	bot                telegram.Bot
+	botGateway         botGateway
 	tgUser             tg.TgUserDTO
 	userService        userService
 	machine            *state_machine.UserStateMachine
 	appointmentService appointmentService
 	messageService     messageService
-	botService         botService
 }
 
 func NewCreateAppointmentCommand(
 	logger *slog.Logger,
 	bot telegram.Bot,
+	botGateway botGateway,
 	tgUser tg.TgUserDTO,
 	userService userService,
 	machine *state_machine.UserStateMachine,
 	appointmentService appointmentService,
 	messageService messageService,
-	botService botService,
 ) CreateAppointmentCommand {
 	return CreateAppointmentCommand{
 		logger:             logger,
 		bot:                bot,
+		botGateway:         botGateway,
 		tgUser:             tgUser,
 		userService:        userService,
 		machine:            machine,
 		appointmentService: appointmentService,
 		messageService:     messageService,
-		botService:         botService,
 	}
 }
 
 func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.MessageDTO) {
-	var msg tgbotapi.MessageConfig
 	// так как мы не изменяем бизнес сущность, а бот меняет состояние, то нахождение сущность в слое controllers некритично
 	userEntity, _ := c.userService.GetUser(ctx, c.tgUser.TgID)
 	if userEntity.GetState() == nil {
@@ -58,22 +57,16 @@ func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.Mes
 		if err != nil {
 			return
 		}
+
 		translatedSpecialities, _, err := c.appointmentService.GetTranslatedSpecialities(ctx, userEntity, specialities, 0)
 		if err != nil {
 			return
 		}
 
-		msgText, keyboard := c.botService.ConfigureGetSpecialityMessage(ctx, userEntity, translatedSpecialities, 0)
-		msg = tgbotapi.NewMessage(c.tgUser.TgID, msgText)
-		if keyboard.InlineKeyboard != nil {
-			msg.ReplyMarkup = keyboard
-		}
-		c.bot.RemoveMessage(c.tgUser.TgID, sentMessageId)
-		c.bot.SendMessage(msg, messageDTO)
-		c.machine.SetState(userEntity, *userEntity.GetState(), state_machine.ChooseSpeciality)
+		c.botGateway.SendChooseSpecialityMessage(ctx, sentMessageId, translatedSpecialities, userEntity, messageDTO)
+		go c.machine.SetState(userEntity, state_machine.ChooseSpeciality)
 		go c.appointmentService.CreateDraftAppointment(ctx, userEntity.GetTgId())
 		return
 	}
-
 	return
 }

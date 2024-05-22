@@ -14,7 +14,6 @@ import (
 	"sorkin_bot/internal/controller/bot/commands/administration_help"
 	"sorkin_bot/internal/controller/bot/text/text_message"
 
-	"sorkin_bot/internal/controller/bot/commands/cancel_appointment"
 	"sorkin_bot/internal/controller/bot/commands/change_language"
 	"sorkin_bot/internal/controller/bot/commands/create_appointment"
 	"sorkin_bot/internal/controller/bot/commands/fast_appointment"
@@ -33,7 +32,7 @@ type TelegramWebhookController struct {
 	userService        userService
 	appointmentService appointmentService
 	messageService     messageService
-	botService         botService
+	botGateway         botGateway
 }
 
 func NewTelegramWebhookController(
@@ -44,7 +43,7 @@ func NewTelegramWebhookController(
 	userService userService,
 	appointmentService appointmentService,
 	messageService messageService,
-	botService botService,
+	botGateway botGateway,
 ) TelegramWebhookController {
 
 	return TelegramWebhookController{
@@ -55,7 +54,7 @@ func NewTelegramWebhookController(
 		userService:        userService,
 		appointmentService: appointmentService,
 		messageService:     messageService,
-		botService:         botService,
+		botGateway:         botGateway,
 	}
 }
 
@@ -100,34 +99,27 @@ func (t TelegramWebhookController) BotWebhookHandler(c *gin.Context) {
 func (t TelegramWebhookController) ForkCommands(ctx context.Context, update tgbotapi.Update, tgUser tg.TgUserDTO, tgMessage tg.MessageDTO) {
 
 	switch update.Message.Command() {
-	case "start":
-		command := start.NewStartBotCommand(t.logger, t.bot, tgUser, t.userService, t.messageService, t.botService)
+	case "start", "menu":
+		command := start.NewStartBotCommand(t.logger, t.botGateway, tgUser, t.machine, t.userService, t.messageService)
 		command.Execute(ctx, tgMessage)
 	case "help", "tech_support":
 		command := administration_help.NewAdministrationHelpCommand(t.logger, t.bot, tgUser, t.messageService, t.userService)
 		command.Execute(ctx, tgMessage)
 	case "fast_appointment":
 		// service по работе с fast appointment
-		command := fast_appointment.NewFastAppointmentBotCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.appointmentService, t.messageService, t.botService)
+		command := fast_appointment.NewFastAppointmentBotCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.appointmentService, t.botGateway)
 		command.Execute(ctx, tgMessage)
 	case "appointment":
 		// service по работе с appointment
-		command := create_appointment.NewCreateAppointmentCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.appointmentService, t.messageService, t.botService)
-		command.Execute(ctx, tgMessage)
-	case "cancel_appointment":
-		// service по работе с cancel_appointment
-		command := cancel_appointment.NewCancelAppointmentBotCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.appointmentService, t.messageService)
+		command := create_appointment.NewCreateAppointmentCommand(t.logger, t.bot, t.botGateway, tgUser, t.userService, t.machine, t.appointmentService, t.messageService)
 		command.Execute(ctx, tgMessage)
 	case "my_appointments":
 		// service по работе с my_appointments
-		command := my_appointment.NewMyAppointmentsCommand(t.logger, t.bot, tgUser, t.machine, t.userService, t.appointmentService, t.messageService)
+		command := my_appointment.NewMyAppointmentsCommand(t.logger, t.botGateway, tgUser, t.machine, t.userService, t.appointmentService)
 		command.Execute(ctx, tgMessage)
 	case "change_language":
-		command := change_language.NewChangeLanguageCommand(t.logger, t.bot, tgUser, t.userService, t.messageService, t.botService)
+		command := change_language.NewChangeLanguageCommand(t.logger, t.botGateway, tgUser, t.machine, t.userService)
 		command.Execute(ctx, tgMessage)
-	case "menu":
-		// service по работе с menu
-		t.bot.SendMessage(tgbotapi.NewMessage(update.FromChat().ID, "i will help you"), tgMessage)
 	}
 }
 
@@ -135,13 +127,13 @@ func (t TelegramWebhookController) ForkCommands(ctx context.Context, update tgbo
 // todo и в зависимости от состояния пользователя ему будет выдаваться контент
 
 func (t TelegramWebhookController) ForkMessages(ctx context.Context, tgUser tg.TgUserDTO, tgMessage tg.MessageDTO) {
-	messageBot := text_message.NewTextBotMessage(t.logger, t.bot, tgUser, t.machine, t.userService, t.messageService, t.appointmentService, t.botService)
+	messageBot := text_message.NewTextBotMessage(t.logger, t.bot, t.botGateway, tgUser, t.machine, t.userService, t.messageService, t.appointmentService)
 	messageBot.Execute(ctx, tgMessage)
 }
 
 func (t TelegramWebhookController) ForkCallbacks(ctx context.Context, update tgbotapi.Update, tgUser tg.TgUserDTO, tgMessage tg.MessageDTO) {
 	callbackData := update.CallbackData()
-	callbackBot := callback.NewCallbackBot(t.logger, t.bot, tgUser, t.machine, t.userService, t.messageService, t.appointmentService, t.botService)
+	callbackBot := callback.NewCallbackBot(t.logger, t.bot, t.botGateway, tgUser, t.machine, t.userService, t.messageService, t.appointmentService)
 	callbackBot.Execute(ctx, tgMessage, callbackData)
 }
 

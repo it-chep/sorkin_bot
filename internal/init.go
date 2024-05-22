@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"sorkin_bot/internal/clients/bot_gateway"
 	"sorkin_bot/internal/clients/gateways/mis_reno"
 	"sorkin_bot/internal/config"
 	"sorkin_bot/internal/controller"
@@ -97,6 +98,7 @@ type App struct {
 	useCases        useCases
 	gateways        gateways
 	adapters        adapters
+	botGateway      bot_gateway.BotGateway
 	periodicalTasks periodicalTasks
 	workerPool      worker_pool.WorkerPool
 	bot             telegram.Bot
@@ -120,6 +122,7 @@ func NewApp(ctx context.Context) *App {
 		InitServices(ctx).
 		InitMachine(ctx).
 		InitTelegram(ctx).
+		InitBotGateway(ctx).
 		InitTasks(ctx).
 		InitWorkers(ctx).
 		InitControllers(ctx)

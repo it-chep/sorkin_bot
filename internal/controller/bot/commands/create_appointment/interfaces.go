@@ -2,7 +2,7 @@ package create_appointment
 
 import (
 	"context"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/internal/domain/entity/appointment"
 	entity "sorkin_bot/internal/domain/entity/user"
 )
@@ -22,11 +22,6 @@ type messageService interface {
 	GetMessage(ctx context.Context, user entity.User, name string) (messageText string, err error)
 }
 
-type botService interface {
-	ConfigureGetSpecialityMessage(
-		ctx context.Context,
-		userEntity entity.User,
-		translatedSpecialities map[int]string,
-		offset int,
-	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
+type botGateway interface {
+	SendChooseSpecialityMessage(ctx context.Context, idToDelete int, translatedSpecialities map[int]string, user entity.User, messageDTO tg.MessageDTO)
 }
