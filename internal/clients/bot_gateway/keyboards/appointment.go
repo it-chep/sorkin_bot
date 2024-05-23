@@ -48,7 +48,7 @@ func (k Keyboards) ConfigureGetMyAppointmentsMessage(
 	appointments []appointment.Appointment,
 	offset int,
 ) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup) {
-	msgText, err := k.messageService.GetMessage(ctx, userEntity, "Choose speciality")
+	msgText, err := k.messageService.GetMessage(ctx, userEntity, "Select appointment")
 
 	if err != nil {
 		return msgText, keyboard
@@ -99,5 +99,38 @@ func (k Keyboards) ConfigureConfirmAppointmentMessage(ctx context.Context, userE
 		),
 	)
 	msgText, _ = k.messageService.GetMessage(ctx, userEntity, "confirm appointment ? text")
+	return msgText, keyboard
+}
+
+func (k Keyboards) ConfigureAppointmentDetailMessage(ctx context.Context, userEntity entity.User, appointmentEntity appointment.Appointment) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup) {
+	var cancelText, docText, exitText string
+	var err error
+
+	unformattedText, _ := k.messageService.GetMessage(ctx, userEntity, "detail appointment")
+	msgText = fmt.Sprintf(unformattedText, appointmentEntity.GetTimeStart())
+
+	cancelText, err = k.messageService.GetMessage(ctx, userEntity, "cancel appointment button")
+	if err != nil {
+		return "", tgbotapi.InlineKeyboardMarkup{}
+	}
+	docText, err = k.messageService.GetMessage(ctx, userEntity, "doc information button")
+	if err != nil {
+		return "", tgbotapi.InlineKeyboardMarkup{}
+	}
+	exitText, err = k.messageService.GetMessage(ctx, userEntity, "btn exit")
+	if err != nil {
+		return "", tgbotapi.InlineKeyboardMarkup{}
+	}
+
+	// формируем клавиатуру действий с онлайн записью
+	cancelAppointmentButton := tgbotapi.NewInlineKeyboardButtonData(cancelText, fmt.Sprintf("cancel_%d", appointmentEntity.GetAppointmentId()))
+	docBtn := tgbotapi.NewInlineKeyboardButtonData(docText, fmt.Sprintf("doctor_%d", appointmentEntity.GetDoctorId()))
+	exitBtn := tgbotapi.NewInlineKeyboardButtonData(exitText, "exit")
+	keyboardRowDoctor := tgbotapi.NewInlineKeyboardRow(docBtn)
+	keyboardRowCancel := tgbotapi.NewInlineKeyboardRow(cancelAppointmentButton)
+	keyboardRowExit := tgbotapi.NewInlineKeyboardRow(exitBtn)
+
+	keyboard = tgbotapi.NewInlineKeyboardMarkup(keyboardRowDoctor, keyboardRowCancel, keyboardRowExit)
+
 	return msgText, keyboard
 }

@@ -34,7 +34,7 @@ func (ws TelegramMessageStorage) CreateMessageLog(ctx context.Context, messageLo
 	)
 
 	if err != nil {
-		ws.logger.Error(fmt.Sprintf("%s", err))
+		ws.logger.Error(fmt.Sprintf("error: %s, op: %s", err, op))
 		return err
 	}
 

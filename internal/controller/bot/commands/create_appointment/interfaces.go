@@ -23,5 +23,12 @@ type messageService interface {
 }
 
 type botGateway interface {
-	SendChooseSpecialityMessage(ctx context.Context, idToDelete int, translatedSpecialities map[int]string, user entity.User, messageDTO tg.MessageDTO)
+	SendChooseSpecialityMessage(
+		ctx context.Context,
+		user entity.User,
+		messageDTO tg.MessageDTO,
+		idToDelete int,
+		translatedSpecialities map[int]string,
+	)
+	SendWaitMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, waitMessage string) int
 }

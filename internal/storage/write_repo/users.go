@@ -27,7 +27,18 @@ func (ws UserStorage) CreateUser(ctx context.Context, user entity.User) (userID 
 		insert into tg_users (tg_id, name, surname, username, registration_time, last_state) 
 		values ($1, $2, $3, $4, $5, '') returning id;
 	`
-	currentTime := time.Now()
+	// Получаем текущее время
+	currentTimeUTC := time.Now().UTC()
+
+	// Получаем время в лисабоне(возможно хардкод, но гибкости пока не требуется)
+	location, err := time.LoadLocation("Europe/Paris")
+	if err != nil {
+		fmt.Println("Error loading location:", err)
+		return
+	}
+
+	// Преобразуем текущее время в локацию GMT+1
+	currentTime := currentTimeUTC.In(location)
 	registrationTime := fmt.Sprintf("%02d.%02d.%d %02d:%02d", currentTime.Day(), currentTime.Month(), currentTime.Year(), currentTime.Hour(), currentTime.Minute())
 
 	err = ws.client.QueryRow(

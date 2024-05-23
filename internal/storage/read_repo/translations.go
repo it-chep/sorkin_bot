@@ -66,7 +66,7 @@ func (tr TranslationStorage) GetTranslationsBySourceId(ctx context.Context, sour
 
 	err = pgxscan.Get(ctx, tr.client, &translationsDao, q, sourceId)
 	if err != nil {
-		tr.logger.Error(fmt.Sprintf("Error while scanning row: %s op: %s", err, op))
+		tr.logger.Error(fmt.Sprintf("Error while scanning row: %s op: %s, Source Id: %d", err, op, sourceId))
 		return translation, err
 	}
 	translation = translationsDao.ToDomain()
@@ -76,7 +76,7 @@ func (tr TranslationStorage) GetTranslationsBySourceId(ctx context.Context, sour
 
 func (tr TranslationStorage) GetManyTranslationsByIds(ctx context.Context, ids []int) (translations []appointment.TranslationEntity, err error) {
 	var translationsDao []dao.TranslationDao
-	op := "sorkin_bot.internal.storage.read_repo.translations.GetTranslationsBySourceId"
+	op := "sorkin_bot.internal.storage.read_repo.translations.GetManyTranslationsByIds"
 	if len(ids) == 0 {
 		return nil, fmt.Errorf("ids slice is empty")
 	}

@@ -9,17 +9,21 @@ import (
 func (as *AppointmentService) GetDraftAppointment(ctx context.Context, tgId int64) (draftAppointment appointment.DraftAppointment, err error) {
 	draftAppointment, err = as.readDraftAppointmentRepo.GetUserDraftAppointment(ctx, tgId)
 	if err != nil {
-		return appointment.DraftAppointment{}, err
+		return appointment.NewDraftAppointment(
+			nil, nil, nil, nil, nil, nil,
+		), err
 	}
 	return draftAppointment, nil
 }
 
 func (as *AppointmentService) CreateDraftAppointment(ctx context.Context, tgId int64) {
 	draftAppointment, err := as.GetDraftAppointment(ctx, tgId)
+
 	if err != nil {
 		return
 	}
-	if !reflect.ValueOf(draftAppointment.GetTgId()).IsZero() {
+
+	if !reflect.ValueOf(draftAppointment.GetTgId()).IsNil() {
 		return
 	}
 

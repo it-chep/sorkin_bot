@@ -28,6 +28,7 @@ func (w Worker) Start() {
 
 type WorkerPool struct {
 	workers []Worker
+	limit   int
 }
 
 func NewWorkerPool(workers []Worker) WorkerPool {
@@ -36,6 +37,7 @@ func NewWorkerPool(workers []Worker) WorkerPool {
 	}
 }
 
+// todo ctx
 func (wp WorkerPool) Run() {
 	for _, w := range wp.workers {
 		go w.Start()

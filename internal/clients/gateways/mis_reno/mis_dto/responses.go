@@ -35,8 +35,8 @@ type MisUser struct {
 	AvgTime                int      `json:"avg_time"`
 	HasCompany             bool     `json:"has_company"`
 	AvgTimeCompany         string   `json:"avg_time_company"`
-	AvgTimeRepeat          string   `json:"avg_time_repeat"`
-	AvgTimeRepeatCompany   string   `json:"avg_time_repeat_company"`
+	AvgTimeRepeat          int      `json:"avg_time_repeat"`
+	AvgTimeRepeatCompany   int      `json:"avg_time_repeat_company"`
 	DefaultClinic          int      `json:"default_clinic"`
 	DefaultRoom            string   `json:"default_room"`
 	IsChildDoctor          bool     `json:"is_child_doctor"`
@@ -149,8 +149,8 @@ type CreateAppointmentResponse struct {
 }
 
 type ConfirmAndCancelAppointmentResponse struct {
-	Error int    `json:"error"`
-	Data  string `json:"data"`
+	Error int  `json:"error"`
+	Data  bool `json:"data"`
 }
 
 type MisAppointment struct {

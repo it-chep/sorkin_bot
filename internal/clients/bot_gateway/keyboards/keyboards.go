@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"sorkin_bot/internal/domain/entity/appointment"
 	entity "sorkin_bot/internal/domain/entity/user"
+	"sort"
 )
 
 const (
@@ -37,20 +38,29 @@ func (k Keyboards) ConfigureGetSpecialityMessage(
 	if err != nil {
 		return msgText, keyboard
 	}
+
+	keys := make([]int, 0, len(translatedSpecialities))
+	for k := range translatedSpecialities {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+
 	lengthOfSpecialities := len(translatedSpecialities)
 	if lengthOfSpecialities > InlineButtonsLimit {
 		count := 0
-		for specialityId, translatedSpeciality := range translatedSpecialities {
+		for _, specialityId := range keys {
 			if count == InlineButtonsLimit {
 				break
 			}
+			translatedSpeciality := translatedSpecialities[specialityId]
 			btn := tgbotapi.NewInlineKeyboardButtonData(translatedSpeciality, fmt.Sprintf("%d", specialityId))
 			row := tgbotapi.NewInlineKeyboardRow(btn)
 			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 			count++
 		}
 	} else {
-		for specialityId, translatedSpeciality := range translatedSpecialities {
+		for _, specialityId := range keys {
+			translatedSpeciality := translatedSpecialities[specialityId]
 			btn := tgbotapi.NewInlineKeyboardButtonData(translatedSpeciality, fmt.Sprintf("%d", specialityId))
 			row := tgbotapi.NewInlineKeyboardRow(btn)
 			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
@@ -72,21 +82,30 @@ func (k Keyboards) ConfigureGetDoctorMessage(
 	if err != nil {
 		return msgText, keyboard
 	}
+
+	keys := make([]int, 0, len(doctors))
+	for k := range doctors {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+
 	lengthOfDoctors := len(doctors)
 	if lengthOfDoctors > InlineButtonsLimit {
 		count := 0
-		for doctorId, doctorName := range doctors {
+		for _, doctorId := range keys {
 			if count == InlineButtonsLimit {
 				break
 			}
-			btn := tgbotapi.NewInlineKeyboardButtonData(doctorName, fmt.Sprintf("%d", doctorId))
+			doctorName := doctors[doctorId]
+			btn := tgbotapi.NewInlineKeyboardButtonData(doctorName, fmt.Sprintf("%d_%s", doctorId, doctorName))
 			row := tgbotapi.NewInlineKeyboardRow(btn)
 			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 			count++
 		}
 	} else {
-		for doctorId, doctorName := range doctors {
-			btn := tgbotapi.NewInlineKeyboardButtonData(doctorName, fmt.Sprintf("%d", doctorId))
+		for _, doctorId := range keys {
+			doctorName := doctors[doctorId]
+			btn := tgbotapi.NewInlineKeyboardButtonData(doctorName, fmt.Sprintf("%d_%s", doctorId, doctorName))
 			row := tgbotapi.NewInlineKeyboardRow(btn)
 			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 		}

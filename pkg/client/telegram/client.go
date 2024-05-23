@@ -45,7 +45,7 @@ func NewTelegramBot(cfg config.Config, logger *slog.Logger) *Bot {
 func (bot *Bot) SendMessage(msg tgbotapi.MessageConfig, messageDTO tg.MessageDTO) (dto tg.MessageDTO) {
 	sentMessage, err := bot.Bot.Send(msg)
 	if err != nil {
-		bot.logger.Error(fmt.Sprintf("%s", err))
+		bot.logger.Error(fmt.Sprintf("%s: Bot SendMessage", err))
 	}
 
 	dto = tg.MessageDTO{
@@ -62,7 +62,7 @@ func (bot *Bot) SendMessage(msg tgbotapi.MessageConfig, messageDTO tg.MessageDTO
 func (bot *Bot) SendMessageAndGetId(msg tgbotapi.MessageConfig, messageDTO tg.MessageDTO) int {
 	sentMessage, err := bot.Bot.Send(msg)
 	if err != nil {
-		bot.logger.Error(fmt.Sprintf("%s", err))
+		bot.logger.Error(fmt.Sprintf("%s: Bot SendMessageAndGetId", err))
 	}
 	//bot.CreateMessageLog(sentMessage, messageDTO)
 	return sentMessage.MessageID

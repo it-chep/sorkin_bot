@@ -48,6 +48,7 @@ func NewUserService(
 func (u UserService) GetUser(ctx context.Context, tgId int64) (user entity.User, err error) {
 	op := "sorkin_bot.internal.domain.services.user.users.GetUser"
 
+	//if not in cache
 	user, err = u.readRepo.GetUserByTgID(ctx, tgId)
 
 	if err != nil {
@@ -85,7 +86,7 @@ func (u UserService) RegisterNewUser(ctx context.Context, dto tg.TgUserDTO) (use
 		return entity.User{}, err
 	}
 
-	return user, nil
+	return newUser, nil
 }
 
 func (u UserService) ChangeLanguage(ctx context.Context, dto tg.TgUserDTO, languageCode string) (user entity.User, err error) {
@@ -153,7 +154,7 @@ func (u UserService) UpdatePhone(ctx context.Context, dto tg.TgUserDTO, phone st
 		u.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
 		return entity.User{}, false, err
 	}
-	return user, false, nil
+	return user, true, nil
 }
 
 func (u UserService) UpdateFullName(ctx context.Context, dto tg.TgUserDTO, fullName string) (user entity.User, result bool, err error) {

@@ -33,4 +33,5 @@ type messageService interface {
 type botGateway interface {
 	SendConfirmAppointmentMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, doctorId int)
 	SendChangeLanguageMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendError(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
 }

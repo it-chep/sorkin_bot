@@ -49,21 +49,6 @@ func (bg BotGateway) CreateMessageLog(sentMessage tgbotapi.Message, messageDTO t
 	}()
 }
 
-func (bg BotGateway) SendChooseSpecialityMessage(
-	ctx context.Context,
-	idToDelete int,
-	translatedSpecialities map[int]string,
-	user entity.User,
-	messageDTO tg.MessageDTO,
-) {
-
-	bg.bot.RemoveMessage(user.GetTgId(), idToDelete)
-	msgText, keyboard := bg.keyboard.ConfigureGetSpecialityMessage(ctx, user, translatedSpecialities, 0)
-	msg := tgbotapi.NewMessage(user.GetTgId(), msgText)
-	msg.ReplyMarkup = keyboard
-	bg.bot.SendMessage(msg, messageDTO)
-}
-
 func (bg BotGateway) SendGetDoctorsMessage(
 	ctx context.Context,
 	user entity.User,
@@ -80,13 +65,7 @@ func (bg BotGateway) SendGetDoctorsMessage(
 	}
 
 	bg.bot.RemoveMessage(user.GetTgId(), int(messageDTO.MessageID))
-	sentMessage := bg.bot.SendMessage(msg, messageDTO)
-	go func() {
-		err := bg.messageService.SaveMessageLog(ctx, sentMessage)
-		if err != nil {
-			bg.logger.Error(fmt.Sprintf("%s", err))
-		}
-	}()
+	bg.bot.SendMessage(msg, messageDTO)
 }
 
 func (bg BotGateway) SendSchedulesMessage(
@@ -101,13 +80,7 @@ func (bg BotGateway) SendSchedulesMessage(
 	if keyboard.InlineKeyboard != nil {
 		msg.ReplyMarkup = keyboard
 	}
-	sentMessage := bg.bot.SendMessage(msg, messageDTO)
-	go func() {
-		err := bg.messageService.SaveMessageLog(ctx, sentMessage)
-		if err != nil {
-			bg.logger.Error(fmt.Sprintf("%s", err))
-		}
-	}()
+	bg.bot.SendMessage(msg, messageDTO)
 }
 
 func (bg BotGateway) SendSpecialityMessage(
@@ -123,12 +96,19 @@ func (bg BotGateway) SendSpecialityMessage(
 	if keyboard.InlineKeyboard != nil {
 		msg.ReplyMarkup = keyboard
 	}
+	bg.bot.SendMessage(msg, messageDTO)
+}
 
-	sentMessage := bg.bot.SendMessage(msg, messageDTO)
-	go func() {
-		err := bg.messageService.SaveMessageLog(ctx, sentMessage)
-		if err != nil {
-			bg.logger.Error(fmt.Sprintf("%s", err))
-		}
-	}()
+func (bg BotGateway) SendChooseSpecialityMessage(
+	ctx context.Context,
+	user entity.User,
+	messageDTO tg.MessageDTO,
+	idToDelete int,
+	translatedSpecialities map[int]string,
+) {
+	bg.bot.RemoveMessage(user.GetTgId(), idToDelete)
+	msgText, keyboard := bg.keyboard.ConfigureGetSpecialityMessage(ctx, user, translatedSpecialities, 0)
+	msg := tgbotapi.NewMessage(user.GetTgId(), msgText)
+	msg.ReplyMarkup = keyboard
+	bg.bot.SendMessage(msg, messageDTO)
 }

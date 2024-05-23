@@ -14,6 +14,7 @@ type AppointmentSpeciality interface {
 }
 
 type draftAppointment interface {
+	CreateDraftAppointment(ctx context.Context, tgId int64)
 	GetDraftAppointment(ctx context.Context, tgId int64) (draftAppointment appointment.DraftAppointment, err error)
 	UpdateDraftAppointmentStatus(ctx context.Context, tgId int64, appointmentId int)
 	UpdateDraftAppointmentDate(ctx context.Context, tgId int64, timeStart, timeEnd, date string)
@@ -61,11 +62,9 @@ type botGateway interface {
 	SendConfirmAppointmentMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, doctorId int)
 	SendGetPhoneMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
 	SendSchedulesMessage(ctx context.Context, userEntity entity.User, messageDTO tg.MessageDTO, schedules []appointment.Schedule, offset int)
-	SendSpecialityMessage(
-		ctx context.Context,
-		userEntity entity.User,
-		messageDTO tg.MessageDTO,
-		specialities map[int]string,
-		offset int,
-	)
+	SendSpecialityMessage(ctx context.Context, userEntity entity.User, messageDTO tg.MessageDTO, specialities map[int]string, offset int)
+	SendDetailAppointmentMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, appointmentEntity appointment.Appointment)
+	SendEmptyAppointments(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendWaitMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, waitMessage string) int
+	SendError(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
 }

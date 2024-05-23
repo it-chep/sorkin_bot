@@ -61,7 +61,7 @@ func (mg *MisRenoGateway) sendToMIS(ctx context.Context, method string, body []b
 	var data map[string]interface{}
 	err := json.NewDecoder(bytes.NewReader(body)).Decode(&data)
 	if err != nil {
-		mg.logger.Error(fmt.Sprintf("error while decoding JSON: %s \nplace: %s", err, op))
+		mg.logger.Error(fmt.Sprintf("error while decoding JSON: %s place: %s", err, op))
 		return responseBody
 	}
 
@@ -75,7 +75,7 @@ func (mg *MisRenoGateway) sendToMIS(ctx context.Context, method string, body []b
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, urlWithParams, requestBody)
 	if err != nil {
 		// Обработка ошибки создания запроса
-		mg.logger.Error(fmt.Sprintf("error while create request entity, op: %s", op))
+		mg.logger.Error(fmt.Sprintf("error while create request entity, %v op: %s", request, op))
 		return responseBody
 	}
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -84,7 +84,7 @@ func (mg *MisRenoGateway) sendToMIS(ctx context.Context, method string, body []b
 	result, err := mg.client.Do(request)
 	if err != nil {
 		// Обработка ошибки выполнения запроса
-		mg.logger.Error(fmt.Sprintf("error while do request, op: %s", op))
+		mg.logger.Error(fmt.Sprintf("error while do request %v, op: %s", result, op))
 		return responseBody
 	}
 	defer result.Body.Close()
@@ -93,7 +93,7 @@ func (mg *MisRenoGateway) sendToMIS(ctx context.Context, method string, body []b
 	responseBody, err = ioutil.ReadAll(result.Body)
 	if err != nil {
 		// Обработка ошибки чтения тела ответа
-		mg.logger.Error(fmt.Sprintf("error while reading response body, op: %s", op))
+		mg.logger.Error(fmt.Sprintf("error while reading response body, %v, op: %s", responseBody, op))
 		return responseBody
 	}
 
@@ -216,7 +216,18 @@ func (mg *MisRenoGateway) MyAppointments(ctx context.Context, patientId int, reg
 	// Полуаем записи по пользователю и отдаем ему только даты записей
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.MyAppointments"
 	var response mis_dto.GetAppointmentsResponse
-	currentTime := time.Now().UTC()
+	// Получаем текущее время
+	currentTimeUTC := time.Now().UTC()
+
+	// Получаем время в лисабоне(возможно хардкод, но гибкости пока не требуется)
+	location, err := time.LoadLocation("Europe/Paris")
+	if err != nil {
+		fmt.Println("Error loading location:", err)
+		return
+	}
+
+	// Преобразуем текущее время в локацию GMT+1
+	currentTime := currentTimeUTC.In(location)
 
 	// todo рассматриваем только записи из бота, то есть человек будет получать только доступ к тем записям, которые были созданы им из бота
 	var request = mis_dto.GetAppointmentsRequest{
@@ -225,7 +236,7 @@ func (mg *MisRenoGateway) MyAppointments(ctx context.Context, patientId int, reg
 		PatientId:       patientId,
 		StatusId:        mis_dto.ActiveStatusIDs,
 	}
-
+	mg.logger.Info("request", request)
 	responseBody := mg.sendToMIS(ctx, mis_dto.GetAppointmentsMethod, JsonMarshaller(request, op, mg.logger))
 
 	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)

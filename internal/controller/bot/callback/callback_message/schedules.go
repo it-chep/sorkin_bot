@@ -2,6 +2,7 @@ package callback
 
 import (
 	"context"
+	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"sorkin_bot/internal/controller/dto/tg"
 	entity "sorkin_bot/internal/domain/entity/user"
@@ -12,12 +13,19 @@ import (
 
 func (c *CallbackBotMessage) getSchedules(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, callbackData string) {
 	var msgText string
+	var err error
+	var msg tgbotapi.MessageConfig
 
-	msgText, err := c.messageService.GetMessage(ctx, userEntity, "load doctor schedules")
-	msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
-	messageId := c.bot.SendMessageAndGetId(msg, messageDTO)
+	callbackDataItems := strings.Split(callbackData, "_")
+	c.bot.RemoveMessage(c.tgUser.TgID, int(messageDTO.MessageID))
 
-	doctorId, err := strconv.Atoi(callbackData)
+	msgText, err = c.messageService.GetMessage(ctx, userEntity, "your doctor")
+	msg = tgbotapi.NewMessage(c.tgUser.TgID, fmt.Sprintf(msgText, callbackDataItems[1]))
+	c.bot.SendMessage(msg, messageDTO)
+
+	sentMessageId := c.botGateway.SendWaitMessage(ctx, userEntity, messageDTO, "wait schedules")
+
+	doctorId, err := strconv.Atoi(callbackDataItems[0])
 	if err != nil {
 		return
 	}
@@ -27,7 +35,7 @@ func (c *CallbackBotMessage) getSchedules(ctx context.Context, messageDTO tg.Mes
 		return
 	}
 
-	c.bot.RemoveMessage(c.tgUser.TgID, messageId)
+	c.bot.RemoveMessage(c.tgUser.TgID, sentMessageId)
 	c.botGateway.SendSchedulesMessage(ctx, userEntity, messageDTO, schedules, ZeroOffset)
 }
 
@@ -64,6 +72,8 @@ func (c *CallbackBotMessage) saveDraftAppointment(ctx context.Context, messageDT
 	fullTimeStart := scheduleItems[2]
 	fullTimeEnd := scheduleItems[3]
 	date := scheduleItems[4]
+
+	c.bot.RemoveMessage(c.tgUser.TgID, int(messageDTO.MessageID))
 
 	c.appointmentService.UpdateDraftAppointmentDate(ctx, userEntity.GetTgId(), fullTimeStart, fullTimeEnd, date)
 

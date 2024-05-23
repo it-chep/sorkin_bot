@@ -7,7 +7,6 @@ import (
 	"sorkin_bot/internal/controller/dto/tg"
 	entity "sorkin_bot/internal/domain/entity/user"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
-	"sorkin_bot/internal/domain/services/message"
 	"sorkin_bot/pkg/client/telegram"
 )
 
@@ -57,8 +56,7 @@ func (c TextBotMessage) getBirthDate(ctx context.Context, user entity.User, mess
 
 	user, result, err := c.userService.UpdateBirthDate(ctx, c.tgUser, messageDTO.Text)
 	if err != nil {
-		msg = tgbotapi.NewMessage(c.tgUser.TgID, message.ServerError)
-		c.bot.SendMessage(msg, messageDTO)
+		c.botGateway.SendError(ctx, user, messageDTO)
 		return
 	}
 	if !result {
@@ -90,8 +88,7 @@ func (c TextBotMessage) getPhone(ctx context.Context, user entity.User, messageD
 
 	_, result, err := c.userService.UpdatePhone(ctx, c.tgUser, phone)
 	if err != nil {
-		msg = tgbotapi.NewMessage(c.tgUser.TgID, message.ServerError)
-		c.bot.SendMessage(msg, messageDTO)
+		c.botGateway.SendError(ctx, user, messageDTO)
 		return
 	}
 
@@ -113,8 +110,7 @@ func (c TextBotMessage) getName(ctx context.Context, user entity.User, messageDT
 
 	_, result, err := c.userService.UpdateFullName(ctx, c.tgUser, messageDTO.Text)
 	if err != nil {
-		msg = tgbotapi.NewMessage(c.tgUser.TgID, message.ServerError)
-		c.bot.SendMessage(msg, messageDTO)
+		c.botGateway.SendError(ctx, user, messageDTO)
 		return
 	}
 

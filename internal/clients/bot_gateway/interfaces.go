@@ -60,4 +60,10 @@ type keyboardsInterface interface {
 		schedules []appointment.Schedule,
 		offset int,
 	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
+
+	ConfigureAppointmentDetailMessage(
+		ctx context.Context,
+		userEntity entity.User,
+		appointmentEntity appointment.Appointment,
+	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
 }

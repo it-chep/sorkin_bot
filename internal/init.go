@@ -11,7 +11,6 @@ import (
 	"sorkin_bot/internal/domain/entity/user/state_machine"
 	"sorkin_bot/internal/domain/services/adapter"
 	"sorkin_bot/internal/domain/services/appointment"
-	"sorkin_bot/internal/domain/services/bot"
 	"sorkin_bot/internal/domain/services/message"
 	"sorkin_bot/internal/domain/services/user"
 	"sorkin_bot/internal/domain/usecases/appointment/clean_draft_appointment"
@@ -44,7 +43,6 @@ type services struct {
 	userService        user.UserService
 	appointmentService appointment.AppointmentService
 	messageService     message.MessageService
-	botService         bot.BotService
 }
 
 type useCases struct {

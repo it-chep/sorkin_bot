@@ -28,7 +28,6 @@ const (
 	GetBirthDate        = "getBirthDate"
 	GetName             = "getName"
 	CreateAppointment   = "createAppointment"
-	MyAppointments      = "myAppointments"
 	DetailMyAppointment = "detailMyAppointment"
 	CancelAppointment   = "cancelAppointment"
 	ChooseAppointment   = "chooseAppointment"
@@ -52,11 +51,10 @@ func NewUserStateMachine(userService user.UserService) *UserStateMachine {
 			{Name: GetName, Src: []string{GetPhone}, Dst: GetName},
 			{Name: GetBirthDate, Src: []string{GetName}, Dst: GetBirthDate},
 			{Name: CreateAppointment, Src: []string{GetName, ChooseSchedule, FastAppointment}, Dst: CreateAppointment},
-			{Name: MyAppointments, Src: []string{ChooseSpeciality}, Dst: MyAppointments},
 			{Name: DetailMyAppointment, Src: []string{ChooseAppointment}, Dst: DetailMyAppointment},
 			{Name: ChooseAppointment, Src: []string{Start}, Dst: ChooseAppointment},
 			{Name: CancelAppointment, Src: []string{ChooseAppointment}, Dst: CancelAppointment},
-			{Name: Start, Src: []string{Start, ChooseLanguage, CreateAppointment, ChooseAppointment, MyAppointments, DetailMyAppointment, MoveAppointment}, Dst: Start},
+			{Name: Start, Src: []string{Start, ChooseLanguage, CreateAppointment, ChooseAppointment, DetailMyAppointment, MoveAppointment}, Dst: Start},
 			{Name: MoveAppointment, Src: []string{DetailMyAppointment}, Dst: MoveAppointment},
 			{Name: GetDoctorInfo, Src: []string{GetDoctorInfo, CreateAppointment, DetailMyAppointment, ChooseDoctor, ChooseSchedule}, Dst: GetDoctorInfo},
 		},
@@ -70,7 +68,6 @@ func NewUserStateMachine(userService user.UserService) *UserStateMachine {
 			fmt.Sprintf("enter_%s", GetName):             enterGetName,
 			fmt.Sprintf("enter_%s", GetBirthDate):        enterGetBirthDate,
 			fmt.Sprintf("enter_%s", CreateAppointment):   enterCreateAppointment,
-			fmt.Sprintf("enter_%s", MyAppointments):      enterMyAppointments,
 			fmt.Sprintf("enter_%s", DetailMyAppointment): enterDetailMyAppointment,
 			fmt.Sprintf("enter_%s", CancelAppointment):   enterCancelAppointment,
 			fmt.Sprintf("enter_%s", ChooseAppointment):   enterChooseAppointment,

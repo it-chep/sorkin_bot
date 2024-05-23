@@ -82,10 +82,10 @@ type botGateway interface {
 	SendGetDoctorsMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, doctors map[int]string, offset int)
 	SendChooseSpecialityMessage(
 		ctx context.Context,
-		idToDelete int,
-		translatedSpecialities map[int]string,
 		user entity.User,
 		messageDTO tg.MessageDTO,
+		idToDelete int,
+		translatedSpecialities map[int]string,
 	)
 	SendStartMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
 	SendChangeLanguageMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
@@ -93,7 +93,10 @@ type botGateway interface {
 	SendMyAppointmentsMessage(ctx context.Context, user entity.User, appointments []appointment.Appointment, messageDTO tg.MessageDTO)
 	SendConfirmAppointmentMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, doctorId int)
 	SendFastAppointmentMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
-	SendDetailAppointmentMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, appointmentId int)
+	SendDetailAppointmentMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, appointmentEntity appointment.Appointment)
 	SendSchedulesMessage(ctx context.Context, userEntity entity.User, messageDTO tg.MessageDTO, schedules []appointment.Schedule, offset int)
 	SendSpecialityMessage(ctx context.Context, userEntity entity.User, messageDTO tg.MessageDTO, specialities map[int]string, offset int)
+	SendWaitMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, waitMessage string) int
+	SendEmptyAppointments(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendError(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
 }

@@ -12,9 +12,18 @@ import (
 )
 
 func (c *CallbackBotMessage) getDoctors(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, specialityId int) {
+	var msgText string
+	var err error
+
+	c.bot.RemoveMessage(c.tgUser.TgID, int(messageDTO.MessageID))
+
+	sentMessageId := c.botGateway.SendWaitMessage(ctx, userEntity, messageDTO, "wait doctors")
+
 	doctors := c.appointmentService.GetDoctors(ctx, userEntity.GetTgId(), 0, &specialityId)
 
-	msgText, err := c.messageService.GetMessage(ctx, userEntity, "your speciality")
+	c.bot.RemoveMessage(c.tgUser.TgID, sentMessageId)
+
+	msgText, err = c.messageService.GetMessage(ctx, userEntity, "your speciality")
 
 	if err != nil {
 		c.bot.SendMessage(tgbotapi.NewMessage(userEntity.GetTgId(), msgText), messageDTO)
@@ -26,7 +35,6 @@ func (c *CallbackBotMessage) getDoctors(ctx context.Context, messageDTO tg.Messa
 		return
 	}
 
-	c.bot.RemoveMessage(c.tgUser.TgID, int(messageDTO.MessageID))
 	c.bot.SendMessage(tgbotapi.NewMessage(userEntity.GetTgId(), fmt.Sprintf(msgText, specialityText)), messageDTO)
 
 	if len(doctors) != 0 {
@@ -47,7 +55,7 @@ func (c *CallbackBotMessage) chooseDoctor(ctx context.Context, messageDTO tg.Mes
 	if strings.Contains(callbackData, "offset") {
 		c.moreLessDoctors(ctx, messageDTO, userEntity, callbackData)
 	} else {
-		doctorId, _ := strconv.Atoi(callbackData)
+		doctorId, _ := strconv.Atoi(strings.Split(callbackData, "_")[0])
 		c.getSchedules(ctx, messageDTO, userEntity, callbackData)
 		go c.machine.SetState(userEntity, state_machine.ChooseSchedule)
 		go c.appointmentService.UpdateDraftAppointmentIntField(ctx, userEntity.GetTgId(), doctorId, "doctor_id")
@@ -55,10 +63,11 @@ func (c *CallbackBotMessage) chooseDoctor(ctx context.Context, messageDTO tg.Mes
 }
 
 func (c *CallbackBotMessage) moreLessDoctors(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, callbackData string) {
+
 	offset, _ := strconv.Atoi(strings.Split(callbackData, "_")[1])
 	if strings.Contains(callbackData, ">") {
 		offset += 10
-	} else {
+	} else if strings.Contains(callbackData, "<") {
 		offset -= 10
 	}
 

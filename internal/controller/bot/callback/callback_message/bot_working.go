@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
-	"sorkin_bot/internal/domain/services/message"
 	"sorkin_bot/pkg/client/telegram"
 )
 
@@ -60,7 +59,7 @@ func (c *CallbackBotMessage) Execute(ctx context.Context, messageDTO tg.MessageD
 	userEntity, _ := c.userService.GetUser(ctx, c.tgUser.TgID)
 
 	switch *userEntity.GetState() {
-	case "":
+	case state_machine.Start:
 		c.mainMenu(ctx, messageDTO, userEntity, callbackData)
 	case state_machine.ChooseSpeciality:
 		c.chooseSpeciality(ctx, messageDTO, userEntity, callbackData)
@@ -86,12 +85,20 @@ func (c *CallbackBotMessage) chooseLanguage(ctx context.Context, messageDTO tg.M
 	if err != nil {
 		return
 	}
+
 	userEntity.SetLanguageCode(callbackData)
 	msgText, err := c.messageService.GetMessage(ctx, userEntity, "successfully changed language")
+
+	c.bot.RemoveMessage(userEntity.GetTgId(), int(messageDTO.MessageID))
+
 	if err != nil {
 		c.logger.Error(fmt.Sprintf("error: %s,  place: CallbackBotMessage/chooseLanguage", err))
-		msgText = message.ServerError
+		c.botGateway.SendError(ctx, userEntity, messageDTO)
+		return
 	}
-	msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
+
+	msg := tgbotapi.NewMessage(c.tgUser.TgID, fmt.Sprintf(msgText, callbackData))
 	c.bot.SendMessage(msg, messageDTO)
+	c.botGateway.SendStartMessage(ctx, userEntity, messageDTO)
+	go c.machine.SetState(userEntity, state_machine.Start)
 }

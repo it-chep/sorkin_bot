@@ -2,7 +2,6 @@ package create_appointment
 
 import (
 	"context"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log/slog"
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
@@ -49,9 +48,8 @@ func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.Mes
 		return
 	}
 	switch *userEntity.GetState() {
-	case "":
-		msgText, _ := c.messageService.GetMessage(ctx, userEntity, "wait speciality")
-		sentMessageId := c.bot.SendMessageAndGetId(tgbotapi.NewMessage(c.tgUser.TgID, msgText), messageDTO)
+	case state_machine.Start:
+		sentMessageId := c.botGateway.SendWaitMessage(ctx, userEntity, messageDTO, "wait speciality")
 
 		specialities, err := c.appointmentService.GetSpecialities(ctx)
 		if err != nil {
@@ -63,10 +61,9 @@ func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.Mes
 			return
 		}
 
-		c.botGateway.SendChooseSpecialityMessage(ctx, sentMessageId, translatedSpecialities, userEntity, messageDTO)
+		c.botGateway.SendChooseSpecialityMessage(ctx, userEntity, messageDTO, sentMessageId, translatedSpecialities)
 		go c.machine.SetState(userEntity, state_machine.ChooseSpeciality)
 		go c.appointmentService.CreateDraftAppointment(ctx, userEntity.GetTgId())
-		return
 	}
 	return
 }

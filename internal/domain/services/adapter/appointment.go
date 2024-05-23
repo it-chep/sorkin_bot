@@ -9,13 +9,12 @@ import (
 )
 
 func (a *AppointmentServiceAdapter) CreateAppointment(ctx context.Context, user entity.User, doctorId int, timeStart, timeEnd string) (appointmentId *int, err error) {
-	//appointmentId, err = a.gateway.CreateAppointment(ctx, *user.GetPatientId(), doctorId, timeStart, timeEnd)
-	//if err != nil {
-	//	return nil, err
-	//}
-	fixedAppointmentId := 1
+	appointmentId, err = a.gateway.CreateAppointment(ctx, *user.GetPatientId(), doctorId, timeStart, timeEnd)
+	if err != nil {
+		return nil, err
+	}
 
-	return &fixedAppointmentId, nil
+	return appointmentId, nil
 }
 
 func (a *AppointmentServiceAdapter) MyAppointments(ctx context.Context, user entity.User) (appointments []appointment.Appointment) {

@@ -23,8 +23,15 @@ func (c *CallbackBotMessage) preCreateAppointment(ctx context.Context, messageDT
 }
 
 func (c *CallbackBotMessage) rejectAppointment(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User) {
+	msgText, err := c.messageService.GetMessage(ctx, userEntity, "have rejected appointment")
+	if err != nil {
+		return
+	}
+	msg := tgbotapi.NewMessage(userEntity.GetTgId(), msgText)
+	c.bot.SendMessage(msg, messageDTO)
 	c.bot.RemoveMessage(c.tgUser.TgID, int(messageDTO.MessageID))
 	c.botGateway.SendStartMessage(ctx, userEntity, messageDTO)
+	go c.machine.SetState(userEntity, state_machine.Start)
 }
 
 func (c *CallbackBotMessage) confirmAppointment(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User) {
@@ -55,10 +62,13 @@ func (c *CallbackBotMessage) confirmAppointment(ctx context.Context, messageDTO 
 	c.bot.SendMessage(msg, messageDTO)
 
 	c.botGateway.SendStartMessage(ctx, userEntity, messageDTO)
+	go c.machine.SetState(userEntity, state_machine.Start)
 }
 
 func (c *CallbackBotMessage) fastAppointment(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, callbackData string) {
 	if strings.Contains(callbackData, "fast_") {
+		c.bot.RemoveMessage(userEntity.GetTgId(), int(messageDTO.MessageID))
+
 		items := strings.Split(callbackData, "__")
 		doctorId, _ := strconv.Atoi(items[1])
 		timeStart := items[2]
@@ -76,6 +86,5 @@ func (c *CallbackBotMessage) fastAppointment(ctx context.Context, messageDTO tg.
 }
 
 func (c *CallbackBotMessage) getDoctorInfo(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, callbackData string) {
-	c.machine.SetState(userEntity, state_machine.GetDoctorInfo)
-
+	go c.machine.SetState(userEntity, state_machine.Start)
 }

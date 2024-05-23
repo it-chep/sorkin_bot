@@ -10,10 +10,7 @@ import (
 
 func (as *AppointmentService) GetSpecialities(ctx context.Context) (specialities []appointment.Speciality, err error) {
 	specialities = as.misAdapter.GetSpecialities(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return specialities, err
+	return specialities, nil
 }
 
 func (as *AppointmentService) GetTranslatedSpecialities(
