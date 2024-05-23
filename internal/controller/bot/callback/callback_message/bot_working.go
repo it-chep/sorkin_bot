@@ -97,8 +97,11 @@ func (c *CallbackBotMessage) chooseLanguage(ctx context.Context, messageDTO tg.M
 		return
 	}
 
-	msg := tgbotapi.NewMessage(c.tgUser.TgID, fmt.Sprintf(msgText, callbackData))
-	c.bot.SendMessage(msg, messageDTO)
+	c.bot.SendMessage(
+		tgbotapi.NewMessage(c.tgUser.TgID, fmt.Sprintf(msgText, callbackData)),
+		messageDTO,
+	)
+
 	c.botGateway.SendStartMessage(ctx, userEntity, messageDTO)
 	go c.machine.SetState(userEntity, state_machine.Start)
 }

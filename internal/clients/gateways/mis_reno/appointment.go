@@ -220,7 +220,7 @@ func (mg *MisRenoGateway) MyAppointments(ctx context.Context, patientId int, reg
 	currentTimeUTC := time.Now().UTC()
 
 	// Получаем время в лисабоне(возможно хардкод, но гибкости пока не требуется)
-	location, err := time.LoadLocation("Europe/Paris")
+	location, err := time.LoadLocation("Europe/Lisbon")
 	if err != nil {
 		fmt.Println("Error loading location:", err)
 		return
