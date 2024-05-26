@@ -84,17 +84,31 @@ func (rs AppointmentStorage) FastUpdateDraftAppointment(
 	ctx context.Context, tgId int64,
 	draftAppointment appointment.DraftAppointment,
 ) (err error) {
-	op := "internal/storage/read_repo/appointment/UpdateStatusDraftAppointment"
+	op := "internal/storage/read_repo/appointment/FastUpdateDraftAppointment"
 	q := `
-		update appointment set doctor_id = $1, time_start = $2, time_end = $3 where tg_id = $4 and draft = true;
+		insert into appointment (tg_id, doctor_id, time_start, time_end, draft)
+		values ($1, $2, $3, $4, true);
 	`
+
+	var doctorId int
+	if draftAppointment.GetDoctorId() != nil {
+		doctorId = *draftAppointment.GetDoctorId()
+	}
+
+	var timeStart, timeEnd string
+	if draftAppointment.GetTimeStart() != nil {
+		timeStart = *draftAppointment.GetTimeStart()
+	}
+	if draftAppointment.GetTimeEnd() != nil {
+		timeEnd = *draftAppointment.GetTimeEnd()
+	}
 
 	_, err = rs.client.Exec(
 		ctx, q,
-		draftAppointment.GetDoctorId(),
-		draftAppointment.GetTimeStart(),
-		draftAppointment.GetTimeEnd(),
 		tgId,
+		doctorId,
+		timeStart,
+		timeEnd,
 	)
 
 	if err != nil {

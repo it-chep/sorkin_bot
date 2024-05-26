@@ -21,14 +21,14 @@ func (c *CallbackBotMessage) getAppointmentDetail(ctx context.Context, messageDT
 	}
 
 	appointmentEntity := c.appointmentService.GetAppointmentDetail(ctx, userEntity, appointmentId)
-
+	c.logger.Info("appointmentDetail and callbackData", appointmentEntity, callbackData, appointmentId)
 	if appointmentEntity.GetAppointmentId() != 0 {
 		c.botGateway.SendDetailAppointmentMessage(ctx, userEntity, messageDTO, appointmentEntity)
 	} else {
 		c.botGateway.SendEmptyAppointments(ctx, userEntity, messageDTO)
 	}
 
-	go c.machine.SetState(userEntity, state_machine.DetailMyAppointment)
+	c.machine.SetState(userEntity, state_machine.DetailMyAppointment)
 }
 
 func (c *CallbackBotMessage) detailMyAppointment(ctx context.Context, messageDTO tg.MessageDTO, callbackData string) {
@@ -40,12 +40,12 @@ func (c *CallbackBotMessage) detailMyAppointment(ctx context.Context, messageDTO
 		//} else if dataItems[0] == "reschedule" {
 		//	appointmentId, _ := strconv.Atoi(dataItems[1])
 		//	c.rescheduleAppointment(ctx, messageDTO, userEntity, "", appointmentId)
-	} else if dataItems[0] == "doctor" {
-		return
+	} else if strings.Contains(callbackData, "doc_info") {
+		c.getDoctorInfo(ctx, messageDTO, userEntity, callbackData)
 	} else if dataItems[0] == "exit" {
 		c.bot.RemoveMessage(c.tgUser.TgID, int(messageDTO.MessageID))
 		c.botGateway.SendStartMessage(ctx, userEntity, messageDTO)
-		go c.machine.SetState(userEntity, state_machine.Start)
+		c.machine.SetState(userEntity, state_machine.Start)
 	}
 }
 
@@ -53,7 +53,7 @@ func (c *CallbackBotMessage) cancelAppointment(ctx context.Context, messageDTO t
 	if c.appointmentService.CancelAppointment(ctx, userEntity, appointmentId) {
 		c.bot.RemoveMessage(c.tgUser.TgID, int(messageDTO.MessageID))
 		c.botGateway.SendStartMessage(ctx, userEntity, messageDTO)
-		go c.machine.SetState(userEntity, state_machine.Start)
+		c.machine.SetState(userEntity, state_machine.Start)
 	}
 }
 

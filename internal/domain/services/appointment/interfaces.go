@@ -36,5 +36,5 @@ type CleanDraftAppointmentUseCase interface {
 }
 
 type FastUpdateDraftAppointmentUseCase interface {
-	Execute(ctx context.Context, tgId int64, draftAppointment appointment.DraftAppointment) error
+	Execute(ctx context.Context, tgId int64, draftAppointment appointment.DraftAppointment, created bool) error
 }

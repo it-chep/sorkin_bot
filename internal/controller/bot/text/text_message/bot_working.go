@@ -74,7 +74,7 @@ func (c TextBotMessage) getBirthDate(ctx context.Context, user entity.User, mess
 
 	c.botGateway.SendConfirmAppointmentMessage(ctx, user, messageDTO, *draftAppointment.GetDoctorId())
 	c.appointmentService.CreatePatient(ctx, user)
-	go c.machine.SetState(user, state_machine.CreateAppointment)
+	c.machine.SetState(user, state_machine.CreateAppointment)
 }
 
 func (c TextBotMessage) getPhone(ctx context.Context, user entity.User, messageDTO tg.MessageDTO) {
@@ -102,7 +102,7 @@ func (c TextBotMessage) getPhone(ctx context.Context, user entity.User, messageD
 	messageText, _ := c.messageService.GetMessage(ctx, user, "enter name")
 	msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
 	c.bot.SendMessage(msg, messageDTO)
-	go c.machine.SetState(user, state_machine.GetName)
+	c.machine.SetState(user, state_machine.GetName)
 }
 
 func (c TextBotMessage) getName(ctx context.Context, user entity.User, messageDTO tg.MessageDTO) {
@@ -124,5 +124,5 @@ func (c TextBotMessage) getName(ctx context.Context, user entity.User, messageDT
 	messageText, _ := c.messageService.GetMessage(ctx, user, "enter birthdate")
 	msg = tgbotapi.NewMessage(c.tgUser.TgID, messageText)
 	c.bot.SendMessage(msg, messageDTO)
-	go c.machine.SetState(user, state_machine.GetBirthDate)
+	c.machine.SetState(user, state_machine.GetBirthDate)
 }

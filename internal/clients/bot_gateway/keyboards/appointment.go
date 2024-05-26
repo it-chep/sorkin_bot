@@ -26,7 +26,7 @@ func (k Keyboards) ConfigureFastAppointmentMessage(
 			trimmedProfession := strings.TrimSpace(professionSlug)
 			if speciality, ok := translatedSpecialities[trimmedProfession]; ok {
 				langCode := *userEntity.GetLanguageCode()
-				translatedSpeciality := k.appointmentService.GetSpecialityTranslate(langCode, speciality)
+				translatedSpeciality := k.appointmentService.GetTranslationString(langCode, speciality)
 
 				btn := tgbotapi.NewInlineKeyboardButtonData(
 					fmt.Sprintf("%s || %s || %s", schedule.GetTimeStartShort(), translatedSpeciality, schedule.GetDoctorName()),
@@ -124,7 +124,7 @@ func (k Keyboards) ConfigureAppointmentDetailMessage(ctx context.Context, userEn
 
 	// формируем клавиатуру действий с онлайн записью
 	cancelAppointmentButton := tgbotapi.NewInlineKeyboardButtonData(cancelText, fmt.Sprintf("cancel_%d", appointmentEntity.GetAppointmentId()))
-	docBtn := tgbotapi.NewInlineKeyboardButtonData(docText, fmt.Sprintf("doctor_%d", appointmentEntity.GetDoctorId()))
+	docBtn := tgbotapi.NewInlineKeyboardButtonData(docText, fmt.Sprintf("doc_info_%d", appointmentEntity.GetDoctorId()))
 	exitBtn := tgbotapi.NewInlineKeyboardButtonData(exitText, "exit")
 	keyboardRowDoctor := tgbotapi.NewInlineKeyboardRow(docBtn)
 	keyboardRowCancel := tgbotapi.NewInlineKeyboardRow(cancelAppointmentButton)

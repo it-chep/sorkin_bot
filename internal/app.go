@@ -152,7 +152,7 @@ func (app *App) InitMachine(ctx context.Context) *App {
 }
 
 func (app *App) InitTelegram(ctx context.Context) *App {
-	app.bot = *telegram.NewTelegramBot(*app.config, app.logger)
+	app.bot = *telegram.NewTelegramBot(*app.config, app.logger, app.services.messageService)
 	return app
 }
 

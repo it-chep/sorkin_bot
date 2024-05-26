@@ -8,17 +8,19 @@ type DoctorDTO struct {
 	phone                  string
 	email                  string
 	professionTitles       string
+	secondProfessions      []int
 	secondProfessionTitles string
 	isDeleted              bool
 }
 
-func NewDoctorDTO(id int, name, phone, email, professionTitles, secondProfessionTitles string, isDeleted bool) DoctorDTO {
+func NewDoctorDTO(id int, name, phone, email, professionTitles, secondProfessionTitles string, isDeleted bool, secondProfessions []int) DoctorDTO {
 	return DoctorDTO{
 		id:                     id,
 		name:                   name,
 		phone:                  phone,
 		email:                  email,
 		professionTitles:       professionTitles,
+		secondProfessions:      secondProfessions,
 		secondProfessionTitles: secondProfessionTitles,
 		isDeleted:              isDeleted,
 	}
@@ -26,6 +28,6 @@ func NewDoctorDTO(id int, name, phone, email, professionTitles, secondProfession
 
 func (d DoctorDTO) ToDomain() appointment.Doctor {
 	return appointment.NewDoctor(
-		d.id, d.name, d.phone, d.email, d.professionTitles, d.secondProfessionTitles, d.isDeleted,
+		d.id, d.name, d.phone, d.email, d.professionTitles, d.secondProfessionTitles, d.isDeleted, d.secondProfessions,
 	)
 }

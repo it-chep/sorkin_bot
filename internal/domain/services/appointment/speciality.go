@@ -38,7 +38,7 @@ func (as *AppointmentService) GetTranslatedSpecialities(
 			unTranslatedSpecialities = append(unTranslatedSpecialities, speciality.GetDoctorName())
 		}
 
-		translatedSpeciality = as.GetSpecialityTranslate(langCode, translationEntity)
+		translatedSpeciality = as.GetTranslationString(langCode, translationEntity)
 
 		if translatedSpeciality == "" || !translations[speciality.GetDoctorName()].GetUses() {
 			continue
@@ -58,7 +58,7 @@ func (as *AppointmentService) TranslateSpecialityByID(ctx context.Context, user 
 	}
 
 	langCode := *user.GetLanguageCode()
-	translatedSpeciality = as.GetSpecialityTranslate(langCode, translationEntity)
+	translatedSpeciality = as.GetTranslationString(langCode, translationEntity)
 
 	return translatedSpeciality, nil
 }
@@ -74,7 +74,7 @@ func (as *AppointmentService) TranslateManyByIds(ctx context.Context, user entit
 	for _, translationEntity := range translations {
 
 		langCode := *user.GetLanguageCode()
-		translatedSpeciality := as.GetSpecialityTranslate(langCode, translationEntity)
+		translatedSpeciality := as.GetTranslationString(langCode, translationEntity)
 
 		if translationEntity.GetSourceId() != nil {
 			translatedSpecialities[*translationEntity.GetSourceId()] = translatedSpeciality
@@ -84,16 +84,16 @@ func (as *AppointmentService) TranslateManyByIds(ctx context.Context, user entit
 	return translatedSpecialities, err
 }
 
-func (as *AppointmentService) GetSpecialityTranslate(langCode string, translationEntity appointment.TranslationEntity) (translatedSpeciality string) {
+func (as *AppointmentService) GetTranslationString(langCode string, translationEntity appointment.TranslationEntity) (translatedString string) {
 
 	switch langCode {
 	case "RU":
-		translatedSpeciality = translationEntity.GetRuText()
+		translatedString = translationEntity.GetRuText()
 	case "EN":
-		translatedSpeciality = translationEntity.GetEngText()
+		translatedString = translationEntity.GetEngText()
 	case "PT":
-		translatedSpeciality = translationEntity.GetPtBrText()
+		translatedString = translationEntity.GetPtBrText()
 	}
 
-	return translatedSpeciality
+	return translatedString
 }

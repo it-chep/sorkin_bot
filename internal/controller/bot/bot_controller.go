@@ -12,6 +12,7 @@ import (
 	"sorkin_bot/internal/config"
 	callback "sorkin_bot/internal/controller/bot/callback/callback_message"
 	"sorkin_bot/internal/controller/bot/commands/administration_help"
+	"sorkin_bot/internal/controller/bot/commands/exit"
 	"sorkin_bot/internal/controller/bot/text/text_message"
 
 	"sorkin_bot/internal/controller/bot/commands/change_language"
@@ -119,6 +120,9 @@ func (t TelegramWebhookController) ForkCommands(ctx context.Context, update tgbo
 		command.Execute(ctx, tgMessage)
 	case "change_language":
 		command := change_language.NewChangeLanguageCommand(t.logger, t.botGateway, tgUser, t.machine, t.userService)
+		command.Execute(ctx, tgMessage)
+	case "exit":
+		command := exit.NewExitBotCommand(t.logger, t.botGateway, tgUser, t.machine, t.userService, t.appointmentService)
 		command.Execute(ctx, tgMessage)
 	}
 }

@@ -32,7 +32,6 @@ func (task CheckAdministrationHelpTask) Process(ctx context.Context) error {
 	if err != nil {
 		panic("adminId not found")
 	}
-	return nil
 	minutes, err := strconv.Atoi(os.Getenv("DEFAULT_CHECK_SUPPORT"))
 	if err != nil {
 		panic("DEFAULT_CHECK_SUPPORT not found")

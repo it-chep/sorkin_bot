@@ -11,7 +11,8 @@ import (
 type appointmentService interface {
 	GetFastAppointmentSchedules(ctx context.Context) (randomDoctors map[int]appointment.Schedule)
 	GetAppointments(ctx context.Context, user entity.User) (appointments []appointment.Appointment)
-	GetSpecialityTranslate(langCode string, translationEntity appointment.TranslationEntity) (translatedSpeciality string)
+	GetTranslationString(langCode string, translationEntity appointment.TranslationEntity) (translatedSpeciality string)
+	GetDoctorInfo(ctx context.Context, user entity.User, doctorId int) (doctorEntity appointment.Doctor, err error)
 }
 
 type messageService interface {
@@ -66,4 +67,6 @@ type keyboardsInterface interface {
 		userEntity entity.User,
 		appointmentEntity appointment.Appointment,
 	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
+
+	ConfigureDoctorInfoMessage(ctx context.Context, userEntity entity.User, doctorId int) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
 }

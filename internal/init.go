@@ -128,8 +128,8 @@ func NewApp(ctx context.Context) *App {
 	return app
 }
 
-func (app *App) Run() error {
+func (app *App) Run(ctx context.Context) error {
 	app.logger.Info("start server")
-	go app.workerPool.Run()
+	go app.workerPool.Run(ctx)
 	return app.server.ListenAndServe()
 }

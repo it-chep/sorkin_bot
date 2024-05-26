@@ -2,6 +2,7 @@ package appointment
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"sorkin_bot/internal/domain/entity/appointment"
 )
@@ -62,9 +63,18 @@ func (as *AppointmentService) CleanDraftAppointment(ctx context.Context, tgId in
 }
 
 func (as *AppointmentService) FastUpdateDraftAppointment(ctx context.Context, tgId int64, doctorId int, timeStart, timeEnd string) {
+	var created = true
 	draftAppointment := appointment.NewDraftAppointment(nil, &doctorId, &tgId, &timeStart, &timeEnd, nil)
-	err := as.fastUpdateDraftAppointmentUseCase.Execute(ctx, tgId, draftAppointment)
+	oldDraftAppointment, err := as.readDraftAppointmentRepo.GetUserDraftAppointment(ctx, tgId)
 	if err != nil {
+		return
+	}
+	if oldDraftAppointment.GetTgId() == nil {
+		created = false
+	}
+	err = as.fastUpdateDraftAppointmentUseCase.Execute(ctx, tgId, draftAppointment, created)
+	if err != nil {
+		as.logger.Error(fmt.Sprintf("fast update draft appointment failed: %s", err))
 		return
 	}
 }

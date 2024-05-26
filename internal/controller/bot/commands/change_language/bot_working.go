@@ -32,5 +32,5 @@ func (c ChangeLanguageCommand) Execute(ctx context.Context, messageDTO tg.Messag
 	}
 
 	c.botGateway.SendChangeLanguageMessage(ctx, userEntity, messageDTO)
-	go c.machine.SetState(userEntity, state_machine.ChooseLanguage)
+	c.machine.SetState(userEntity, state_machine.ChooseLanguage)
 }

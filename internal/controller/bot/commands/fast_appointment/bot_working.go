@@ -45,6 +45,6 @@ func (c *FastAppointmentBotCommand) Execute(ctx context.Context, message tg.Mess
 	}
 
 	c.botGateway.SendFastAppointmentMessage(ctx, userEntity, message)
-	go c.machine.SetState(userEntity, state_machine.FastAppointment)
-	go c.appointmentService.CreateDraftAppointment(ctx, userEntity.GetTgId())
+	c.machine.SetState(userEntity, state_machine.FastAppointment)
+	c.appointmentService.CreateDraftAppointment(ctx, userEntity.GetTgId())
 }

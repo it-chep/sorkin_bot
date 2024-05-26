@@ -17,7 +17,7 @@ func (c *CallbackBotMessage) preCreateAppointment(ctx context.Context, messageDT
 	} else if callbackData == "reject_appointment" {
 		c.appointmentService.CleanDraftAppointment(ctx, userEntity.GetTgId())
 		c.rejectAppointment(ctx, messageDTO, userEntity)
-	} else if strings.Contains(callbackData, "doctorInfo") {
+	} else if strings.Contains(callbackData, "doc_info") {
 		c.getDoctorInfo(ctx, messageDTO, userEntity, callbackData)
 	}
 }
@@ -31,7 +31,7 @@ func (c *CallbackBotMessage) rejectAppointment(ctx context.Context, messageDTO t
 	c.bot.SendMessage(msg, messageDTO)
 	c.bot.RemoveMessage(c.tgUser.TgID, int(messageDTO.MessageID))
 	c.botGateway.SendStartMessage(ctx, userEntity, messageDTO)
-	go c.machine.SetState(userEntity, state_machine.Start)
+	c.machine.SetState(userEntity, state_machine.Start)
 }
 
 func (c *CallbackBotMessage) confirmAppointment(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User) {
@@ -62,7 +62,7 @@ func (c *CallbackBotMessage) confirmAppointment(ctx context.Context, messageDTO 
 	c.bot.SendMessage(msg, messageDTO)
 
 	c.botGateway.SendStartMessage(ctx, userEntity, messageDTO)
-	go c.machine.SetState(userEntity, state_machine.Start)
+	c.machine.SetState(userEntity, state_machine.Start)
 }
 
 func (c *CallbackBotMessage) fastAppointment(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, callbackData string) {
@@ -77,14 +77,17 @@ func (c *CallbackBotMessage) fastAppointment(ctx context.Context, messageDTO tg.
 
 		if userEntity.GetPhone() != nil {
 			c.botGateway.SendConfirmAppointmentMessage(ctx, userEntity, messageDTO, doctorId)
-			go c.machine.SetState(userEntity, state_machine.CreateAppointment)
+			c.machine.SetState(userEntity, state_machine.CreateAppointment)
 		} else {
 			c.botGateway.SendGetPhoneMessage(ctx, userEntity, messageDTO)
-			go c.machine.SetState(userEntity, state_machine.GetPhone)
+			c.machine.SetState(userEntity, state_machine.GetPhone)
 		}
 	}
 }
 
 func (c *CallbackBotMessage) getDoctorInfo(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, callbackData string) {
-	go c.machine.SetState(userEntity, state_machine.Start)
+	callbackItems := strings.Split(callbackData, "_")
+	doctorId, _ := strconv.Atoi(callbackItems[2])
+	c.botGateway.SendDoctorInfoMessage(ctx, userEntity, messageDTO, int(messageDTO.MessageID), doctorId)
+	c.machine.SetState(userEntity, state_machine.GetDoctorInfo)
 }

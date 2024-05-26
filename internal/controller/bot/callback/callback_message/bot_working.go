@@ -77,6 +77,8 @@ func (c *CallbackBotMessage) Execute(ctx context.Context, messageDTO tg.MessageD
 		c.detailMyAppointment(ctx, messageDTO, callbackData)
 	case state_machine.ChooseLanguage:
 		c.chooseLanguage(ctx, messageDTO, callbackData)
+	case state_machine.GetDoctorInfo:
+		c.afterDoctorInfo(ctx, messageDTO, userEntity, callbackData)
 	}
 }
 
@@ -103,5 +105,5 @@ func (c *CallbackBotMessage) chooseLanguage(ctx context.Context, messageDTO tg.M
 	)
 
 	c.botGateway.SendStartMessage(ctx, userEntity, messageDTO)
-	go c.machine.SetState(userEntity, state_machine.Start)
+	c.machine.SetState(userEntity, state_machine.Start)
 }

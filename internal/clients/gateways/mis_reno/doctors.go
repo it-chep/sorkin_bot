@@ -8,8 +8,8 @@ import (
 	"sorkin_bot/internal/clients/gateways/mis_reno/mis_dto"
 )
 
-func (mg *MisRenoGateway) GetDoctors(ctx context.Context, specialityId int) (doctors []dto.DoctorDTO, err error) {
-	op := "sorkin_bot.internal.domain.services.appointment.doctors.GetDoctors"
+func (mg *MisRenoGateway) GetDoctorsBySpecialityId(ctx context.Context, specialityId int) (doctors []dto.DoctorDTO, err error) {
+	op := "sorkin_bot.internal.domain.services.appointment.doctors.GetDoctorsBySpecialityId"
 	var response mis_dto.GetUsersResponse
 	var request = mis_dto.GetUserRequest{
 		SpecialityId: specialityId,
@@ -30,7 +30,7 @@ func (mg *MisRenoGateway) GetDoctors(ctx context.Context, specialityId int) (doc
 	return doctors, nil
 }
 
-func (mg *MisRenoGateway) GetDoctorInfo(ctx context.Context, doctorId int) (doctor dto.DoctorDTO, err error) {
+func (mg *MisRenoGateway) GetDoctorInfo(ctx context.Context, doctorId int) (doctorDTO dto.DoctorDTO, err error) {
 	op := "sorkin_bot.internal.domain.services.appointment.doctors.GetDoctorInfo"
 	var response mis_dto.GetUsersResponse
 	var request = mis_dto.GetUserRequest{
@@ -42,10 +42,15 @@ func (mg *MisRenoGateway) GetDoctorInfo(ctx context.Context, doctorId int) (doct
 	err = json.Unmarshal(responseBody, &response)
 	if err != nil {
 		mg.logger.Info(fmt.Sprintf("error while unmarshalling json %s \nplace: %s", err, op))
-		return doctor, err
+		return doctorDTO, err
 	}
 
-	//response.Data
+	for _, doctor := range response.Data {
+		if doctor.MisUser.ID == doctorId {
+			doctorDTO = doctor.ToDTO()
+			break
+		}
+	}
 
-	return doctor, nil
+	return doctorDTO, nil
 }

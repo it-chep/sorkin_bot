@@ -12,5 +12,6 @@ type messageService interface {
 }
 
 type appointmentService interface {
-	GetSpecialityTranslate(langCode string, translationEntity appointment.TranslationEntity) (translatedSpeciality string)
+	GetTranslationString(langCode string, translationEntity appointment.TranslationEntity) (translatedSpeciality string)
+	GetDoctorInfo(ctx context.Context, user userEntity.User, doctorId int) (doctorEntity appointment.Doctor, err error)
 }

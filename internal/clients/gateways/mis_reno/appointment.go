@@ -222,7 +222,7 @@ func (mg *MisRenoGateway) MyAppointments(ctx context.Context, patientId int, reg
 	// Получаем время в лисабоне(возможно хардкод, но гибкости пока не требуется)
 	location, err := time.LoadLocation("Europe/Lisbon")
 	if err != nil {
-		fmt.Println("Error loading location:", err)
+		mg.logger.Error("Error loading location:", err)
 		return
 	}
 
@@ -272,7 +272,11 @@ func (mg *MisRenoGateway) DetailAppointment(ctx context.Context, patientId, appo
 		return appointmentDTO, err
 	}
 
-	appointmentDTO = response.Data[0].ToDTO()
-
+	for _, misDTO := range response.Data {
+		appointmentDTO = misDTO.ToDTO()
+		if appointmentDTO.Id == appointmentId {
+			break
+		}
+	}
 	return appointmentDTO, nil
 }

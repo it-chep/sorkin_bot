@@ -67,4 +67,5 @@ type botGateway interface {
 	SendEmptyAppointments(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
 	SendWaitMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, waitMessage string) int
 	SendError(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendDoctorInfoMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, idToDelete, doctorId int)
 }

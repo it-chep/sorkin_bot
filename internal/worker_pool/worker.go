@@ -2,6 +2,7 @@ package worker_pool
 
 import (
 	"context"
+	"log"
 	"time"
 )
 
@@ -17,12 +18,17 @@ func NewWorker(task Task, interval time.Duration) Worker {
 	}
 }
 
-func (w Worker) Start() {
+func (w Worker) Start(ctx context.Context) {
+LOOP:
 	for {
-		go func() {
-			_ = w.task.Process(context.Background())
-		}()
-		time.Sleep(w.interval)
+		select {
+		case <-ctx.Done():
+			break LOOP
+		case <-time.After(w.interval):
+			if err := w.task.Process(ctx); err != nil {
+				log.Printf("task process error: %v", err) // todo: log
+			}
+		}
 	}
 }
 
@@ -37,9 +43,8 @@ func NewWorkerPool(workers []Worker) WorkerPool {
 	}
 }
 
-// todo ctx
-func (wp WorkerPool) Run() {
+func (wp WorkerPool) Run(ctx context.Context) {
 	for _, w := range wp.workers {
-		go w.Start()
+		go w.Start(ctx)
 	}
 }

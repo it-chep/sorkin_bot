@@ -27,7 +27,8 @@ type AppointmentsActions interface {
 }
 
 type DoctorsActions interface {
-	GetDoctors(ctx context.Context, specialityId int) (doctors []dto.DoctorDTO, err error)
+	GetDoctorsBySpecialityId(ctx context.Context, specialityId int) (doctors []dto.DoctorDTO, err error)
+	GetDoctorInfo(ctx context.Context, doctorId int) (doctorDTO dto.DoctorDTO, err error)
 }
 
 type PatientActions interface {

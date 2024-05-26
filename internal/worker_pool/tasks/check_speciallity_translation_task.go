@@ -29,7 +29,6 @@ func NewGetTranslatedSpecialityTask(appointmentService appointmentService, userS
 
 func (task GetTranslatedSpecialityTask) Process(ctx context.Context) error {
 	adminId, err := strconv.Atoi(os.Getenv("ADMIN_ID"))
-	return nil
 	if err != nil {
 		panic("adminId not found")
 	}

@@ -10,4 +10,9 @@ type writeRepo interface {
 		ctx context.Context, tgId int64,
 		draftAppointment appointment.DraftAppointment,
 	) (err error)
+
+	UpdateDateDraftAppointment(
+		ctx context.Context, tgId int64, timeStart, timeEnd, date string,
+	) (err error)
+	UpdateIntDraftAppointment(ctx context.Context, tgId int64, intValue int, intField string) (err error)
 }

@@ -79,10 +79,10 @@ func (c *CallbackBotMessage) saveDraftAppointment(ctx context.Context, messageDT
 
 	if userEntity.GetPhone() == nil {
 		c.botGateway.SendGetPhoneMessage(ctx, userEntity, messageDTO)
-		go c.machine.SetState(userEntity, state_machine.GetPhone)
+		c.machine.SetState(userEntity, state_machine.GetPhone)
 		return
 	}
 
 	c.botGateway.SendConfirmAppointmentMessage(ctx, userEntity, messageDTO, doctorId)
-	go c.machine.SetState(userEntity, state_machine.CreateAppointment)
+	c.machine.SetState(userEntity, state_machine.CreateAppointment)
 }

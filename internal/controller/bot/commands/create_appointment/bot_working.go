@@ -62,8 +62,8 @@ func (c CreateAppointmentCommand) Execute(ctx context.Context, messageDTO tg.Mes
 		}
 
 		c.botGateway.SendChooseSpecialityMessage(ctx, userEntity, messageDTO, sentMessageId, translatedSpecialities)
-		go c.machine.SetState(userEntity, state_machine.ChooseSpeciality)
-		go c.appointmentService.CreateDraftAppointment(ctx, userEntity.GetTgId())
+		c.machine.SetState(userEntity, state_machine.ChooseSpeciality)
+		c.appointmentService.CreateDraftAppointment(ctx, userEntity.GetTgId())
 	}
 	return
 }

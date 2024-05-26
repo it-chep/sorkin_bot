@@ -2,6 +2,7 @@ package keyboards
 
 import (
 	"context"
+	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	entity "sorkin_bot/internal/domain/entity/user"
 )
@@ -52,4 +53,23 @@ func (k Keyboards) ConfigureMainMenuMessage(ctx context.Context, userEntity enti
 
 	msgText, _ = k.messageService.GetMessage(ctx, userEntity, "Start")
 	return msgText, keyboard
+}
+
+func (k Keyboards) ConfigureDoctorInfoMessage(ctx context.Context, userEntity entity.User, doctorId int) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup) {
+	doctor, err := k.appointmentService.GetDoctorInfo(ctx, userEntity, doctorId)
+	msgText, _ = k.messageService.GetMessage(ctx, userEntity, "empty doctor info")
+
+	buttonBackText, _ := k.messageService.GetMessage(ctx, userEntity, "btn back")
+	keyboard = tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData(buttonBackText, fmt.Sprintf("back_%s_%d", *userEntity.GetState(), doctorId)),
+		),
+	)
+
+	if err != nil {
+		return msgText, keyboard
+	}
+
+	msgText, _ = k.messageService.GetMessage(ctx, userEntity, "doctor info")
+	return fmt.Sprintf(msgText, doctor.GetName(), doctor.GetInfo()), keyboard
 }

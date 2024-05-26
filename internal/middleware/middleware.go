@@ -60,7 +60,7 @@ func (middleware MessageLogMiddleware) ProcessRequest(c *gin.Context) {
 	}
 
 	go func() {
-		if err := middleware.messageService.SaveMessageLog(context.Background(), tgMessage); err != nil {
+		if err = middleware.messageService.SaveMessageLog(context.Background(), tgMessage); err != nil {
 			log.Println("Failed to log incoming message:", err)
 		}
 	}()

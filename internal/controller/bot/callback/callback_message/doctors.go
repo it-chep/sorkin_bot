@@ -39,7 +39,7 @@ func (c *CallbackBotMessage) getDoctors(ctx context.Context, messageDTO tg.Messa
 
 	if len(doctors) != 0 {
 		c.botGateway.SendGetDoctorsMessage(ctx, userEntity, messageDTO, doctors, ZeroOffset)
-		go c.machine.SetState(userEntity, state_machine.ChooseDoctor)
+		c.machine.SetState(userEntity, state_machine.ChooseDoctor)
 	} else {
 		msg := tgbotapi.NewMessage(c.tgUser.TgID, msgText)
 		msgText, err = c.messageService.GetMessage(ctx, userEntity, "empty doctors")
@@ -47,7 +47,7 @@ func (c *CallbackBotMessage) getDoctors(ctx context.Context, messageDTO tg.Messa
 		c.bot.SendMessage(msg, messageDTO)
 		c.moreLessSpeciality(ctx, messageDTO, userEntity, "")
 
-		go c.machine.SetState(userEntity, state_machine.ChooseSpeciality)
+		c.machine.SetState(userEntity, state_machine.ChooseSpeciality)
 	}
 }
 
@@ -57,8 +57,25 @@ func (c *CallbackBotMessage) chooseDoctor(ctx context.Context, messageDTO tg.Mes
 	} else {
 		doctorId, _ := strconv.Atoi(strings.Split(callbackData, "_")[0])
 		c.getSchedules(ctx, messageDTO, userEntity, callbackData)
-		go c.machine.SetState(userEntity, state_machine.ChooseSchedule)
-		go c.appointmentService.UpdateDraftAppointmentIntField(ctx, userEntity.GetTgId(), doctorId, "doctor_id")
+		c.machine.SetState(userEntity, state_machine.ChooseSchedule)
+		c.appointmentService.UpdateDraftAppointmentIntField(ctx, userEntity.GetTgId(), doctorId, "doctor_id")
+	}
+}
+
+func (c *CallbackBotMessage) afterDoctorInfo(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, callbackData string) {
+	callbackDataItems := strings.Split(callbackData, "_")
+	if strings.Contains(callbackData, "back") {
+		previousState := callbackDataItems[1]
+		doctorId, _ := strconv.Atoi(callbackDataItems[2])
+		c.bot.RemoveMessage(userEntity.GetTgId(), int(messageDTO.MessageID))
+		if previousState == state_machine.DetailMyAppointment {
+			appointments := c.appointmentService.GetAppointments(ctx, userEntity)
+			c.botGateway.SendMyAppointmentsMessage(ctx, userEntity, appointments, messageDTO)
+			c.machine.SetState(userEntity, state_machine.ChooseAppointment)
+		} else if previousState == state_machine.CreateAppointment {
+			c.botGateway.SendConfirmAppointmentMessage(ctx, userEntity, messageDTO, doctorId)
+			c.machine.SetState(userEntity, state_machine.CreateAppointment)
+		}
 	}
 }
 

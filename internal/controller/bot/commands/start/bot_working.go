@@ -36,9 +36,9 @@ func (c *StartBotCommand) Execute(ctx context.Context, message tg.MessageDTO) {
 
 	if user.GetState() == nil && user.GetLanguageCode() == nil {
 		c.botGateway.SendChangeLanguageMessage(ctx, user, message)
-		go c.machine.SetState(user, state_machine.ChooseLanguage)
+		c.machine.SetState(user, state_machine.ChooseLanguage)
 	} else {
 		c.botGateway.SendStartMessage(ctx, user, message)
-		go c.machine.SetState(user, state_machine.Start)
+		c.machine.SetState(user, state_machine.Start)
 	}
 }

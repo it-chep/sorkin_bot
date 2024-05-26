@@ -2,12 +2,14 @@ package appointment
 
 import (
 	"context"
+	"fmt"
 	"sorkin_bot/internal/domain/entity/appointment"
+	entity "sorkin_bot/internal/domain/entity/user"
 	"sorkin_bot/pkg/utils"
 )
 
 func (as *AppointmentService) GetDoctors(ctx context.Context, tgId int64, offset int, specialityId *int) (doctorsMap map[int]string) {
-	_ = "sorkin_bot.internal.domain.services.appointment.doctor.GetDoctors"
+	_ = "sorkin_bot.internal.domain.services.appointment.doctor.GetDoctorsBySpecialityId"
 	if specialityId == nil {
 		draftAppointment, err := as.GetDraftAppointment(ctx, tgId)
 		if err != nil {
@@ -29,4 +31,26 @@ func (as *AppointmentService) getDoctorsMap(doctors []appointment.Doctor) (docto
 		doctorsMap[doctor.GetID()] = doctor.GetName()
 	}
 	return doctorsMap
+}
+
+func (as *AppointmentService) GetDoctorInfo(ctx context.Context, user entity.User, doctorId int) (doctorEntity appointment.Doctor, err error) {
+	var translations []appointment.TranslationEntity
+	doctor := as.misAdapter.GetDoctorInfo(ctx, doctorId)
+	ids := doctor.GetSecondProfessions()
+	translationString := ""
+	if len(ids) > 0 {
+		translations, err = as.readMessageRepo.GetManyTranslationsByIds(ctx, ids)
+		if err != nil {
+			return appointment.Doctor{}, err
+		}
+		for _, translation := range translations {
+			translationString = fmt.Sprintf(
+				"%s %s", as.GetTranslationString(*user.GetLanguageCode(), translation), translationString,
+			)
+		}
+		doctorEntity = doctor.SetDoctorInfo(translationString)
+		return doctorEntity, nil
+	} else {
+		return appointment.Doctor{}, fmt.Errorf("doctor not found")
+	}
 }

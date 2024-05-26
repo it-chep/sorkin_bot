@@ -3,6 +3,7 @@ package mis_dto
 import (
 	"encoding/json"
 	"sorkin_bot/internal/clients/gateways/dto"
+	"strconv"
 )
 
 type BaseResponse struct {
@@ -65,8 +66,15 @@ type GetUsersResponse struct {
 }
 
 func (u MisUser) ToDTO() dto.DoctorDTO {
+	professionIds := make([]int, len(u.SecondProfession))
+	if len(u.SecondProfession) > 0 {
+		for _, profession := range u.SecondProfession {
+			professionId, _ := strconv.Atoi(profession)
+			professionIds = append(professionIds, professionId)
+		}
+	}
 	return dto.NewDoctorDTO(
-		u.ID, u.Name, u.Phone, u.Email, u.ProfessionTitles, u.SecondProfessionTitles, u.IsDeleted,
+		u.ID, u.Name, u.Phone, u.Email, u.ProfessionTitles, u.SecondProfessionTitles, u.IsDeleted, professionIds,
 	)
 }
 

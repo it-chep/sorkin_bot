@@ -112,3 +112,17 @@ func (bg BotGateway) SendChooseSpecialityMessage(
 	msg.ReplyMarkup = keyboard
 	bg.bot.SendMessage(msg, messageDTO)
 }
+
+func (bg BotGateway) SendDoctorInfoMessage(
+	ctx context.Context,
+	user entity.User,
+	messageDTO tg.MessageDTO,
+	idToDelete,
+	doctorId int,
+) {
+	bg.bot.RemoveMessage(user.GetTgId(), idToDelete)
+	msgText, keyboard := bg.keyboard.ConfigureDoctorInfoMessage(ctx, user, doctorId)
+	msg := tgbotapi.NewMessage(user.GetTgId(), msgText)
+	msg.ReplyMarkup = keyboard
+	bg.bot.SendMessage(msg, messageDTO)
+}

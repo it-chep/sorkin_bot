@@ -12,12 +12,12 @@ func (c *CallbackBotMessage) mainMenu(ctx context.Context, messageDTO tg.Message
 	switch callbackData {
 	case "fast_appointment":
 		c.botGateway.SendFastAppointmentMessage(ctx, userEntity, messageDTO)
-		go c.machine.SetState(userEntity, state_machine.FastAppointment)
+		c.machine.SetState(userEntity, state_machine.FastAppointment)
 
 	case "create_appointment":
 		c.moreLessSpeciality(ctx, messageDTO, userEntity, callbackData)
-		go c.machine.SetState(userEntity, state_machine.ChooseSpeciality)
-		go c.appointmentService.CreateDraftAppointment(ctx, userEntity.GetTgId())
+		c.machine.SetState(userEntity, state_machine.ChooseSpeciality)
+		c.appointmentService.CreateDraftAppointment(ctx, userEntity.GetTgId())
 
 	case "my_appointments":
 		messageId := c.botGateway.SendWaitMessage(ctx, userEntity, messageDTO, "wait my appointments")
@@ -26,18 +26,18 @@ func (c *CallbackBotMessage) mainMenu(ctx context.Context, messageDTO tg.Message
 
 		if len(appointments) != 0 {
 			c.botGateway.SendMyAppointmentsMessage(ctx, userEntity, appointments, messageDTO)
-			go c.machine.SetState(userEntity, state_machine.ChooseAppointment)
+			c.machine.SetState(userEntity, state_machine.ChooseAppointment)
 		} else {
 			msgText, _ := c.messageService.GetMessage(ctx, userEntity, "empty appointments")
 			msg := tgbotapi.NewMessage(userEntity.GetTgId(), msgText)
 			c.bot.SendMessage(msg, messageDTO)
 
 			c.botGateway.SendStartMessage(ctx, userEntity, messageDTO)
-			go c.machine.SetState(userEntity, state_machine.Start)
+			c.machine.SetState(userEntity, state_machine.Start)
 		}
 
 	case "change_language":
 		c.botGateway.SendChangeLanguageMessage(ctx, userEntity, messageDTO)
-		go c.machine.SetState(userEntity, state_machine.ChooseLanguage)
+		c.machine.SetState(userEntity, state_machine.ChooseLanguage)
 	}
 }
