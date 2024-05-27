@@ -285,6 +285,15 @@ type MisGetPatientResponse struct {
 	} `json:"data"`
 }
 
+type MisGetPatientsResponse struct {
+	Error int `json:"error"`
+	Data  []struct {
+		GetPatientData
+	} `json:"data"`
+}
+
 func (p GetPatientData) ToDTO() dto.CreatedPatientDTO {
-	return dto.NewCreatePatientDTO()
+	return dto.NewCreatePatientDTO(
+		p.PatientID, p.Number,
+	)
 }

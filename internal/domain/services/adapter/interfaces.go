@@ -3,6 +3,7 @@ package adapter
 import (
 	"context"
 	"sorkin_bot/internal/clients/gateways/dto"
+	entity "sorkin_bot/internal/domain/entity/user"
 )
 
 type Gateway interface {
@@ -34,6 +35,7 @@ type DoctorsActions interface {
 type PatientActions interface {
 	GetPatientById(ctx context.Context, patientId int) (patientDTO dto.CreatedPatientDTO, err error)
 	CreatePatient(ctx context.Context, userDTO dto.PatientDTO) (patientId *int, err error)
+	GetPatientByBirthDate(ctx context.Context, user entity.User) (patientDTO dto.CreatedPatientDTO, err error)
 }
 
 type SpecialityActions interface {

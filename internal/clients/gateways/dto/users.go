@@ -10,8 +10,11 @@ type CreatedPatientDTO struct {
 	PatientDTO
 }
 
-func NewCreatePatientDTO() CreatedPatientDTO {
-	return CreatedPatientDTO{}
+func NewCreatePatientDTO(patientId, number int) CreatedPatientDTO {
+	return CreatedPatientDTO{
+		PatientID: patientId,
+		Number:    number,
+	}
 }
 
 func (d CreatedPatientDTO) ToDomain() {
