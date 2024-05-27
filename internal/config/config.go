@@ -31,11 +31,21 @@ type StorageConfig struct {
 	User         string        `yaml:"user"`
 	Password     string        `yaml:"password"`
 	MaxRetry     int           `yaml:"max_retry"`
+	MaxConnects  int           `yaml:"max_connects"`
 	RetryTimeout time.Duration `yaml:"retry_timeout"`
 }
 
 type BotConfig struct {
-	Token string `yaml:"token"`
+	Token         string        `yaml:"token"`
+	WebhookURL    string        `yaml:"webhook"`
+	UpdatesConfig UpdatesConfig `yaml:"updates_config"`
+}
+
+type UpdatesConfig struct {
+	Offset         int      `yaml:"offset"`
+	Limit          int      `yaml:"limit"`
+	Timeout        int      `yaml:"timeout"`
+	AllowedUpdates []string `yaml:"allowed_updates"`
 }
 
 type MISConfig struct {

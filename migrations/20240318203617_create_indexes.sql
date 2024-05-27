@@ -1,16 +1,13 @@
 -- +goose NO TRANSACTION
 -- +goose Up
-create index concurrently if not exists tg_users on tg_id (tg_id);
--- create index concurrently if not exists tg_users on tg_id (tg_id);
-create index concurrently if not exists message_logs on referals (tg_id);
--- create index concurrently if not exists message_logs on referal (tg_id);
-create index concurrently if not exists admins_login on admins (login);
--- create index concurrently if not exists admins_login on admin (login);
+
+create unique index uniq_tg_id on appointment(tg_id) where draft = true;
+create index concurrently if not exists tg_users_id on tg_users (tg_id);
+-- create index concurrently if not exists tg_users_id on tg_users (tg_id);
+create index concurrently if not exists message_logs_id on message_logs (tg_id);
+-- create index concurrently if not exists message_logs_id on message_logs (tg_id);
 
 -- +goose Down
-drop index concurrently tg_users;
--- drop index concurrently users_tg_id;
-drop index concurrently referals_tg_id;
--- drop index concurrently referals_tg_id;
-drop index concurrently admins_login;
--- drop index concurrently admins_login;
+drop index if exists uniq_tg_id;
+drop index concurrently tg_users_id;
+-- drop index concurrently tg_users_id;

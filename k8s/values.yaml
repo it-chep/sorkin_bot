@@ -16,7 +16,13 @@ storage:
   retry_timeout: 5s
 
 bot:
-  token:
+  token: "${BOT_TOKEN}"
+  webhook: "${WEBHOOK_URL}"
+  updates_config:
+    offset: 5
+    limit: 5
+    timeout: 5
+    allowed_updates: ["GET", "POST"]
 
 mis:
   url:
