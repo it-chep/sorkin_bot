@@ -27,7 +27,6 @@ func (ws TelegramMessageStorage) CreateMessageLog(ctx context.Context, messageLo
 		insert into message_log (tg_message_id, text, user_tg_id, time) 
 		values ($1, $2, $3, $4);
 	`
-	ws.logger.Info(op)
 
 	_, err = ws.client.Exec(
 		ctx, q, messageLog.GetTgMessageId(), messageLog.GetMessageText(), messageLog.GetUserTgId(), time.Now().UTC(),

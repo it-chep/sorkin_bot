@@ -29,6 +29,7 @@ func (as *AppointmentService) GetFastAppointmentSchedules(ctx context.Context) (
 	for doctorID := range schedulesMap {
 		doctorIDs = append(doctorIDs, doctorID)
 	}
+
 	// TODO УЖАС !!!!! А не вложенность, подумать, но такие кривые данные приходят от МИС
 	for _, schedule := range schedulesMap {
 		for _, scheduleItem := range schedule {

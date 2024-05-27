@@ -21,12 +21,7 @@ func NewTelegramBot(cfg config.Config, logger *slog.Logger, messageService messa
 	if err != nil {
 		panic("can't create bot instance")
 	}
-	//updates, err := bot.GetUpdates(tgbotapi.UpdateConfig{AllowedUpdates: []string{"message", "callback_query"}, Limit: 100, Offset: 0})
-	//if err != nil {
-	//	return nil
-	//}
-	//logger.Info(fmt.Sprintf("%v", updates))
-	//time.Sleep(6 * time.Second)
+
 	wh, _ := tgbotapi.NewWebhook(cfg.Bot.WebhookURL + bot.Token + "/")
 	_, err = bot.Request(wh)
 	if err != nil {

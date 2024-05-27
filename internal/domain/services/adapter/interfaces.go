@@ -16,7 +16,6 @@ type Gateway interface {
 
 type SchedulesActions interface {
 	GetSchedules(ctx context.Context, doctorId int, timeStart string) (schedulesMap map[int][]dto.ScheduleDTO, err error)
-	FastAppointment(ctx context.Context) (schedulesMap map[int][]dto.ScheduleDTO, err error)
 }
 
 type AppointmentsActions interface {

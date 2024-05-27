@@ -55,18 +55,12 @@ func NewAppointmentService(
 }
 
 func (as *AppointmentService) GetAppointments(ctx context.Context, user entity.User) (appointments []appointment.Appointment) {
-	op := "sorkin_bot.internal.domain.services.appointment.appointment.GetAppointments"
+	_ = "sorkin_bot.internal.domain.services.appointment.appointment.GetAppointments"
 	if user.GetPatientId() == nil {
 		return
 	}
 
-	appointments = as.misAdapter.MyAppointments(ctx, user)
-
-	for _, appointmentEntity := range appointments {
-		as.logger.Info(fmt.Sprintf("%d %s %s", appointmentEntity.GetAppointmentId(), appointmentEntity.GetTimeStart(), op))
-	}
-
-	return appointments
+	return as.misAdapter.MyAppointments(ctx, user)
 }
 
 func (as *AppointmentService) GetAppointmentDetail(ctx context.Context, user entity.User, appointmentId int) (appointmentEntity appointment.Appointment) {

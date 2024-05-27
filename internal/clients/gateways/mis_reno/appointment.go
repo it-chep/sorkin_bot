@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log/slog"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -109,51 +108,6 @@ func (mg *MisRenoGateway) sendToMIS(ctx context.Context, method string, body []b
 
 }
 
-// FastAppointment возвращает 3 ближайших окна на запись к врачу
-func (mg *MisRenoGateway) FastAppointment(ctx context.Context) (schedulesMap map[int][]dto.ScheduleDTO, err error) {
-	currentTime := time.Now()
-	filteredSchedulesMap := make(map[int][]dto.ScheduleDTO)
-	// Время начала приемов - завтра
-	timeStart := fmt.Sprintf("%02d.%02d.%d %02d:%02d", currentTime.Day()+1, currentTime.Month(), currentTime.Year(), currentTime.Hour(), currentTime.Minute())
-
-	schedulesMap, err = mg.GetSchedules(ctx, 0, timeStart)
-	if err != nil {
-		return schedulesMap, err
-	}
-	// todo нам необходимо 3-4 окна -> 3 врача с минимальной timeStart
-	// todo расписание доктора нам приходит по возрастанию
-	for doctorId, schedule := range schedulesMap {
-		filteredSchedulesMap[doctorId] = schedule
-		mg.logger.Info(fmt.Sprintf("DoctorID %d, shedules %s", doctorId, schedule))
-		continue
-	}
-
-	// todo докрутить рандомный выбор окон врачей and move to service
-	rand.Seed(time.Now().UnixNano())
-
-	randomDoctors := make(map[int][]dto.ScheduleDTO)
-	var doctorIDs []int
-	for doctorID := range schedulesMap {
-		doctorIDs = append(doctorIDs, doctorID)
-	}
-
-	rand.Shuffle(len(doctorIDs), func(i, j int) {
-		doctorIDs[i], doctorIDs[j] = doctorIDs[j], doctorIDs[i]
-	})
-
-	numDoctorsToSelect := 4
-	if len(doctorIDs) < 4 {
-		numDoctorsToSelect = len(doctorIDs)
-	}
-
-	for i := 0; i < numDoctorsToSelect; i++ {
-		doctorID := doctorIDs[i]
-		randomDoctors[doctorID] = schedulesMap[doctorID]
-	}
-
-	return randomDoctors, nil
-}
-
 func (mg *MisRenoGateway) CreateAppointment(ctx context.Context, patientId, doctorId int, timeStart, timeEnd string) (appointmentId *int, err error) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.CreateAppointment"
 	var response mis_dto.CreateAppointmentResponse
@@ -171,7 +125,6 @@ func (mg *MisRenoGateway) CreateAppointment(ctx context.Context, patientId, doct
 	if err != nil {
 		return nil, err
 	}
-	mg.logger.Info("CreateAppointment response: ", string(responseBody), request)
 
 	id, _ := strconv.Atoi(response.Data)
 
@@ -236,14 +189,12 @@ func (mg *MisRenoGateway) MyAppointments(ctx context.Context, patientId int, reg
 		PatientId:       patientId,
 		StatusId:        mis_dto.ActiveStatusIDs,
 	}
-	mg.logger.Info("request", request)
 	responseBody := mg.sendToMIS(ctx, mis_dto.GetAppointmentsMethod, JsonMarshaller(request, op, mg.logger))
 
 	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)
 	if err != nil {
 		return appointments, err
 	}
-	mg.logger.Info("response: ", string(responseBody), request)
 
 	for _, appointment := range response.Data {
 		appointments = append(appointments, appointment.ToDTO())

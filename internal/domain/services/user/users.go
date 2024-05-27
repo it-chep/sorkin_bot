@@ -59,7 +59,7 @@ func (u UserService) GetUser(ctx context.Context, tgId int64) (user entity.User,
 }
 
 func (u UserService) RegisterNewUser(ctx context.Context, dto tg.TgUserDTO) (user entity.User, err error) {
-	op := "sorkin_bot.internal.domain.services.user.users.RegisterNewUser"
+	_ = "sorkin_bot.internal.domain.services.user.users.RegisterNewUser"
 
 	user, err = u.GetUser(ctx, dto.TgID)
 	if err != nil {
@@ -77,8 +77,6 @@ func (u UserService) RegisterNewUser(ctx context.Context, dto tg.TgUserDTO) (use
 			entity.WithUsrLastName(&dto.LastName),
 		},
 	)
-
-	u.logger.Info("user was not found, trying to register new user", user, op)
 
 	//// Save new user
 	_, err = u.createUserUseCase.Execute(ctx, newUser)

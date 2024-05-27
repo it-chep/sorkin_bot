@@ -2,7 +2,6 @@ package adapter
 
 import (
 	"context"
-	"fmt"
 	"sorkin_bot/internal/clients/gateways/dto"
 	entity "sorkin_bot/internal/domain/entity/user"
 )
@@ -18,7 +17,6 @@ func (a *AppointmentServiceAdapter) GetPatientById(ctx context.Context, patientI
 
 func (a *AppointmentServiceAdapter) CreatePatient(ctx context.Context, user entity.User) (patientId *int, err error) {
 	patientDTO, err := a.gateway.GetPatientByBirthDate(ctx, user)
-	fmt.Println("CreatePatient", patientDTO, &patientDTO.PatientID)
 	if err == nil {
 		return &patientDTO.PatientID, nil
 	}
