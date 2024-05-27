@@ -81,7 +81,7 @@ type InlineKeyboardMarkup struct {
 }
 
 type MessageDTO struct {
-	MessageID         int                   `json:"message_id"`
+	MessageID         int64                 `json:"message_id"`
 	Date              int                   `json:"date"`
 	Chat              *Chat                 `json:"chat"`
 	ForwardDate       int                   `json:"forward_date,omitempty"`
@@ -110,9 +110,10 @@ type TgUserDTO struct {
 	SupportsInlineQueries bool   `json:"supports_inline_queries,omitempty"`
 }
 
-func (tg *TgUserDTO) ToDomain() entity.User {
+func (tg *TgUserDTO) ToDomain(opts []entity.UserOpt) entity.User {
 	return *entity.NewUser(
 		tg.TgID,
 		tg.FirstName,
+		opts...,
 	)
 }

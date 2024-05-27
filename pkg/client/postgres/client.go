@@ -5,62 +5,57 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"sorkin_bot/internal/config"
 	"time"
 )
 
 type Client interface {
-	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
+	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
 	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
-	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
 	Begin(ctx context.Context) (pgx.Tx, error)
 	BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error)
 }
 
 type PgxClientWrapper struct {
-	conn *pgx.Conn
+	pool *pgxpool.Pool
 }
 
-func (c *PgxClientWrapper) Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error) {
-	return c.conn.Exec(ctx, sql, arguments...)
+func (c *PgxClientWrapper) Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error) {
+	return c.pool.Exec(ctx, sql, arguments...)
 }
 
 func (c *PgxClientWrapper) Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error) {
-	return c.conn.Query(ctx, sql, args)
+	return c.pool.Query(ctx, sql, args...)
 }
 
-func (c *PgxClientWrapper) QueryRow(ctx context.Context, sql string, args ...any) pgx.Row {
-	return c.conn.QueryRow(ctx, sql, args...)
+func (c *PgxClientWrapper) QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row {
+	return c.pool.QueryRow(ctx, sql, args...)
 }
 
 func (c *PgxClientWrapper) Begin(ctx context.Context) (pgx.Tx, error) {
-	return c.conn.Begin(ctx)
+	return c.pool.Begin(ctx)
 }
 
 func (c *PgxClientWrapper) BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error) {
-	return c.conn.BeginTx(ctx, txOptions)
+	return c.pool.BeginTx(ctx, txOptions)
 }
 
 func NewClient(ctx context.Context, pg config.StorageConfig) (client Client, err error) {
-	const op = "referalMS.pkg.client.postgres.NewClient"
-	DSN := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", pg.User, pg.Password, pg.Host, pg.Port, pg.Database)
+	const op = "sorkin_bot.pkg.client.postgres.NewClient"
+	DSN := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?pool_max_conns=%d", pg.User, pg.Password, pg.Host, pg.Port, pg.Database, pg.MaxConnects)
 
-	err = ConnectWithRetry(func() error {
-		ctx, cancel := context.WithTimeout(ctx, pg.RetryTimeout)
-		defer cancel()
-
-		client, err = pgx.Connect(ctx, DSN)
-		if err != nil {
-			return err
-		}
-		return nil
-	}, pg.MaxRetry, pg.RetryTimeout)
-
+	poolConfig, err := pgxpool.ParseConfig(DSN)
 	if err != nil {
-		return client, err
+		return nil, err
+	}
+	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
+	if err != nil {
+		return nil, err
 	}
 
-	return client, nil
+	return &PgxClientWrapper{pool: pool}, nil
 }
 
 func ConnectWithRetry(fn func() error, maxRetry int, timeout time.Duration) (err error) {

@@ -1,9 +1,10 @@
 package controller
 
 import (
-	"context"
 	"github.com/gin-gonic/gin"
 	botapi "sorkin_bot/internal/controller/bot"
+	"sorkin_bot/internal/domain/entity/user/state_machine"
+	"sorkin_bot/internal/middleware"
 	"sorkin_bot/pkg/client/telegram"
 
 	"log/slog"
@@ -12,17 +13,35 @@ import (
 )
 
 type RestController struct {
-	router           *gin.Engine
-	cfg              config.Config
-	logger           *slog.Logger
-	botApiController botapi.TelegramWebhookController
+	router             *gin.Engine
+	cfg                config.Config
+	logger             *slog.Logger
+	botApiController   botapi.TelegramWebhookController
+	userService        userService
+	appointmentService appointmentService
+	messageService     messageService
+	botGateway         botGateway
 }
 
-func NewRestController(cfg config.Config, logger *slog.Logger, bot telegram.Bot) *RestController {
+func NewRestController(
+	cfg config.Config,
+	logger *slog.Logger,
+	bot telegram.Bot,
+	machine *state_machine.UserStateMachine,
+	userService userService,
+	appointmentService appointmentService,
+	messageService messageService,
+	botGateway botGateway,
+) *RestController {
 	router := gin.New()
-	router.Use(gin.Recovery())
+	botMiddleware := middleware.NewMessageLogMiddleware(messageService)
+	sentryMiddleware := middleware.NewSentryMiddleware()
+	tgAdminMiddleware := middleware.NewTgAdminWarningMiddleware()
+	router.Use(gin.Recovery(), botMiddleware.ProcessRequest, sentryMiddleware.ProcessRequest, tgAdminMiddleware.ProcessRequest)
 
-	botApiController := botapi.NewTelegramWebhookController(cfg, logger, bot)
+	botApiController := botapi.NewTelegramWebhookController(
+		cfg, logger, bot, machine, userService, appointmentService, messageService, botGateway,
+	)
 
 	return &RestController{
 		router:           router,
@@ -32,7 +51,7 @@ func NewRestController(cfg config.Config, logger *slog.Logger, bot telegram.Bot)
 	}
 }
 
-func (r RestController) InitController(ctx context.Context) {
+func (r RestController) InitController() {
 	r.router.POST("/"+r.cfg.Bot.Token+"/", r.botApiController.BotWebhookHandler)
 }
 
