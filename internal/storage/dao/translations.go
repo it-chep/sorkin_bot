@@ -8,7 +8,7 @@ type TranslationDao struct {
 	EngText    string `db:"eng_text"`
 	PtBrText   string `db:"pt_br_text"`
 	Uses       bool   `db:"uses"`
-	SourceId   *int   `db:"source_id"`
+	SourceId   *int   `db:"id_in_source_system"`
 	Profession string `db:"profession"`
 }
 

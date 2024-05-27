@@ -26,7 +26,7 @@ func NewTranslationRepo(client postgres.Client, logger *slog.Logger) Translation
 func (tr TranslationStorage) GetTranslationsBySlugKeySlug(ctx context.Context, slug string) (translations map[string]appointment.TranslationEntity, err error) {
 	var translationsDao []dao.TranslationDao
 	op := "sorkin_bot.internal.storage.read_repo.translations.GetTranslationsBySlugKeySlug"
-	q := `select slug, ru_text, eng_text, pt_br_text, uses, profession from translations where slug like  $1 || '%' and uses = true;`
+	q := `select slug, ru_text, eng_text, pt_br_text, uses, profession, id_in_source_system from translations where slug like  $1 || '%' and uses = true;`
 
 	err = pgxscan.Select(ctx, tr.client, &translationsDao, q, slug)
 	if err != nil {
@@ -44,7 +44,7 @@ func (tr TranslationStorage) GetTranslationsBySlugKeySlug(ctx context.Context, s
 func (tr TranslationStorage) GetTranslationsBySlugKeyProfession(ctx context.Context, slug string) (translations map[string]appointment.TranslationEntity, err error) {
 	var translationsDao []dao.TranslationDao
 	op := "sorkin_bot.internal.storage.read_repo.translations.GetTranslationsBySlugKeySlug"
-	q := `select slug, ru_text, eng_text, pt_br_text, uses, profession from translations where slug like  $1 || '%' and uses = true;`
+	q := `select slug, ru_text, eng_text, pt_br_text, uses, profession, id_in_source_system from translations where slug like  $1 || '%' and uses = true;`
 
 	err = pgxscan.Select(ctx, tr.client, &translationsDao, q, slug)
 	if err != nil {
@@ -62,7 +62,7 @@ func (tr TranslationStorage) GetTranslationsBySlugKeyProfession(ctx context.Cont
 func (tr TranslationStorage) GetTranslationsBySourceId(ctx context.Context, sourceId int) (translation appointment.TranslationEntity, err error) {
 	var translationsDao dao.TranslationDao
 	op := "sorkin_bot.internal.storage.read_repo.translations.GetTranslationsBySourceId"
-	q := `select slug, ru_text, eng_text, pt_br_text, uses from translations where id_in_source_system = $1 and uses = true;`
+	q := `select slug, ru_text, eng_text, pt_br_text, uses, id_in_source_system from translations where id_in_source_system = $1 and uses = true;`
 
 	err = pgxscan.Get(ctx, tr.client, &translationsDao, q, sourceId)
 	if err != nil {
@@ -88,7 +88,7 @@ func (tr TranslationStorage) GetManyTranslationsByIds(ctx context.Context, ids [
 	}
 
 	q := fmt.Sprintf(
-		`select slug, ru_text, eng_text, pt_br_text, uses 
+		`select slug, ru_text, eng_text, pt_br_text, uses, id_in_source_system 
 				from translations 
 				where id_in_source_system in (%s) and uses = true;
 		`, strings.Join(placeholders, ","),

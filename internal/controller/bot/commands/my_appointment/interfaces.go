@@ -17,6 +17,6 @@ type userService interface {
 }
 
 type botGateway interface {
-	SendMyAppointmentsMessage(ctx context.Context, user entity.User, appointments []appointment.Appointment, messageDTO tg.MessageDTO)
+	SendMyAppointmentsMessage(ctx context.Context, user entity.User, appointments []appointment.Appointment, messageDTO tg.MessageDTO, offset int)
 	SendStartMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
 }

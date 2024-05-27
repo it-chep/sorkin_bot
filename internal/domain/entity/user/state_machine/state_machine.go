@@ -2,7 +2,6 @@ package state_machine
 
 import (
 	"context"
-	"fmt"
 	"github.com/looplab/fsm"
 	entity "sorkin_bot/internal/domain/entity/user"
 	"sorkin_bot/internal/domain/services/appointment"
@@ -45,7 +44,7 @@ func NewUserStateMachine(userService user.UserService) *UserStateMachine {
 			{Name: ChooseLanguage, Src: []string{Start}, Dst: ChooseLanguage},
 			{Name: ChooseSpeciality, Src: []string{Start, ChooseLanguage}, Dst: ChooseSpeciality},
 			{Name: FastAppointment, Src: []string{Start}, Dst: FastAppointment},
-			{Name: ChooseDoctor, Src: []string{Start, ChooseSpeciality, FastAppointment}, Dst: ChooseDoctor},
+			{Name: ChooseDoctor, Src: []string{DetailMyAppointment, Start, ChooseSpeciality, FastAppointment, CreateAppointment}, Dst: ChooseDoctor},
 			{Name: ChooseSchedule, Src: []string{Start, ChooseDoctor}, Dst: ChooseSchedule},
 			{Name: GetPhone, Src: []string{ChooseSchedule}, Dst: GetPhone},
 			{Name: GetName, Src: []string{GetPhone}, Dst: GetName},
@@ -54,29 +53,26 @@ func NewUserStateMachine(userService user.UserService) *UserStateMachine {
 			{Name: DetailMyAppointment, Src: []string{Start, GetDoctorInfo, ChooseAppointment}, Dst: DetailMyAppointment},
 			{Name: ChooseAppointment, Src: []string{Start, GetDoctorInfo}, Dst: ChooseAppointment},
 			{Name: CancelAppointment, Src: []string{ChooseAppointment}, Dst: CancelAppointment},
-			{Name: Start, Src: []string{Start, ChooseLanguage, ChooseSpeciality, FastAppointment,
-				ChooseDoctor, ChooseSchedule, CreateAppointment, DetailMyAppointment,
-				CancelAppointment, ChooseAppointment, MoveAppointment, GetDoctorInfo,
+			{Name: Start, Src: []string{DetailMyAppointment, Start, ChooseLanguage, ChooseSpeciality, FastAppointment,
+				ChooseDoctor, ChooseSchedule, CreateAppointment, CancelAppointment, ChooseAppointment, GetDoctorInfo,
 			}, Dst: Start},
-			{Name: MoveAppointment, Src: []string{DetailMyAppointment}, Dst: MoveAppointment},
 			{Name: GetDoctorInfo, Src: []string{GetDoctorInfo, CreateAppointment, ChooseAppointment, DetailMyAppointment, ChooseDoctor, ChooseSchedule}, Dst: GetDoctorInfo},
 		},
 		fsm.Callbacks{
-			fmt.Sprintf("enter_%s", Start):               enterStart,
-			fmt.Sprintf("enter_%s", ChooseLanguage):      enterChooseLanguage,
-			fmt.Sprintf("enter_%s", ChooseSpeciality):    enterChooseSpeciality,
-			fmt.Sprintf("enter_%s", FastAppointment):     enterFastAppointment,
-			fmt.Sprintf("enter_%s", ChooseDoctor):        enterChooseDoctor,
-			fmt.Sprintf("enter_%s", ChooseSchedule):      enterChooseSchedule,
-			fmt.Sprintf("enter_%s", GetPhone):            enterGetPhone,
-			fmt.Sprintf("enter_%s", GetName):             enterGetName,
-			fmt.Sprintf("enter_%s", GetBirthDate):        enterGetBirthDate,
-			fmt.Sprintf("enter_%s", CreateAppointment):   enterCreateAppointment,
-			fmt.Sprintf("enter_%s", DetailMyAppointment): enterDetailMyAppointment,
-			fmt.Sprintf("enter_%s", CancelAppointment):   enterCancelAppointment,
-			fmt.Sprintf("enter_%s", ChooseAppointment):   enterChooseAppointment,
-			fmt.Sprintf("enter_%s", MoveAppointment):     enterMoveAppointment,
-			fmt.Sprintf("enter_%s", GetDoctorInfo):       enterGetDoctorInfo,
+			//fmt.Sprintf("enter_%s", Start):               enterStart,
+			//fmt.Sprintf("enter_%s", ChooseLanguage):      enterChooseLanguage,
+			//fmt.Sprintf("enter_%s", ChooseSpeciality):    enterChooseSpeciality,
+			//fmt.Sprintf("enter_%s", FastAppointment):     enterFastAppointment,
+			//fmt.Sprintf("enter_%s", ChooseDoctor):        enterChooseDoctor,
+			//fmt.Sprintf("enter_%s", ChooseSchedule):      enterChooseSchedule,
+			//fmt.Sprintf("enter_%s", GetPhone):            enterGetPhone,
+			//fmt.Sprintf("enter_%s", GetName):             enterGetName,
+			//fmt.Sprintf("enter_%s", GetBirthDate):        enterGetBirthDate,
+			//fmt.Sprintf("enter_%s", CreateAppointment):   enterCreateAppointment,
+			//fmt.Sprintf("enter_%s", DetailMyAppointment): enterDetailMyAppointment,
+			//fmt.Sprintf("enter_%s", CancelAppointment):   enterCancelAppointment,
+			//fmt.Sprintf("enter_%s", ChooseAppointment):   enterChooseAppointment,
+			//fmt.Sprintf("enter_%s", GetDoctorInfo):       enterGetDoctorInfo,
 		},
 	)
 	return machine
@@ -84,8 +80,16 @@ func NewUserStateMachine(userService user.UserService) *UserStateMachine {
 
 func (machine *UserStateMachine) SetState(user entity.User, to string) {
 	ctx := context.Background()
-	err := machine.FSM.Event(ctx, to, user, machine.userService)
+	err := changeState(ctx, to, user, machine.userService)
 	if err != nil {
 		return
 	}
+}
+
+func changeState(ctx context.Context, to string, user entity.User, userService userService) error {
+	_, err := userService.ChangeState(ctx, user.GetTgId(), to)
+	if err != nil {
+		return err
+	}
+	return nil
 }

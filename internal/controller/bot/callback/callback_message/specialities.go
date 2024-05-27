@@ -19,7 +19,7 @@ func (c *CallbackBotMessage) chooseSpeciality(ctx context.Context, messageDTO tg
 	} else {
 		specialityId, _ := strconv.Atoi(callbackData)
 		c.getDoctors(ctx, messageDTO, userEntity, specialityId)
-		go c.appointmentService.UpdateDraftAppointmentIntField(ctx, userEntity.GetTgId(), specialityId, "speciality_id")
+		c.appointmentService.UpdateDraftAppointmentIntField(ctx, userEntity.GetTgId(), specialityId, "speciality_id")
 	}
 
 }

@@ -21,6 +21,6 @@ func NewUpdateFullNameUseCase(writeRepo WriteRepo, logger *slog.Logger) UpdateUp
 
 func (uc UpdateUpdateFullNameUseCase) Execute(ctx context.Context, user entity.User, fullName string) (err error) {
 	splitName := strings.Split(fullName, " ")
-	name, surname, thirdName := splitName[0], splitName[1], "..."
+	name, surname, thirdName := splitName[0], splitName[1], "."
 	return uc.writeRepo.UpdateUserFullName(ctx, user, name, surname, thirdName)
 }

@@ -2,8 +2,6 @@ package mis_reno
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"sorkin_bot/internal/clients/gateways/dto"
 	"sorkin_bot/internal/clients/gateways/mis_reno/mis_dto"
 )
@@ -17,9 +15,8 @@ func (mg *MisRenoGateway) GetDoctorsBySpecialityId(ctx context.Context, speciali
 
 	responseBody := mg.sendToMIS(ctx, mis_dto.GetUsersMethod, JsonMarshaller(request, op, mg.logger))
 
-	err = json.Unmarshal(responseBody, &response)
+	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)
 	if err != nil {
-		mg.logger.Info(fmt.Sprintf("error while unmarshalling json %s \nplace: %s", err, op))
 		return doctors, err
 	}
 
@@ -39,9 +36,8 @@ func (mg *MisRenoGateway) GetDoctorInfo(ctx context.Context, doctorId int) (doct
 
 	responseBody := mg.sendToMIS(ctx, mis_dto.GetUsersMethod, JsonMarshaller(request, op, mg.logger))
 
-	err = json.Unmarshal(responseBody, &response)
+	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)
 	if err != nil {
-		mg.logger.Info(fmt.Sprintf("error while unmarshalling json %s \nplace: %s", err, op))
 		return doctorDTO, err
 	}
 

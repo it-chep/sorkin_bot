@@ -32,8 +32,8 @@ func (bg BotGateway) SendConfirmAppointmentMessage(ctx context.Context, user ent
 	bg.bot.SendMessage(msg, messageDTO)
 }
 
-func (bg BotGateway) SendMyAppointmentsMessage(ctx context.Context, user entity.User, appointments []appointment.Appointment, messageDTO tg.MessageDTO) {
-	msgText, keyboard := bg.keyboard.ConfigureGetMyAppointmentsMessage(ctx, user, appointments, 0)
+func (bg BotGateway) SendMyAppointmentsMessage(ctx context.Context, user entity.User, appointments []appointment.Appointment, messageDTO tg.MessageDTO, offset int) {
+	msgText, keyboard := bg.keyboard.ConfigureGetMyAppointmentsMessage(ctx, user, appointments, offset)
 	msg := tgbotapi.NewMessage(user.GetTgId(), msgText)
 	msg.ReplyMarkup = keyboard
 	bg.bot.SendMessage(msg, messageDTO)

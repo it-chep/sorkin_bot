@@ -5,10 +5,13 @@ import (
 	"log/slog"
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
+	"sorkin_bot/pkg/client/telegram"
 )
 
 type ExitBotCommand struct {
-	logger           *slog.Logger
+	logger *slog.Logger
+	bot    telegram.Bot
+
 	botGateway       botGateway
 	tgUser           tg.TgUserDTO
 	machine          *state_machine.UserStateMachine
@@ -18,6 +21,7 @@ type ExitBotCommand struct {
 
 func NewExitBotCommand(
 	logger *slog.Logger,
+	bot telegram.Bot,
 	botGateway botGateway,
 	tgUser tg.TgUserDTO,
 	machine *state_machine.UserStateMachine,
@@ -27,6 +31,7 @@ func NewExitBotCommand(
 	return ExitBotCommand{
 		logger:           logger,
 		botGateway:       botGateway,
+		bot:              bot,
 		tgUser:           tgUser,
 		machine:          machine,
 		userService:      userService,
@@ -40,7 +45,8 @@ func (c *ExitBotCommand) Execute(ctx context.Context, message tg.MessageDTO) {
 	if err != nil {
 		return
 	}
-	c.machine.SetState(user, state_machine.Start)
+	c.bot.RemoveMessage(user.GetTgId(), int(message.MessageID)-1)
 	c.draftAppointment.CleanDraftAppointment(ctx, user.GetTgId())
 	c.botGateway.SendStartMessage(ctx, user, message)
+	_, _ = c.userService.ChangeState(ctx, user.GetTgId(), state_machine.Start)
 }

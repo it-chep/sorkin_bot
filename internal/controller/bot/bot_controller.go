@@ -122,7 +122,7 @@ func (t TelegramWebhookController) ForkCommands(ctx context.Context, update tgbo
 		command := change_language.NewChangeLanguageCommand(t.logger, t.botGateway, tgUser, t.machine, t.userService)
 		command.Execute(ctx, tgMessage)
 	case "exit":
-		command := exit.NewExitBotCommand(t.logger, t.botGateway, tgUser, t.machine, t.userService, t.appointmentService)
+		command := exit.NewExitBotCommand(t.logger, t.bot, t.botGateway, tgUser, t.machine, t.userService, t.appointmentService)
 		command.Execute(ctx, tgMessage)
 	}
 }

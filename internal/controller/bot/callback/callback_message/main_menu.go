@@ -25,7 +25,7 @@ func (c *CallbackBotMessage) mainMenu(ctx context.Context, messageDTO tg.Message
 		c.bot.RemoveMessage(userEntity.GetTgId(), messageId)
 
 		if len(appointments) != 0 {
-			c.botGateway.SendMyAppointmentsMessage(ctx, userEntity, appointments, messageDTO)
+			c.botGateway.SendMyAppointmentsMessage(ctx, userEntity, appointments, messageDTO, 0)
 			c.machine.SetState(userEntity, state_machine.ChooseAppointment)
 		} else {
 			msgText, _ := c.messageService.GetMessage(ctx, userEntity, "empty appointments")

@@ -28,7 +28,7 @@ func (mg *MisRenoGateway) CreatePatient(ctx context.Context, userDTO dto.Patient
 	//todo обязательно продебажить CreatePatientRequest
 	var request = mis_dto.CreatePatientRequest{
 		LastName:  userDTO.LastName,
-		ThirdName: userDTO.ThirdName,
+		ThirdName: ".",
 		FirstName: userDTO.FirstName,
 		Phone:     userDTO.Phone,
 		BirthDate: userDTO.BirthDate,

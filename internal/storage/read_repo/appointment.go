@@ -43,3 +43,23 @@ func (rs AppointmentStorage) GetUserDraftAppointment(ctx context.Context, tgId i
 
 	return appointmentDAO.ToDomain(), nil
 }
+
+func (rs AppointmentStorage) GetDraftAppointmentByAppointmentId(ctx context.Context, appointmentId int) (draftAppointment appointment.DraftAppointment, err error) {
+	op := "internal/storage/read_repo/appointment/GetDraftAppointmentByAppointmentId"
+	q := `
+		select tg_id, speciality_id, doctor_id, date, time_start, time_end 
+		from appointment where appointment_id = $1;
+	`
+
+	var appointmentDAO dao.AppointmentDAO
+	err = pgxscan.Get(ctx, rs.client, &appointmentDAO, q, appointmentId)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return appointment.DraftAppointment{}, nil
+		}
+		rs.logger.Error(fmt.Sprintf("Error while scanning row: %s, op: %s", err, op))
+		return appointment.DraftAppointment{}, err
+	}
+
+	return appointmentDAO.ToDomain(), nil
+}

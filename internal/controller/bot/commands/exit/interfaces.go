@@ -12,6 +12,7 @@ type botGateway interface {
 
 type userService interface {
 	GetUser(ctx context.Context, tgId int64) (user entity.User, err error)
+	ChangeState(ctx context.Context, tgId int64, state string) (user entity.User, err error)
 }
 
 type draftAppointment interface {

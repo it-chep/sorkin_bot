@@ -20,7 +20,8 @@ type draftAppointment interface {
 	UpdateDraftAppointmentDate(ctx context.Context, tgId int64, timeStart, timeEnd, date string)
 	UpdateDraftAppointmentIntField(ctx context.Context, tgId int64, intVal int, fieldName string)
 	CleanDraftAppointment(ctx context.Context, tgId int64)
-	FastUpdateDraftAppointment(ctx context.Context, tgId int64, doctorId int, timeStart, timeEnd string)
+	FastUpdateDraftAppointment(ctx context.Context, tgId int64, specialityId, doctorId int, timeStart, timeEnd string)
+	GetDraftAppointmentByAppointmentId(ctx context.Context, appointmentId int) (draftAppointment appointment.DraftAppointment, err error)
 }
 
 type appointmentService interface {
@@ -56,7 +57,7 @@ type messageService interface {
 type botGateway interface {
 	SendStartMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
 	SendChangeLanguageMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
-	SendMyAppointmentsMessage(ctx context.Context, user entity.User, appointments []appointment.Appointment, messageDTO tg.MessageDTO)
+	SendMyAppointmentsMessage(ctx context.Context, user entity.User, appointments []appointment.Appointment, messageDTO tg.MessageDTO, offset int)
 	SendFastAppointmentMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
 	SendGetDoctorsMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, doctors map[int]string, offset int)
 	SendConfirmAppointmentMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, doctorId int)

@@ -70,10 +70,17 @@ func (c *CallbackBotMessage) fastAppointment(ctx context.Context, messageDTO tg.
 		c.bot.RemoveMessage(userEntity.GetTgId(), int(messageDTO.MessageID))
 
 		items := strings.Split(callbackData, "__")
-		doctorId, _ := strconv.Atoi(items[1])
-		timeStart := items[2]
-		timeEnd := items[3]
-		c.appointmentService.FastUpdateDraftAppointment(ctx, userEntity.GetTgId(), doctorId, timeStart, timeEnd)
+		specialityId, err := strconv.Atoi(items[1])
+		if err != nil {
+			return
+		}
+		doctorId, err := strconv.Atoi(items[2])
+		if err != nil {
+			return
+		}
+		timeStart := items[3]
+		timeEnd := items[4]
+		c.appointmentService.FastUpdateDraftAppointment(ctx, userEntity.GetTgId(), specialityId, doctorId, timeStart, timeEnd)
 
 		if userEntity.GetPhone() != nil {
 			c.botGateway.SendConfirmAppointmentMessage(ctx, userEntity, messageDTO, doctorId)

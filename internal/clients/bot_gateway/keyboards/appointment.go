@@ -27,10 +27,9 @@ func (k Keyboards) ConfigureFastAppointmentMessage(
 			if speciality, ok := translatedSpecialities[trimmedProfession]; ok {
 				langCode := *userEntity.GetLanguageCode()
 				translatedSpeciality := k.appointmentService.GetTranslationString(langCode, speciality)
-
 				btn := tgbotapi.NewInlineKeyboardButtonData(
 					fmt.Sprintf("%s || %s || %s", schedule.GetTimeStartShort(), translatedSpeciality, schedule.GetDoctorName()),
-					fmt.Sprintf("fast__%d__%s__%s", doctorId, schedule.GetTimeStart(), schedule.GetTimeEnd()),
+					fmt.Sprintf("fast__%d__%d__%s__%s", *speciality.GetSourceId(), doctorId, schedule.GetTimeStart(), schedule.GetTimeEnd()),
 				)
 				row := tgbotapi.NewInlineKeyboardRow(btn)
 				keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
@@ -54,10 +53,10 @@ func (k Keyboards) ConfigureGetMyAppointmentsMessage(
 		return msgText, keyboard
 	}
 
-	lengthOfAppointments := len(appointments)
+	lengthOfAppointments := len(appointments[offset:])
 	if lengthOfAppointments > InlineButtonsLimit {
 		count := 0
-		for _, appointmentEntity := range appointments {
+		for _, appointmentEntity := range appointments[offset:] {
 			if count == InlineButtonsLimit {
 				break
 			}
@@ -70,7 +69,7 @@ func (k Keyboards) ConfigureGetMyAppointmentsMessage(
 			count++
 		}
 	} else {
-		for _, appointmentEntity := range appointments {
+		for _, appointmentEntity := range appointments[offset:] {
 			btn := tgbotapi.NewInlineKeyboardButtonData(
 				fmt.Sprintf("%s: %s - %s", appointmentEntity.GetDate(), appointmentEntity.GetTimeStartShort(), appointmentEntity.GetTimeEndShort()),
 				fmt.Sprintf("appointmentId_%d", appointmentEntity.GetAppointmentId()),
@@ -103,7 +102,7 @@ func (k Keyboards) ConfigureConfirmAppointmentMessage(ctx context.Context, userE
 }
 
 func (k Keyboards) ConfigureAppointmentDetailMessage(ctx context.Context, userEntity entity.User, appointmentEntity appointment.Appointment) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup) {
-	var cancelText, docText, exitText string
+	var cancelText, docText, exitText, rescheduleText string
 	var err error
 
 	unformattedText, _ := k.messageService.GetMessage(ctx, userEntity, "detail appointment")
@@ -121,13 +120,19 @@ func (k Keyboards) ConfigureAppointmentDetailMessage(ctx context.Context, userEn
 	if err != nil {
 		return "", tgbotapi.InlineKeyboardMarkup{}
 	}
+	rescheduleText, err = k.messageService.GetMessage(ctx, userEntity, "reschedule appointment button")
+	if err != nil {
+		return "", tgbotapi.InlineKeyboardMarkup{}
+	}
 
 	// формируем клавиатуру действий с онлайн записью
 	cancelAppointmentButton := tgbotapi.NewInlineKeyboardButtonData(cancelText, fmt.Sprintf("cancel_%d", appointmentEntity.GetAppointmentId()))
+	rescheduleAppointmentButton := tgbotapi.NewInlineKeyboardButtonData(rescheduleText, fmt.Sprintf("reschedule_%d", appointmentEntity.GetAppointmentId()))
+
 	docBtn := tgbotapi.NewInlineKeyboardButtonData(docText, fmt.Sprintf("doc_info_%d", appointmentEntity.GetDoctorId()))
 	exitBtn := tgbotapi.NewInlineKeyboardButtonData(exitText, "exit")
 	keyboardRowDoctor := tgbotapi.NewInlineKeyboardRow(docBtn)
-	keyboardRowCancel := tgbotapi.NewInlineKeyboardRow(cancelAppointmentButton)
+	keyboardRowCancel := tgbotapi.NewInlineKeyboardRow(cancelAppointmentButton, rescheduleAppointmentButton)
 	keyboardRowExit := tgbotapi.NewInlineKeyboardRow(exitBtn)
 
 	keyboard = tgbotapi.NewInlineKeyboardMarkup(keyboardRowDoctor, keyboardRowCancel, keyboardRowExit)

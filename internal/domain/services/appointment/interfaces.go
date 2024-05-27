@@ -13,6 +13,7 @@ type ReadMessageRepo interface {
 
 type ReadDraftAppointmentRepo interface {
 	GetUserDraftAppointment(ctx context.Context, tgId int64) (draftAppointment appointment.DraftAppointment, err error)
+	GetDraftAppointmentByAppointmentId(ctx context.Context, appointmentId int) (draftAppointment appointment.DraftAppointment, err error)
 }
 
 type CreateDraftAppointmentUseCase interface {

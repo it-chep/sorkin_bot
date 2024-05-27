@@ -62,9 +62,9 @@ func (as *AppointmentService) CleanDraftAppointment(ctx context.Context, tgId in
 	}
 }
 
-func (as *AppointmentService) FastUpdateDraftAppointment(ctx context.Context, tgId int64, doctorId int, timeStart, timeEnd string) {
+func (as *AppointmentService) FastUpdateDraftAppointment(ctx context.Context, tgId int64, specialityId, doctorId int, timeStart, timeEnd string) {
 	var created = true
-	draftAppointment := appointment.NewDraftAppointment(nil, &doctorId, &tgId, &timeStart, &timeEnd, nil)
+	draftAppointment := appointment.NewDraftAppointment(&specialityId, &doctorId, &tgId, &timeStart, &timeEnd, nil)
 	oldDraftAppointment, err := as.readDraftAppointmentRepo.GetUserDraftAppointment(ctx, tgId)
 	if err != nil {
 		return
@@ -77,4 +77,14 @@ func (as *AppointmentService) FastUpdateDraftAppointment(ctx context.Context, tg
 		as.logger.Error(fmt.Sprintf("fast update draft appointment failed: %s", err))
 		return
 	}
+}
+
+func (as *AppointmentService) GetDraftAppointmentByAppointmentId(ctx context.Context, appointmentId int) (draftAppointment appointment.DraftAppointment, err error) {
+	draftAppointment, err = as.readDraftAppointmentRepo.GetDraftAppointmentByAppointmentId(ctx, appointmentId)
+	if err != nil {
+		return appointment.NewDraftAppointment(
+			nil, nil, nil, nil, nil, nil,
+		), err
+	}
+	return draftAppointment, nil
 }

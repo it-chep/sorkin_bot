@@ -31,12 +31,22 @@ func (c *CallbackBotMessage) getSchedules(ctx context.Context, messageDTO tg.Mes
 	}
 
 	schedules, err := c.appointmentService.GetSchedules(ctx, userEntity, &doctorId)
+
 	if err != nil {
+		msgText, err = c.messageService.GetMessage(ctx, userEntity, "empty schedules")
+		msg = tgbotapi.NewMessage(c.tgUser.TgID, msgText)
+		c.bot.SendMessage(msg, messageDTO)
+		c.machine.SetState(userEntity, state_machine.ChooseDoctor)
+
+		draftAppointmentEntity, _ := c.appointmentService.GetDraftAppointment(ctx, userEntity.GetTgId())
+
+		c.getDoctors(ctx, messageDTO, userEntity, *draftAppointmentEntity.GetSpecialityId())
 		return
 	}
 
 	c.bot.RemoveMessage(c.tgUser.TgID, sentMessageId)
 	c.botGateway.SendSchedulesMessage(ctx, userEntity, messageDTO, schedules, ZeroOffset)
+	c.machine.SetState(userEntity, state_machine.ChooseSchedule)
 }
 
 func (c *CallbackBotMessage) chooseSchedules(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, callbackData string) {
