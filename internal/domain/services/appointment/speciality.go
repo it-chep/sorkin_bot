@@ -21,7 +21,7 @@ func (as *AppointmentService) GetTranslatedSpecialities(
 ) (translatedSpecialities map[int]string, unTranslatedSpecialities []string, err error) {
 	var translatedSpeciality string
 	op := "sorkin_bot.internal.domain.services.appointment.speciality.GetTranslatedSpecialities"
-	translations, err := as.readMessageRepo.GetTranslationsBySlugKeySlug(ctx, "Врач")
+	translations, err := as.readMessageRepo.GetTranslationsBySlugKeySlug(ctx, "Дополнительно")
 	translatedSpecialities = make(map[int]string)
 	unTranslatedSpecialities = make([]string, 0)
 
@@ -31,16 +31,16 @@ func (as *AppointmentService) GetTranslatedSpecialities(
 	langCode := *user.GetLanguageCode()
 
 	for _, speciality := range specialities {
-		translationEntity, ok := translations[speciality.GetDoctorName()]
+		translationEntity, ok := translations[speciality.GetName()]
 
-		if !ok && speciality.GetDoctorName() != "" {
+		if !ok && speciality.GetName() != "" {
 			as.logger.Error(fmt.Sprintf("untranslated speciality: %s, please translate this in priority. Place %s", speciality.GetDoctorName(), op))
 			unTranslatedSpecialities = append(unTranslatedSpecialities, speciality.GetDoctorName())
 		}
 
 		translatedSpeciality = as.GetTranslationString(langCode, translationEntity)
 
-		if translatedSpeciality == "" || !translations[speciality.GetDoctorName()].GetUses() {
+		if translatedSpeciality == "" || !translations[speciality.GetName()].GetUses() {
 			continue
 		}
 

@@ -19,16 +19,14 @@ func (k Keyboards) ConfigureFastAppointmentMessage(
 		return msgText, keyboard
 	}
 
-	translatedSpecialities, _ := k.messageService.GetTranslationsBySlugKeyProfession(ctx, "Врач")
+	translatedSpecialities, _ := k.messageService.GetTranslationsBySlugKeyProfession(ctx, "Дополнительно:")
 
 	for doctorId, schedule := range schedulesMap {
 		for _, professionSlug := range strings.Split(schedule.GetProfession(), ",") {
 			trimmedProfession := strings.TrimSpace(professionSlug)
 			if speciality, ok := translatedSpecialities[trimmedProfession]; ok {
-				langCode := *userEntity.GetLanguageCode()
-				translatedSpeciality := k.appointmentService.GetTranslationString(langCode, speciality)
 				btn := tgbotapi.NewInlineKeyboardButtonData(
-					fmt.Sprintf("%s || %s || %s", schedule.GetTimeStartShort(), translatedSpeciality, schedule.GetDoctorName()),
+					fmt.Sprintf("%s || %s", schedule.GetTimeStartShort(), schedule.GetDoctorName()),
 					fmt.Sprintf("fast__%d__%d__%s__%s", *speciality.GetSourceId(), doctorId, schedule.GetTimeStart(), schedule.GetTimeEnd()),
 				)
 				row := tgbotapi.NewInlineKeyboardRow(btn)
