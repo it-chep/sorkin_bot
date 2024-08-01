@@ -27,7 +27,6 @@ func (tr TranslationStorage) GetTranslationsBySlugKeySlug(ctx context.Context, s
 	var translationsDao []dao.TranslationDao
 	op := "sorkin_bot.internal.storage.read_repo.translations.GetTranslationsBySlugKeySlug"
 	q := `select slug, ru_text, eng_text, pt_br_text, uses, profession, id_in_source_system from translations where slug like  $1 || '%' and uses = true;`
-
 	err = pgxscan.Select(ctx, tr.client, &translationsDao, q, slug)
 	if err != nil {
 		tr.logger.Error(fmt.Sprintf("Error while scanning row: %s op: %s", err, op))
@@ -36,7 +35,7 @@ func (tr TranslationStorage) GetTranslationsBySlugKeySlug(ctx context.Context, s
 
 	translations = make(map[string]appointment.TranslationEntity)
 	for _, translation := range translationsDao {
-		translations[translation.Slug] = translation.ToDomain()
+		translations[translation.Profession] = translation.ToDomain()
 	}
 	return translations, nil
 }

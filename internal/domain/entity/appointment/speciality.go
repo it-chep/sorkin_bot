@@ -23,3 +23,5 @@ func (s Speciality) GetDoctorName() string {
 func (s Speciality) GetId() int {
 	return s.id
 }
+
+func (s Speciality) GetName() string { return s.name }

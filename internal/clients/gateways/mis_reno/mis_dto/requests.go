@@ -56,16 +56,13 @@ type GetSchedulePeriodsRequest struct {
 }
 
 type GetSpecialityRequest struct {
-	ShowAll        bool `json:"show_all"`
-	ShowDeleted    bool `json:"show_deleted"`
-	WithoutDoctors bool `json:"without_doctors"`
+	ShowAll     bool `json:"show_all"`
+	ShowDeleted bool `json:"show_deleted"`
 }
 
 type GetUserRequest struct {
-	DoctorId     int    `json:"user_id"`
-	SpecialityId int    `json:"profession_id"`
-	ClinicId     int    `json:"clinic_id"`
-	Role         string `json:"role"`
+	DoctorId     int `json:"user_id"`
+	SpecialityId int `json:"profession_id"`
 }
 
 type CancelAppointmentRequest struct {

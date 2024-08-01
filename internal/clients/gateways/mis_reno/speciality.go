@@ -10,13 +10,11 @@ func (mg *MisRenoGateway) GetSpecialities(ctx context.Context) (specialities []d
 	op := "sorkin_bot.internal.domain.services.appointment.speciality.GetSpecialities"
 	var response mis_dto.GetSpecialityResponse
 	var request = mis_dto.GetSpecialityRequest{
-		ShowAll:        false,
-		ShowDeleted:    false,
-		WithoutDoctors: false,
+		ShowAll:     false,
+		ShowDeleted: false,
 	}
 
 	responseBody := mg.sendToMIS(ctx, mis_dto.GetSpecialityMethod, JsonMarshaller(request, op, mg.logger))
-
 	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)
 	if err != nil {
 		return specialities, err
