@@ -29,6 +29,10 @@ type UpdateUserPatientIdUseCase interface {
 	Execute(ctx context.Context, user entity.User, patientId int) (err error)
 }
 
+type UpdateUserHomeAddressUseCase interface {
+	Execute(ctx context.Context, user entity.User, homeAddress string) (err error)
+}
+
 type UpdateUserBirthDateUseCase interface {
 	Execute(ctx context.Context, user entity.User, birthDate string) (err error)
 }

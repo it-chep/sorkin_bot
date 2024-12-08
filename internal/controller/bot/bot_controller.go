@@ -17,7 +17,6 @@ import (
 
 	"sorkin_bot/internal/controller/bot/commands/change_language"
 	"sorkin_bot/internal/controller/bot/commands/create_appointment"
-	"sorkin_bot/internal/controller/bot/commands/fast_appointment"
 	"sorkin_bot/internal/controller/bot/commands/my_appointment"
 	"sorkin_bot/internal/controller/bot/commands/start"
 	"sorkin_bot/internal/controller/dto/tg"
@@ -106,10 +105,6 @@ func (t TelegramWebhookController) ForkCommands(ctx context.Context, update tgbo
 	case "help", "tech_support":
 		command := administration_help.NewAdministrationHelpCommand(t.logger, t.bot, tgUser, t.messageService, t.userService)
 		command.Execute(ctx, tgMessage)
-	case "fast_appointment":
-		// service по работе с fast appointment
-		command := fast_appointment.NewFastAppointmentBotCommand(t.logger, t.bot, tgUser, t.userService, t.machine, t.appointmentService, t.botGateway)
-		command.Execute(ctx, tgMessage)
 	case "appointment":
 		// service по работе с appointment
 		command := create_appointment.NewCreateAppointmentCommand(t.logger, t.bot, t.botGateway, tgUser, t.userService, t.machine, t.appointmentService, t.messageService)
@@ -126,9 +121,6 @@ func (t TelegramWebhookController) ForkCommands(ctx context.Context, update tgbo
 		command.Execute(ctx, tgMessage)
 	}
 }
-
-// todo в эти форки будут сыпаться все текстовые сообщения и колбэки
-// todo и в зависимости от состояния пользователя ему будет выдаваться контент
 
 func (t TelegramWebhookController) ForkMessages(ctx context.Context, tgUser tg.TgUserDTO, tgMessage tg.MessageDTO) {
 	messageBot := text_message.NewTextBotMessage(t.logger, t.bot, t.botGateway, tgUser, t.machine, t.userService, t.messageService, t.appointmentService)

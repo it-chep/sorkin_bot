@@ -22,6 +22,7 @@ const (
 	ChooseSpeciality    = "chooseSpeciality"
 	FastAppointment     = "fastAppointment"
 	ChooseDoctor        = "chooseDoctor"
+	ChooseCalendar      = "chooseCalendar"
 	ChooseSchedule      = "chooseSchedule"
 	GetPhone            = "getPhone"
 	GetBirthDate        = "getBirthDate"
@@ -29,9 +30,15 @@ const (
 	CreateAppointment   = "createAppointment"
 	DetailMyAppointment = "detailMyAppointment"
 	CancelAppointment   = "cancelAppointment"
+	ChooseMyAppointment = "chooseMyAppointment"
 	ChooseAppointment   = "chooseAppointment"
-	MoveAppointment     = "moveAppointment"
 	GetDoctorInfo       = "getDoctorInfo"
+	ClinicAppointment   = "clinicAppointment"
+	HomeAppointment     = "homeAppointment"
+	OnlineAppointment   = "onlineAppointment"
+	Pediatrician        = "pediatrician"
+	Therapist           = "therapist"
+	SetAddress          = "setAddress"
 )
 
 func NewUserStateMachine(userService user.UserService) *UserStateMachine {
@@ -45,35 +52,22 @@ func NewUserStateMachine(userService user.UserService) *UserStateMachine {
 			{Name: ChooseSpeciality, Src: []string{Start, ChooseLanguage}, Dst: ChooseSpeciality},
 			{Name: FastAppointment, Src: []string{Start}, Dst: FastAppointment},
 			{Name: ChooseDoctor, Src: []string{DetailMyAppointment, Start, ChooseSpeciality, FastAppointment, CreateAppointment}, Dst: ChooseDoctor},
-			{Name: ChooseSchedule, Src: []string{Start, ChooseDoctor}, Dst: ChooseSchedule},
+			{Name: ChooseSchedule, Src: []string{Start, ChooseCalendar}, Dst: ChooseSchedule},
 			{Name: GetPhone, Src: []string{ChooseSchedule}, Dst: GetPhone},
 			{Name: GetName, Src: []string{GetPhone}, Dst: GetName},
 			{Name: GetBirthDate, Src: []string{GetName}, Dst: GetBirthDate},
 			{Name: CreateAppointment, Src: []string{GetName, ChooseSchedule, FastAppointment, GetDoctorInfo}, Dst: CreateAppointment},
-			{Name: DetailMyAppointment, Src: []string{Start, GetDoctorInfo, ChooseAppointment}, Dst: DetailMyAppointment},
-			{Name: ChooseAppointment, Src: []string{Start, GetDoctorInfo}, Dst: ChooseAppointment},
-			{Name: CancelAppointment, Src: []string{ChooseAppointment}, Dst: CancelAppointment},
+			{Name: DetailMyAppointment, Src: []string{Start, GetDoctorInfo, ChooseMyAppointment}, Dst: DetailMyAppointment},
+			{Name: ChooseMyAppointment, Src: []string{Start, GetDoctorInfo}, Dst: ChooseMyAppointment},
+			{Name: CancelAppointment, Src: []string{ChooseMyAppointment}, Dst: CancelAppointment},
 			{Name: Start, Src: []string{DetailMyAppointment, Start, ChooseLanguage, ChooseSpeciality, FastAppointment,
-				ChooseDoctor, ChooseSchedule, CreateAppointment, CancelAppointment, ChooseAppointment, GetDoctorInfo,
+				ChooseDoctor, ChooseSchedule, CreateAppointment, CancelAppointment, ChooseMyAppointment, GetDoctorInfo,
 			}, Dst: Start},
-			{Name: GetDoctorInfo, Src: []string{GetDoctorInfo, CreateAppointment, ChooseAppointment, DetailMyAppointment, ChooseDoctor, ChooseSchedule}, Dst: GetDoctorInfo},
+			{Name: ChooseCalendar, Src: []string{ChooseDoctor, Start}, Dst: ChooseCalendar},
+			{Name: GetDoctorInfo, Src: []string{GetDoctorInfo, CreateAppointment, ChooseMyAppointment, DetailMyAppointment, ChooseDoctor, ChooseSchedule}, Dst: GetDoctorInfo},
+			{Name: ChooseAppointment, Src: []string{Start}, Dst: ChooseAppointment},
 		},
-		fsm.Callbacks{
-			//fmt.Sprintf("enter_%s", Start):               enterStart,
-			//fmt.Sprintf("enter_%s", ChooseLanguage):      enterChooseLanguage,
-			//fmt.Sprintf("enter_%s", ChooseSpeciality):    enterChooseSpeciality,
-			//fmt.Sprintf("enter_%s", FastAppointment):     enterFastAppointment,
-			//fmt.Sprintf("enter_%s", ChooseDoctor):        enterChooseDoctor,
-			//fmt.Sprintf("enter_%s", ChooseSchedule):      enterChooseSchedule,
-			//fmt.Sprintf("enter_%s", GetPhone):            enterGetPhone,
-			//fmt.Sprintf("enter_%s", GetName):             enterGetName,
-			//fmt.Sprintf("enter_%s", GetBirthDate):        enterGetBirthDate,
-			//fmt.Sprintf("enter_%s", CreateAppointment):   enterCreateAppointment,
-			//fmt.Sprintf("enter_%s", DetailMyAppointment): enterDetailMyAppointment,
-			//fmt.Sprintf("enter_%s", CancelAppointment):   enterCancelAppointment,
-			//fmt.Sprintf("enter_%s", ChooseAppointment):   enterChooseAppointment,
-			//fmt.Sprintf("enter_%s", GetDoctorInfo):       enterGetDoctorInfo,
-		},
+		fsm.Callbacks{},
 	)
 	return machine
 }

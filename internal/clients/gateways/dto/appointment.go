@@ -62,3 +62,14 @@ func (a AppointmentDTO) ToDomain() appointment.Appointment {
 		a.Status, a.ConfirmStatus, a.Source,
 	)
 }
+
+type CreateAppointmentDTO struct {
+	PatientId         int
+	DoctorId          int
+	TimeStart         string
+	TimeEnd           string
+	HomeAddress       string
+	HomeVisit         bool
+	OnlineAppointment bool
+	ClinicAppointment bool
+}

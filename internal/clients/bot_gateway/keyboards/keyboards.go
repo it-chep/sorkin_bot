@@ -126,32 +126,16 @@ func (k Keyboards) ConfigureGetScheduleMessage(
 	if err != nil {
 		return msgText, keyboard
 	}
-	lengthOfSchedules := len(schedules)
+	msgText = fmt.Sprintf(msgText, schedules[0].GetDate())
 
-	if lengthOfSchedules > InlineButtonsLimit {
-		count := 0
-		for _, schedule := range schedules[offset:] {
-			if count == InlineButtonsLimit {
-				break
-			}
-			btn := tgbotapi.NewInlineKeyboardButtonData(
-				fmt.Sprintf("%s: %s - %s", schedule.GetDate(), schedule.GetTimeStartShort(), schedule.GetTimeEndShort()),
-				fmt.Sprintf("schedule_%d_%s_%s_%s", schedule.GetDoctorId(), schedule.GetTimeStart(), schedule.GetTimeEnd(), schedule.GetDate()))
-			row := tgbotapi.NewInlineKeyboardRow(btn)
-			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
-			count++
-		}
-	} else {
-		for _, schedule := range schedules {
-			btn := tgbotapi.NewInlineKeyboardButtonData(
-				fmt.Sprintf("%s: %s - %s", schedule.GetDate(), schedule.GetTimeStartShort(), schedule.GetTimeEndShort()),
-				fmt.Sprintf("schedule_%d_%s_%s_%s", schedule.GetDoctorId(), schedule.GetTimeStart(), schedule.GetTimeEnd(), schedule.GetDate()))
-			row := tgbotapi.NewInlineKeyboardRow(btn)
-			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
-		}
+	for _, schedule := range schedules[offset:] {
+
+		btn := tgbotapi.NewInlineKeyboardButtonData(
+			fmt.Sprintf("%s - %s", schedule.GetTimeStartShort(), schedule.GetTimeEndShort()),
+			fmt.Sprintf("schedule_%d_%s_%s_%s", schedule.GetDoctorId(), schedule.GetTimeStart(), schedule.GetTimeEnd(), schedule.GetDate()))
+		row := tgbotapi.NewInlineKeyboardRow(btn)
+		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 	}
-
-	keyboard = k.moreLessButtons(offset, lengthOfSchedules, keyboard)
 
 	return msgText, keyboard
 }

@@ -11,7 +11,7 @@ func (as *AppointmentService) GetDraftAppointment(ctx context.Context, tgId int6
 	draftAppointment, err = as.readDraftAppointmentRepo.GetUserDraftAppointment(ctx, tgId)
 	if err != nil {
 		return appointment.NewDraftAppointment(
-			nil, nil, nil, nil, nil, nil,
+			nil, nil, nil, nil, nil, nil, nil, nil,
 		), err
 	}
 	return draftAppointment, nil
@@ -55,6 +55,14 @@ func (as *AppointmentService) UpdateDraftAppointmentIntField(ctx context.Context
 	}
 }
 
+func (as *AppointmentService) UpdateDraftAppointmentDoctorName(ctx context.Context, tgId int64, doctorId int) {
+	doctor := as.misAdapter.GetDoctorInfo(ctx, doctorId)
+	err := as.updateDraftAppointmentStrField.Execute(ctx, tgId, doctor.GetName(), "doctor_name")
+	if err != nil {
+		return
+	}
+}
+
 func (as *AppointmentService) CleanDraftAppointment(ctx context.Context, tgId int64) {
 	err := as.cleanDraftAppointmentUseCase.Execute(ctx, tgId)
 	if err != nil {
@@ -64,7 +72,7 @@ func (as *AppointmentService) CleanDraftAppointment(ctx context.Context, tgId in
 
 func (as *AppointmentService) FastUpdateDraftAppointment(ctx context.Context, tgId int64, specialityId, doctorId int, timeStart, timeEnd string) {
 	var created = true
-	draftAppointment := appointment.NewDraftAppointment(&specialityId, &doctorId, &tgId, &timeStart, &timeEnd, nil)
+	draftAppointment := appointment.NewDraftAppointment(&specialityId, &doctorId, &tgId, nil, &timeStart, &timeEnd, nil, nil)
 	oldDraftAppointment, err := as.readDraftAppointmentRepo.GetUserDraftAppointment(ctx, tgId)
 	if err != nil {
 		return
@@ -83,8 +91,15 @@ func (as *AppointmentService) GetDraftAppointmentByAppointmentId(ctx context.Con
 	draftAppointment, err = as.readDraftAppointmentRepo.GetDraftAppointmentByAppointmentId(ctx, appointmentId)
 	if err != nil {
 		return appointment.NewDraftAppointment(
-			nil, nil, nil, nil, nil, nil,
+			nil, nil, nil, nil, nil, nil, nil, nil,
 		), err
 	}
 	return draftAppointment, nil
+}
+
+func (as *AppointmentService) UpdateDraftAppointmentType(ctx context.Context, tgId int64, appointmentType appointment.AppointmentType) {
+	err := as.updateDraftAppointmentStrField.Execute(ctx, tgId, string(appointmentType), "type")
+	if err != nil {
+		return
+	}
 }

@@ -22,6 +22,7 @@ type AppointmentService struct {
 	updateDraftAppointmentDate        UpdateDraftAppointmentDate
 	updateDraftAppointmentStatus      UpdateDraftAppointmentStatus
 	updateDraftAppointmentIntField    UpdateDraftAppointmentIntField
+	updateDraftAppointmentStrField    UpdateDraftAppointmentStrField
 	cleanDraftAppointmentUseCase      CleanDraftAppointmentUseCase
 	fastUpdateDraftAppointmentUseCase FastUpdateDraftAppointmentUseCase
 }
@@ -36,6 +37,7 @@ func NewAppointmentService(
 	updateDraftAppointmentDate UpdateDraftAppointmentDate,
 	updateDraftAppointmentStatus UpdateDraftAppointmentStatus,
 	updateDraftAppointmentIntField UpdateDraftAppointmentIntField,
+	updateDraftAppointmentStrField UpdateDraftAppointmentStrField,
 	cleanDraftAppointmentUseCase CleanDraftAppointmentUseCase,
 	fastUpdateDraftAppointmentUseCase FastUpdateDraftAppointmentUseCase,
 ) AppointmentService {
@@ -49,6 +51,7 @@ func NewAppointmentService(
 		updateDraftAppointmentDate:        updateDraftAppointmentDate,
 		updateDraftAppointmentStatus:      updateDraftAppointmentStatus,
 		updateDraftAppointmentIntField:    updateDraftAppointmentIntField,
+		updateDraftAppointmentStrField:    updateDraftAppointmentStrField,
 		cleanDraftAppointmentUseCase:      cleanDraftAppointmentUseCase,
 		fastUpdateDraftAppointmentUseCase: fastUpdateDraftAppointmentUseCase,
 	}
@@ -79,7 +82,7 @@ func (as *AppointmentService) GetAppointmentDetail(ctx context.Context, user ent
 	return appointmentEntity
 }
 
-func (as *AppointmentService) CreateAppointment(ctx context.Context, user entity.User, callbackData string) (appointmentId *int) {
+func (as *AppointmentService) CreateAppointment(ctx context.Context, user entity.User, draftAppointment appointment.DraftAppointment, callbackData string) (appointmentId *int) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.CreateAppointment"
 	if user.GetPatientId() == nil {
 		return
@@ -90,7 +93,7 @@ func (as *AppointmentService) CreateAppointment(ctx context.Context, user entity
 	doctorId, _ := strconv.Atoi(strings.Split(elements[0], "_")[1])
 	timeStart, timeEnd := as.convertToValidDate(elements)
 
-	appointmentId, err := as.misAdapter.CreateAppointment(ctx, user, doctorId, timeStart, timeEnd)
+	appointmentId, err := as.misAdapter.CreateAppointment(ctx, user, draftAppointment, doctorId, timeStart, timeEnd)
 	if err != nil {
 		as.logger.Error(fmt.Sprintf("error: %s. Place %s", err, op))
 		return nil

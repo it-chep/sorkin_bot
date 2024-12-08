@@ -9,7 +9,7 @@ import (
 
 type appointmentService interface {
 	// appointmeent interfaces in service and gateway
-	CreateAppointment(ctx context.Context, user entity.User, callbackData string) (appointmentId *int)
+	CreateAppointment(ctx context.Context, user entity.User, draftAppointment appointment.DraftAppointment, callbackData string) (appointmentId *int)
 
 	// user interfaces in service and gateway
 	GetPatient(ctx context.Context, user entity.User) (result bool)
@@ -24,6 +24,7 @@ type userService interface {
 	UpdateBirthDate(ctx context.Context, dto tg.TgUserDTO, birthDate string) (user entity.User, result bool, err error)
 	UpdateFullName(ctx context.Context, dto tg.TgUserDTO, fullName string) (user entity.User, result bool, err error)
 	UpdatePhone(ctx context.Context, dto tg.TgUserDTO, phone string) (user entity.User, result bool, err error)
+	UpdateHomeAddress(ctx context.Context, user entity.User, homeAddress string) (err error)
 }
 
 type messageService interface {

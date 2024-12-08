@@ -37,3 +37,24 @@ func (mr MessageStorage) GetMessageByName(ctx context.Context, name string) (err
 
 	return nil, messageEntity
 }
+
+func (mr MessageStorage) GetWeekdaysName(ctx context.Context) (err error, messageEntity []tg.Message) {
+	var MessageDAO []dao.MessageDAO
+	op := "sorkin_bot.internal.storage.read_repo.message.GetMessageByName"
+	q := `
+		select id, ru_text, eng_text, pt_br_text 
+		from message 
+		where name in ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun');
+	`
+	err = pgxscan.Select(ctx, mr.client, &MessageDAO, q)
+	if err != nil {
+		mr.logger.Error(fmt.Sprintf("error while scanning db rows %s, place: %s", err, op))
+		return err, nil
+	}
+
+	for _, msg := range MessageDAO {
+		messageEntity = append(messageEntity, msg.ToDomain())
+	}
+
+	return nil, messageEntity
+}

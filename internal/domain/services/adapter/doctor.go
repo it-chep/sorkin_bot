@@ -7,21 +7,31 @@ import (
 	"time"
 )
 
-func (a *AppointmentServiceAdapter) GetDoctors(ctx context.Context, specialityId int) (doctors []appointment.Doctor) {
-	cachedDoctors, ok := a.cache.Get("doctors")
-	if !ok {
-		doctorsDTO, err := a.gateway.GetDoctorsBySpecialityId(ctx, specialityId)
-		if err != nil {
-			return
-		}
-
-		for _, doctorDTO := range doctorsDTO {
-			doctors = append(doctors, doctorDTO.ToDomain())
-		}
-		a.cache.Set("doctors", doctors, 12*time.Hour)
-		return doctors
+func (a *AppointmentServiceAdapter) GetDoctorsBySpecialityId(ctx context.Context, specialityId int) (doctors []appointment.Doctor) {
+	doctorsDTO, err := a.gateway.GetDoctorsBySpecialityId(ctx, specialityId)
+	if err != nil {
+		return
 	}
-	return cachedDoctors.([]appointment.Doctor)
+
+	for _, doctorDTO := range doctorsDTO {
+		doctors = append(doctors, doctorDTO.ToDomain())
+	}
+	a.cache.Set("doctors", doctors, 12*time.Hour)
+	return doctors
+}
+
+func (a *AppointmentServiceAdapter) GetDoctors(ctx context.Context, homeVisit, onlineAppointment, clinicAppointment bool) (doctors []appointment.Doctor, err error) {
+	doctorsDTO, err := a.gateway.GetDoctors(ctx, homeVisit, onlineAppointment, clinicAppointment)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, doctorDTO := range doctorsDTO {
+		doctors = append(doctors, doctorDTO.ToDomain())
+	}
+
+	// todo add cache
+	return doctors, nil
 }
 
 func (a *AppointmentServiceAdapter) GetDoctorInfo(ctx context.Context, doctorId int) (doctor appointment.Doctor) {

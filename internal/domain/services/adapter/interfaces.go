@@ -15,11 +15,14 @@ type Gateway interface {
 }
 
 type SchedulesActions interface {
-	GetSchedules(ctx context.Context, doctorId int, timeStart string) (schedulesMap map[int][]dto.ScheduleDTO, err error)
+	GetSchedulesByDoctorId(ctx context.Context, doctorId int, timeStart, timeEnd string) (schedulesMap map[int][]dto.ScheduleDTO, err error)
+	GetAvailableDoctorIdsFromSchedulePeriods(ctx context.Context, doctorIdsBySpeciality []int, timeStart, timeEnd string) (availableDoctorIds []int, err error)
+	GetSchedulesManyDoctors(ctx context.Context, doctorIds []int, timeStart, timeEnd string) (schedules []dto.ScheduleDTO, err error)
+	GetSchedulePeriodsByDoctorId(ctx context.Context, doctorId int, timeStart, timeEnd string) (schedulePeriods []dto.SchedulePeriodDTO, err error)
 }
 
 type AppointmentsActions interface {
-	CreateAppointment(ctx context.Context, patientId, doctorId int, timeStart, timeEnd string) (appointmentId *int, err error)
+	CreateAppointment(ctx context.Context, createAppointmentDTO dto.CreateAppointmentDTO) (appointmentId *int, err error)
 	CancelAppointment(ctx context.Context, movedTo string, appointmentId int) (result bool, err error)
 	ConfirmAppointment(ctx context.Context, appointmentId int) (result bool, err error)
 	MyAppointments(ctx context.Context, patientId int, registrationTime string) (appointments []dto.AppointmentDTO, err error)
@@ -29,6 +32,7 @@ type AppointmentsActions interface {
 type DoctorsActions interface {
 	GetDoctorsBySpecialityId(ctx context.Context, specialityId int) (doctors []dto.DoctorDTO, err error)
 	GetDoctorInfo(ctx context.Context, doctorId int) (doctorDTO dto.DoctorDTO, err error)
+	GetDoctors(ctx context.Context, homeVisit, onlineAppointment, clinicAppointment bool) (doctors []dto.DoctorDTO, err error)
 }
 
 type PatientActions interface {

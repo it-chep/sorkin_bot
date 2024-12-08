@@ -18,9 +18,18 @@ func (bg BotGateway) SendStartMessage(ctx context.Context, user entity.User, mes
 
 func (bg BotGateway) SendChangeLanguageMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO) {
 	msgText, keyboard := bg.keyboard.ConfigureChangeLanguageMessage(ctx, user)
-
 	msg := tgbotapi.NewMessage(user.GetTgId(), msgText)
 	msg.ReplyMarkup = keyboard
+	bg.bot.SendMessage(msg, messageDTO)
+}
+
+func (bg BotGateway) SendGetHomeAddressMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO) {
+	msgText, err := bg.messageService.GetMessage(ctx, user, "get home address")
+	if err != nil {
+		bg.SendError(ctx, user, messageDTO)
+		return
+	}
+	msg := tgbotapi.NewMessage(user.GetTgId(), msgText)
 	bg.bot.SendMessage(msg, messageDTO)
 }
 
@@ -33,5 +42,11 @@ func (bg BotGateway) SendGetPhoneMessage(ctx context.Context, user entity.User, 
 
 func (bg BotGateway) SendError(ctx context.Context, user entity.User, messageDTO tg.MessageDTO) {
 	msg := tgbotapi.NewMessage(user.GetTgId(), message.ServerError)
+	bg.bot.SendMessage(msg, messageDTO)
+}
+
+func (bg BotGateway) SendForbiddenAction(ctx context.Context, user entity.User, messageDTO tg.MessageDTO) {
+	msgText, _ := bg.messageService.GetMessage(ctx, user, "forbidden_action")
+	msg := tgbotapi.NewMessage(user.GetTgId(), msgText)
 	bg.bot.SendMessage(msg, messageDTO)
 }

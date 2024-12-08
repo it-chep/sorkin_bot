@@ -56,6 +56,18 @@ func (bot *Bot) SendMessage(msg tgbotapi.MessageConfig, messageDTO tg.MessageDTO
 	return dto
 }
 
+func (bot *Bot) SendLocation(chatID int64, latitude float64, longitude float64, messageDTO tg.MessageDTO) {
+	locationMsg := tgbotapi.NewLocation(chatID, latitude, longitude)
+
+	sentMessage, err := bot.Bot.Send(locationMsg)
+	if err != nil {
+		bot.logger.Error(fmt.Sprintf("%s: Bot SendLocation", err))
+		return
+	}
+
+	bot.createMessageLog(sentMessage, messageDTO)
+}
+
 // SendMessageAndGetId todo может подумать над объединением в 1 метод SendMessage
 func (bot *Bot) SendMessageAndGetId(msg tgbotapi.MessageConfig, messageDTO tg.MessageDTO) int {
 	sentMessage, err := bot.Bot.Send(msg)
