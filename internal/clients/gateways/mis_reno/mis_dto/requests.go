@@ -17,42 +17,50 @@ const (
 )
 
 type CreateAppointmentRequest struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	ThirdName string `json:"third_name"`
-	BirthDate string `json:"birth_date"`
-	Mobile    string `json:"mobile"`
-	Gender    string `json:"gender"`
-	Email     string `json:"email"`
-	DoctorId  int    `json:"doctor_id"`
-	TimeStart string `json:"time_start"` //dd.mm.yyyy hh:mm
-	TimeEnd   string `json:"time_end"`   //dd.mm.yyyy hh:mm
-	ClinicId  int    `json:"clinic_id"`
-	PatientId int    `json:"patient_id"`
+	FirstName      string  `json:"first_name"`
+	LastName       string  `json:"last_name"`
+	ThirdName      string  `json:"third_name"`
+	BirthDate      string  `json:"birth_date"`
+	Mobile         string  `json:"mobile"`
+	Gender         string  `json:"gender"`
+	Email          string  `json:"email"`
+	DoctorId       int     `json:"doctor_id"`
+	TimeStart      string  `json:"time_start"` //dd.mm.yyyy hh:mm
+	TimeEnd        string  `json:"time_end"`   //dd.mm.yyyy hh:mm
+	PatientId      int     `json:"patient_id"`
+	ClinicId       int     `json:"clinic_id"`
+	IsOutside      *bool   `json:"is_outside,omitempty"`
+	Comment        *string `json:"comment,omitempty"`
+	IsTelemedicine *bool   `json:"is_telemedicine,omitempty"`
 }
 
 type GetScheduleRequest struct {
-	ClinicId      int    `json:"clinic_id"`
-	DoctorId      int    `json:"user_id"`
-	TimeStart     string `json:"time_start"` //dd.mm.yyyy hh:mm
-	TimeEnd       string `json:"time_end"`   //dd.mm.yyyy hh:mm
-	Room          string `json:"room"`
-	Step          int    `json:"step"`
-	UseDocAVGTime bool   `json:"use_doctor_avg_time"`
-	AllClinics    bool   `json:"all_clinics"`
-	ShowBusy      bool   `json:"show_busy"`
-	ShowAll       bool   `json:"show_all"`
-	ShowPast      bool   `json:"show_past"`
-}
-
-type GetSchedulePeriodsRequest struct {
-	ClinicId   int    `json:"clinic_id"`
 	DoctorId   int    `json:"user_id"`
 	TimeStart  string `json:"time_start"` //dd.mm.yyyy hh:mm
 	TimeEnd    string `json:"time_end"`   //dd.mm.yyyy hh:mm
-	RoleId     int    `json:"role_id"`
-	CategoryId int    `json:"category_id"`
-	Type       string `json:"type"`
+	Step       int    `json:"step"`
+	ShowBusy   bool   `json:"show_busy"`
+	AllClinics bool   `json:"all_clinics"`
+	ShowAll    bool   `json:"show_all"`
+	ShowPast   bool   `json:"show_past"`
+}
+
+type GetScheduleManyDoctorsRequest struct {
+	DoctorIds  string `json:"user_id"`
+	TimeStart  string `json:"time_start"` //dd.mm.yyyy hh:mm
+	TimeEnd    string `json:"time_end"`   //dd.mm.yyyy hh:mm
+	Step       int    `json:"step"`
+	ShowBusy   bool   `json:"show_busy"`
+	AllClinics bool   `json:"all_clinics"`
+	ShowAll    bool   `json:"show_all"`
+	ShowPast   bool   `json:"show_past"`
+}
+
+type GetSchedulePeriodsRequest struct {
+	DoctorId  string `json:"user_id"`
+	TimeStart string `json:"time_start"` //dd.mm.yyyy hh:mm
+	TimeEnd   string `json:"time_end"`   //dd.mm.yyyy hh:mm
+	Type      int    `json:"type"`
 }
 
 type GetSpecialityRequest struct {
@@ -63,6 +71,12 @@ type GetSpecialityRequest struct {
 type GetUserRequest struct {
 	DoctorId     int `json:"user_id"`
 	SpecialityId int `json:"profession_id"`
+}
+
+type GetDoctorsRequest struct {
+	IsOutside      int  `json:"is_outside"`
+	IsTelemedicine int  `json:"is_telemedicine"`
+	ShowAll        bool `json:"show_all"`
 }
 
 type CancelAppointmentRequest struct {

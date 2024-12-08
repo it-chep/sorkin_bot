@@ -87,28 +87,38 @@ func (a Appointment) GetTimeEndShort() string {
 }
 
 type DraftAppointment struct {
-	timeStart    *string
-	timeEnd      *string
-	doctorId     *int
-	tgId         *int64
-	specialityId *int
-	date         *string
+	timeStart       *string
+	timeEnd         *string
+	doctorId        *int
+	doctorName      *string
+	tgId            *int64
+	specialityId    *int
+	date            *string
+	appointmentType *AppointmentType
 }
 
-func NewDraftAppointment(specialityId, doctorId *int, tgId *int64, timeStart, timeEnd, date *string,
+func NewDraftAppointment(specialityId, doctorId *int, tgId *int64, doctorName, timeStart, timeEnd, date *string, appointmentType *AppointmentType,
 ) DraftAppointment {
 	return DraftAppointment{
-		doctorId:     doctorId,
-		tgId:         tgId,
-		timeEnd:      timeEnd,
-		timeStart:    timeStart,
-		specialityId: specialityId,
-		date:         date,
+		doctorId:        doctorId,
+		tgId:            tgId,
+		doctorName:      doctorName,
+		timeEnd:         timeEnd,
+		timeStart:       timeStart,
+		specialityId:    specialityId,
+		date:            date,
+		appointmentType: appointmentType,
 	}
 }
 
 func (a DraftAppointment) GetTimeStart() *string {
 	return a.timeStart
+}
+
+func (a DraftAppointment) GetDoctorName() *string { return a.doctorName }
+
+func (a DraftAppointment) GetAppointmentType() *AppointmentType {
+	return a.appointmentType
 }
 
 func (a DraftAppointment) GetTimeEnd() *string {

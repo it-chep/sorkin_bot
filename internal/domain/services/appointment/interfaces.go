@@ -32,6 +32,10 @@ type UpdateDraftAppointmentIntField interface {
 	Execute(ctx context.Context, tgId int64, fieldValue int, fieldName string) error
 }
 
+type UpdateDraftAppointmentStrField interface {
+	Execute(ctx context.Context, tgId int64, fieldValue, fieldName string) error
+}
+
 type CleanDraftAppointmentUseCase interface {
 	Execute(ctx context.Context, tgId int64) error
 }

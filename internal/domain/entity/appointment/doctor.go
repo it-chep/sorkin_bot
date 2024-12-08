@@ -38,6 +38,10 @@ func (d *Doctor) GetSecondProfessions() []int {
 	return d.secondProfessions
 }
 
+func (d *Doctor) GetSecondProfessionTitles() string {
+	return d.secondProfessionTitles
+}
+
 func (d *Doctor) SetDoctorInfo(doctorInfo string) Doctor {
 	d.doctorInfo = doctorInfo
 	return *d

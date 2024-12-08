@@ -49,6 +49,28 @@ func (c TextBotMessage) Execute(ctx context.Context, messageDTO tg.MessageDTO) {
 			c.getBirthDate(ctx, userEntity, messageDTO)
 		}
 	}
+	if *userEntity.GetState() == state_machine.SetAddress {
+		c.setHomeAddress(ctx, userEntity, messageDTO)
+	}
+
+}
+
+func (c TextBotMessage) setHomeAddress(ctx context.Context, user entity.User, messageDTO tg.MessageDTO) {
+	err := c.userService.UpdateHomeAddress(ctx, user, messageDTO.Text)
+	if err != nil {
+		c.botGateway.SendError(ctx, user, messageDTO)
+		return
+	}
+
+	draftAppointment, err := c.appointmentService.GetDraftAppointment(ctx, c.tgUser.TgID)
+	if err != nil {
+		return
+	}
+	if draftAppointment.GetDoctorId() == nil {
+		return
+	}
+	c.botGateway.SendConfirmAppointmentMessage(ctx, user, messageDTO, *draftAppointment.GetDoctorId())
+	c.machine.SetState(user, state_machine.CreateAppointment)
 }
 
 func (c TextBotMessage) getBirthDate(ctx context.Context, user entity.User, messageDTO tg.MessageDTO) {

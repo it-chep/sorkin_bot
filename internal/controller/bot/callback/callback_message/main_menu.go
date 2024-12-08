@@ -10,13 +10,9 @@ import (
 
 func (c *CallbackBotMessage) mainMenu(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, callbackData string) {
 	switch callbackData {
-	case "fast_appointment":
-		c.botGateway.SendFastAppointmentMessage(ctx, userEntity, messageDTO)
-		c.machine.SetState(userEntity, state_machine.FastAppointment)
-
 	case "create_appointment":
-		c.moreLessSpeciality(ctx, messageDTO, userEntity, callbackData)
-		c.machine.SetState(userEntity, state_machine.ChooseSpeciality)
+		c.chooseAppointmentVariant(ctx, messageDTO, userEntity, callbackData)
+		c.machine.SetState(userEntity, state_machine.ChooseAppointment)
 		c.appointmentService.CreateDraftAppointment(ctx, userEntity.GetTgId())
 
 	case "my_appointments":
@@ -26,7 +22,7 @@ func (c *CallbackBotMessage) mainMenu(ctx context.Context, messageDTO tg.Message
 
 		if len(appointments) != 0 {
 			c.botGateway.SendMyAppointmentsMessage(ctx, userEntity, appointments, messageDTO, 0)
-			c.machine.SetState(userEntity, state_machine.ChooseAppointment)
+			c.machine.SetState(userEntity, state_machine.ChooseMyAppointment)
 		} else {
 			msgText, _ := c.messageService.GetMessage(ctx, userEntity, "empty appointments")
 			msg := tgbotapi.NewMessage(userEntity.GetTgId(), msgText)

@@ -6,6 +6,7 @@ import (
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/internal/domain/entity/appointment"
 	entity "sorkin_bot/internal/domain/entity/user"
+	"time"
 )
 
 type appointmentService interface {
@@ -18,6 +19,7 @@ type appointmentService interface {
 type messageService interface {
 	SaveMessageLog(ctx context.Context, messageDTO tg.MessageDTO) (err error)
 	GetMessage(ctx context.Context, user entity.User, name string) (messageText string, err error)
+	GetWeekdaysName(ctx context.Context, user entity.User) (translatedMessages []string, err error)
 	GetTranslationsBySlugKeyProfession(ctx context.Context, slug string) (translations map[string]appointment.TranslationEntity, err error)
 }
 
@@ -69,4 +71,8 @@ type keyboardsInterface interface {
 	) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
 
 	ConfigureDoctorInfoMessage(ctx context.Context, userEntity entity.User, doctorId int) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
+	GenerateCalendarKeyboard(ctx context.Context, userEntity entity.User, year int, month time.Month, schedulesMap map[time.Time]bool) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
+	ConfigureChooseAppointmentMessage(ctx context.Context, userEntity entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
+	ConfigureDoctorOrReasonMessage(ctx context.Context, userEntity entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
+	ConfigureChooseHomeDoctorSpecificationMessage(ctx context.Context, userEntity entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup)
 }

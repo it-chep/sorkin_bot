@@ -9,8 +9,28 @@ import (
 	"time"
 )
 
-func (a *AppointmentServiceAdapter) CreateAppointment(ctx context.Context, user entity.User, doctorId int, timeStart, timeEnd string) (appointmentId *int, err error) {
-	appointmentId, err = a.gateway.CreateAppointment(ctx, *user.GetPatientId(), doctorId, timeStart, timeEnd)
+func (a *AppointmentServiceAdapter) CreateAppointment(ctx context.Context, user entity.User, draftAppointment appointment.DraftAppointment, doctorId int, timeStart, timeEnd string) (appointmentId *int, err error) {
+	createAppointmentDTO := dto.CreateAppointmentDTO{
+		PatientId:         *user.GetPatientId(),
+		DoctorId:          doctorId,
+		TimeStart:         timeStart,
+		TimeEnd:           timeEnd,
+		HomeAddress:       user.GetHomeAddress(),
+		HomeVisit:         false,
+		OnlineAppointment: false,
+		ClinicAppointment: false,
+	}
+
+	switch *draftAppointment.GetAppointmentType() {
+	case appointment.HomeAppointment:
+		createAppointmentDTO.HomeVisit = true
+	case appointment.ClinicAppointment:
+		createAppointmentDTO.ClinicAppointment = true
+	case appointment.OnlineAppointment:
+		createAppointmentDTO.OnlineAppointment = true
+	}
+
+	appointmentId, err = a.gateway.CreateAppointment(ctx, createAppointmentDTO)
 	if err != nil {
 		return nil, err
 	}

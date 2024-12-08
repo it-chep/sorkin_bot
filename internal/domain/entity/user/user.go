@@ -11,6 +11,7 @@ type User struct {
 	languageCode     *string
 	state            *string
 	phone            *string
+	homeAddress      string
 	patientId        *int
 	thirdName        string
 }
@@ -44,6 +45,10 @@ func (usr *User) GetRegistrationTime() string {
 
 func (usr *User) GetPatientId() *int {
 	return usr.patientId
+}
+
+func (usr *User) GetHomeAddress() string {
+	return usr.homeAddress
 }
 
 func (usr *User) GetFirstName() string {

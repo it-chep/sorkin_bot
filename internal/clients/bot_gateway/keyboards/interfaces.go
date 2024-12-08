@@ -8,6 +8,7 @@ import (
 
 type messageService interface {
 	GetMessage(ctx context.Context, user userEntity.User, name string) (messageText string, err error)
+	GetWeekdaysName(ctx context.Context, user userEntity.User) (translatedMessages []string, err error)
 	GetTranslationsBySlugKeyProfession(ctx context.Context, slug string) (translations map[string]appointment.TranslationEntity, err error)
 }
 

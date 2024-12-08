@@ -8,6 +8,7 @@ import (
 
 type ReadRepo interface {
 	GetMessageByName(ctx context.Context, name string) (err error, messageEntity entity.Message)
+	GetWeekdaysName(ctx context.Context) (err error, messageEntity []entity.Message)
 }
 
 type readLogsRepo interface {

@@ -32,12 +32,9 @@ type MisUser struct {
 	SecondProfession       []string `json:"second_profession"`
 	SecondProfessionTitles string   `json:"second_profession_titles"`
 	Clinic                 []string `json:"clinic"`
-	ClinicTitles           string   `json:"clinic_titles"`
+	ClinicTitles           *string  `json:"clinic_titles"`
 	AvgTime                int      `json:"avg_time"`
 	HasCompany             bool     `json:"has_company"`
-	AvgTimeCompany         string   `json:"avg_time_company"`
-	AvgTimeRepeat          int      `json:"avg_time_repeat"`
-	AvgTimeRepeatCompany   int      `json:"avg_time_repeat_company"`
 	DefaultClinic          int      `json:"default_clinic"`
 	DefaultRoom            string   `json:"default_room"`
 	IsChildDoctor          bool     `json:"is_child_doctor"`
@@ -128,16 +125,10 @@ func (sch MisSchedule) ToDTO() dto.ScheduleDTO {
 }
 
 type MisSchedulePeriod struct {
-	Date            string `json:"date"`
-	TimeStart       string `json:"time_start"` //dd.mm.yyyy hh:mm
-	TimeEnd         string `json:"time_end"`   //dd.mm.yyyy hh:mm
-	Type            string `json:"type"`
-	ClinicId        int    `json:"clinic_id"`
-	DoctorId        int    `json:"user_id"`
-	CategoryId      int    `json:"category_id"`
-	Room            string `json:"room"`
-	WithoutCrossing bool   `json:"without_crossing"`
-	DisableInSalary bool   `json:"disable_in_salary"`
+	Date      string `json:"date"`
+	TimeStart string `json:"time_start"` //dd.mm.yyyy hh:mm
+	TimeEnd   string `json:"time_end"`   //dd.mm.yyyy hh:mm
+	DoctorId  int    `json:"user_id"`
 }
 
 type GetSchedulePeriodsResponse struct {
@@ -147,8 +138,10 @@ type GetSchedulePeriodsResponse struct {
 	} `json:"data"`
 }
 
-func (schPer MisSchedulePeriod) ToDTO() {
-
+func (schPer MisSchedulePeriod) ToDTO() dto.SchedulePeriodDTO {
+	return dto.NewSchedulePeriodDTO(
+		schPer.Date, schPer.TimeStart, schPer.TimeEnd, schPer.DoctorId,
+	)
 }
 
 type CreateAppointmentResponse struct {

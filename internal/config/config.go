@@ -49,8 +49,10 @@ type UpdatesConfig struct {
 }
 
 type MISConfig struct {
-	APIUrl   string `yaml:"url"`
-	APIToken string `yaml:"token"`
+	APIUrl    string  `yaml:"url"`
+	APIToken  string  `yaml:"token"`
+	Latitude  float64 `yaml:"latitude"`
+	Longitude float64 `yaml:"longitude"`
 }
 
 // NewConfig ctor

@@ -19,10 +19,12 @@ import (
 	"sorkin_bot/internal/domain/usecases/appointment/update_appointment_date"
 	"sorkin_bot/internal/domain/usecases/appointment/update_appointment_status"
 	"sorkin_bot/internal/domain/usecases/appointment/update_int_appointment_field"
+	"sorkin_bot/internal/domain/usecases/appointment/update_str_appointment_field"
 	"sorkin_bot/internal/domain/usecases/bot/save_message_log"
 	"sorkin_bot/internal/domain/usecases/user/change_language"
 	"sorkin_bot/internal/domain/usecases/user/change_user_status"
 	"sorkin_bot/internal/domain/usecases/user/create_user"
+	"sorkin_bot/internal/domain/usecases/user/update_home_address"
 	"sorkin_bot/internal/domain/usecases/user/update_user_birth_date"
 	"sorkin_bot/internal/domain/usecases/user/update_user_full_name"
 	"sorkin_bot/internal/domain/usecases/user/update_user_patient_id"
@@ -52,11 +54,13 @@ type useCases struct {
 	saveMessageUseCase                    save_message_log.SaveMessageLogUseCase
 	updateUserPatientIdUseCase            update_user_patient_id.UpdateUserPatientIdUseCase
 	updateUserPhoneUseCase                update_user_phone.UpdateUserPhoneUseCase
+	updateUserHomeAddressUseCase          update_home_address.UpdateUserHomeAddressUseCase
 	updateUserThirdNameUseCase            update_user_full_name.UpdateUpdateFullNameUseCase
 	updateUserBirthDateUseCase            update_user_birth_date.UpdateUserBirthDateUseCase
 	createDraftAppointmentUseCase         create_draft_appointment.CreateDraftAppointmentUseCase
 	updateDraftAppointmentStatusUseCase   update_appointment_status.UpdateAppointmentStatusUseCase
 	updateDraftAppointmentIntFieldUseCase update_int_appointment_field.UpdateIntAppointmentFieldUseCase
+	updateDraftAppointmentStrFieldUseCase update_str_appointment_field.UpdateStrAppointmentFieldUseCase
 	updateDraftAppointmentDateUseCase     update_appointment_date.UpdateAppointmentDate
 	cleanDraftAppointmentUseCase          clean_draft_appointment.CleanDraftAppointmentUseCase
 	fastUpdateDraftAppointmentUseCase     fast_update_draft_appointment_use_case.FastUpdateDraftAppointmentUseCase

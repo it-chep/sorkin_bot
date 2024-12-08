@@ -38,5 +38,5 @@ func (c MyAppointmentsCommand) Execute(ctx context.Context, messageDTO tg.Messag
 	}
 
 	c.botGateway.SendMyAppointmentsMessage(ctx, userEntity, appointments, messageDTO, 0)
-	c.machine.SetState(userEntity, state_machine.ChooseAppointment)
+	c.machine.SetState(userEntity, state_machine.ChooseMyAppointment)
 }

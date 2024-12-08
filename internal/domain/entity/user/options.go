@@ -16,6 +16,17 @@ func WithUsrUsername(username *string) UserOpt {
 	}
 }
 
+func WithUsrHomeAddress(homeAddress *string) UserOpt {
+	return func(usr *User) *User {
+		if homeAddress == nil {
+			usr.homeAddress = ""
+		} else {
+			usr.homeAddress = *homeAddress
+		}
+		return usr
+	}
+}
+
 func WithUsrLastName(lastName *string) UserOpt {
 	return func(usr *User) *User {
 		usr.lastName = lastName

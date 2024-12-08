@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func (c *CallbackBotMessage) getDoctors(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, specialityId int) {
+func (c *CallbackBotMessage) getDoctorsBySpecialityId(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, specialityId int) {
 	var msgText string
 	var err error
 
@@ -19,7 +19,7 @@ func (c *CallbackBotMessage) getDoctors(ctx context.Context, messageDTO tg.Messa
 
 	sentMessageId := c.botGateway.SendWaitMessage(ctx, userEntity, messageDTO, "wait doctors")
 
-	doctors := c.appointmentService.GetDoctors(ctx, userEntity.GetTgId(), 0, &specialityId)
+	doctors := c.appointmentService.GetDoctorsBySpecialityId(ctx, userEntity.GetTgId(), 0, &specialityId)
 
 	c.bot.RemoveMessage(c.tgUser.TgID, sentMessageId)
 
@@ -58,8 +58,9 @@ func (c *CallbackBotMessage) chooseDoctor(ctx context.Context, messageDTO tg.Mes
 		c.moreLessDoctors(ctx, messageDTO, userEntity, callbackData)
 	} else {
 		doctorId, _ := strconv.Atoi(strings.Split(callbackData, "_")[0])
-		c.getSchedules(ctx, messageDTO, userEntity, callbackData)
 		c.appointmentService.UpdateDraftAppointmentIntField(ctx, userEntity.GetTgId(), doctorId, "doctor_id")
+		c.appointmentService.UpdateDraftAppointmentDoctorName(ctx, userEntity.GetTgId(), doctorId)
+		c.chooseCalendar(ctx, messageDTO, userEntity, callbackData)
 	}
 }
 
@@ -72,7 +73,7 @@ func (c *CallbackBotMessage) afterDoctorInfo(ctx context.Context, messageDTO tg.
 		if previousState == state_machine.DetailMyAppointment {
 			appointments := c.appointmentService.GetAppointments(ctx, userEntity)
 			c.botGateway.SendMyAppointmentsMessage(ctx, userEntity, appointments, messageDTO, 0)
-			c.machine.SetState(userEntity, state_machine.ChooseAppointment)
+			c.machine.SetState(userEntity, state_machine.ChooseMyAppointment)
 		} else if previousState == state_machine.CreateAppointment {
 			c.botGateway.SendConfirmAppointmentMessage(ctx, userEntity, messageDTO, doctorId)
 			c.machine.SetState(userEntity, state_machine.CreateAppointment)
@@ -81,15 +82,37 @@ func (c *CallbackBotMessage) afterDoctorInfo(ctx context.Context, messageDTO tg.
 }
 
 func (c *CallbackBotMessage) moreLessDoctors(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User, callbackData string) {
-
+	var doctors map[int]string
 	offset, _ := strconv.Atoi(strings.Split(callbackData, "_")[1])
 	if strings.Contains(callbackData, ">") {
 		offset += 10
 	} else if strings.Contains(callbackData, "<") {
 		offset -= 10
 	}
-
-	doctors := c.appointmentService.GetDoctors(ctx, userEntity.GetTgId(), offset, nil)
+	appointment, err := c.appointmentService.GetDraftAppointment(ctx, userEntity.GetTgId())
+	if err != nil {
+		//todo
+		return
+	}
+	specialityId := appointment.GetSpecialityId()
+	if specialityId == nil {
+		doctors = c.appointmentService.GetDoctors(ctx, userEntity.GetTgId(), offset)
+	} else {
+		doctors = c.appointmentService.GetDoctorsBySpecialityId(ctx, userEntity.GetTgId(), offset, specialityId)
+	}
 	c.botGateway.SendGetDoctorsMessage(ctx, userEntity, messageDTO, doctors, offset)
+}
 
+func (c *CallbackBotMessage) getDoctors(ctx context.Context, messageDTO tg.MessageDTO, userEntity entity.User) {
+
+	c.bot.RemoveMessage(c.tgUser.TgID, int(messageDTO.MessageID))
+
+	sentMessageId := c.botGateway.SendWaitMessage(ctx, userEntity, messageDTO, "wait doctors")
+
+	doctors := c.appointmentService.GetDoctors(ctx, userEntity.GetTgId(), 0)
+
+	c.bot.RemoveMessage(c.tgUser.TgID, sentMessageId)
+
+	c.botGateway.SendGetDoctorsMessage(ctx, userEntity, messageDTO, doctors, ZeroOffset)
+	c.machine.SetState(userEntity, state_machine.ChooseDoctor)
 }

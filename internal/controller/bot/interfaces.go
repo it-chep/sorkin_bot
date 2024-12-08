@@ -5,13 +5,14 @@ import (
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/internal/domain/entity/appointment"
 	entity "sorkin_bot/internal/domain/entity/user"
+	"time"
 )
 
 // MisAppointment interfaces in service and gateway
 type MisAppointment interface {
 	GetAppointments(ctx context.Context, user entity.User) (appointments []appointment.Appointment)
 	GetAppointmentDetail(ctx context.Context, user entity.User, appointmentId int) (appointmentEntity appointment.Appointment)
-	CreateAppointment(ctx context.Context, user entity.User, callbackData string) (appointmentId *int)
+	CreateAppointment(ctx context.Context, user entity.User, draftAppointment appointment.DraftAppointment, callbackData string) (appointmentId *int)
 	ConfirmAppointment(ctx context.Context, appointmentId int) (result bool)
 	CancelAppointment(ctx context.Context, user entity.User, appointmentId int) (result bool)
 	RescheduleAppointment(ctx context.Context, user entity.User, appointmentId int, movedTo string) (result bool)
@@ -25,7 +26,8 @@ type MisUser interface {
 
 // MisDoctors interfaces in service and gateway
 type MisDoctors interface {
-	GetDoctors(ctx context.Context, tgId int64, offset int, specialityId *int) (doctorsMap map[int]string)
+	GetDoctorsBySpecialityId(ctx context.Context, tgId int64, offset int, specialityId *int) (doctorsMap map[int]string)
+	GetDoctors(ctx context.Context, tgId int64, offset int) (doctorsMap map[int]string)
 	GetSpecialities(ctx context.Context) (specialities []appointment.Speciality, err error)
 	GetTranslatedSpecialities(ctx context.Context, user entity.User, specialities []appointment.Speciality, offset int) (translatedSpecialities map[int]string, unTranslatedSpecialities []string, err error)
 	TranslateSpecialityByID(ctx context.Context, user entity.User, specialityId int) (translatedSpeciality string, err error)
@@ -33,8 +35,10 @@ type MisDoctors interface {
 
 // MisSchedules interfaces in service and gateway
 type MisSchedules interface {
-	GetSchedules(ctx context.Context, userEntity entity.User, doctorId *int) (schedulesMap []appointment.Schedule, err error)
+	GetSchedulesByDoctorId(ctx context.Context, userEntity entity.User, dayStart time.Time, doctorId *int) (schedulesMap []appointment.Schedule, err error)
 	GetFastAppointmentSchedules(ctx context.Context) (randomDoctors map[int]appointment.Schedule)
+	GetSchedulesToHomeVisit(ctx context.Context, userEntity entity.User, dayStart time.Time) (schedulesMap []appointment.Schedule, err error)
+	GetSchedulePeriodsByDoctorId(ctx context.Context, doctorId int, dayStart time.Time) (schedulePeriodsMap map[time.Time]bool, err error)
 }
 
 type DraftAppointment interface {
@@ -42,6 +46,8 @@ type DraftAppointment interface {
 	UpdateDraftAppointmentStatus(ctx context.Context, tgId int64, appointmentId int)
 	UpdateDraftAppointmentDate(ctx context.Context, tgId int64, timeStart, timeEnd, date string)
 	UpdateDraftAppointmentIntField(ctx context.Context, tgId int64, intVal int, fieldName string)
+	UpdateDraftAppointmentDoctorName(ctx context.Context, tgId int64, doctorId int)
+	UpdateDraftAppointmentType(ctx context.Context, tgId int64, appointmentType appointment.AppointmentType)
 	CreateDraftAppointment(ctx context.Context, tgId int64)
 	CleanDraftAppointment(ctx context.Context, tgId int64)
 	FastUpdateDraftAppointment(ctx context.Context, tgId int64, specialityId int, doctorId int, timeStart string, timeEnd string)
@@ -61,6 +67,7 @@ type UpdateUser interface {
 	UpdateBirthDate(ctx context.Context, dto tg.TgUserDTO, birthDate string) (user entity.User, result bool, err error)
 	UpdateFullName(ctx context.Context, dto tg.TgUserDTO, fullName string) (user entity.User, result bool, err error)
 	UpdatePhone(ctx context.Context, dto tg.TgUserDTO, phone string) (user entity.User, result bool, err error)
+	UpdateHomeAddress(ctx context.Context, user entity.User, homeAddress string) (err error)
 }
 
 type CRUDUser interface {
@@ -101,4 +108,12 @@ type botGateway interface {
 	SendEmptyAppointments(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
 	SendError(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
 	SendDoctorInfoMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, idToDelete int, doctorId int)
+	SendCalendarMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO, year int, month time.Month, schedulesMap map[time.Time]bool)
+	SendForbiddenAction(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendChooseAppointmentMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendDoctorOrReasonMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendHomeDoctorSpecificationMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendEmptySchedulesHomeVisit(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendEmptySchedulePeriods(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
+	SendGetHomeAddressMessage(ctx context.Context, user entity.User, messageDTO tg.MessageDTO)
 }

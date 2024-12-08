@@ -1,5 +1,11 @@
 package appointment
 
+import (
+	"fmt"
+	"strings"
+	"time"
+)
+
 type Schedule struct {
 	clinicId       int
 	doctorId       int
@@ -69,4 +75,47 @@ func (sch Schedule) GetDate() string {
 
 func (sch Schedule) GetDoctorName() string {
 	return sch.user
+}
+
+type SchedulePeriod struct {
+	date      string
+	doctorId  int
+	timeStart string
+	timeEnd   string
+}
+
+func NewSchedulePeriod(date, timeStart, timeEnd string, doctorId int) SchedulePeriod {
+	return SchedulePeriod{
+		date:      date,
+		doctorId:  doctorId,
+		timeStart: timeStart,
+		timeEnd:   timeEnd,
+	}
+}
+
+func (sp *SchedulePeriod) GetDate() string {
+	return sp.date
+}
+
+func (sp *SchedulePeriod) GetDoctorId() int {
+	return sp.doctorId
+}
+
+func (sp *SchedulePeriod) GetTimeStart() string {
+	return sp.timeStart
+}
+
+func (sp *SchedulePeriod) GetTimeEnd() string {
+	return sp.timeEnd
+}
+
+func (sp *SchedulePeriod) GetDateInTimeType() time.Time {
+	dateItems := strings.Split(sp.date, ".")
+	dateStr := fmt.Sprintf("%s-%s-%s", dateItems[2], dateItems[1], dateItems[0])
+
+	parsedDate, err := time.Parse(time.DateOnly, dateStr)
+	if err != nil {
+		return time.Time{}
+	}
+	return parsedDate
 }
