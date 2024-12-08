@@ -20,10 +20,12 @@ import (
 	"sorkin_bot/internal/domain/usecases/appointment/update_appointment_date"
 	"sorkin_bot/internal/domain/usecases/appointment/update_appointment_status"
 	"sorkin_bot/internal/domain/usecases/appointment/update_int_appointment_field"
+	"sorkin_bot/internal/domain/usecases/appointment/update_str_appointment_field"
 	"sorkin_bot/internal/domain/usecases/bot/save_message_log"
 	"sorkin_bot/internal/domain/usecases/user/change_language"
 	"sorkin_bot/internal/domain/usecases/user/change_user_status"
 	"sorkin_bot/internal/domain/usecases/user/create_user"
+	"sorkin_bot/internal/domain/usecases/user/update_home_address"
 	"sorkin_bot/internal/domain/usecases/user/update_user_birth_date"
 	"sorkin_bot/internal/domain/usecases/user/update_user_full_name"
 	"sorkin_bot/internal/domain/usecases/user/update_user_patient_id"
@@ -102,6 +104,8 @@ func (app *App) InitUseCases(ctx context.Context) *App {
 	app.useCases.createDraftAppointmentUseCase = create_draft_appointment.NewCreateDraftAppointmentUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
 	app.useCases.updateDraftAppointmentStatusUseCase = update_appointment_status.NewUpdateAppointmentStatusUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
 	app.useCases.updateDraftAppointmentIntFieldUseCase = update_int_appointment_field.NewUpdateIntAppointmentFieldUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
+	app.useCases.updateDraftAppointmentStrFieldUseCase = update_str_appointment_field.NewUpdateStrAppointmentFieldUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
+	app.useCases.updateUserHomeAddressUseCase = update_home_address.NewUpdateUserHomeAddressUseCase(app.storages.writeUserStorage, app.logger)
 	app.useCases.updateDraftAppointmentDateUseCase = update_appointment_date.NewUpdateAppointmentDate(app.storages.writeDraftAppointmentStorage, app.logger)
 	app.useCases.cleanDraftAppointmentUseCase = clean_draft_appointment.NewCleanDraftAppointmentUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
 	app.useCases.fastUpdateDraftAppointmentUseCase = fast_update_draft_appointment_use_case.NewFastUpdateDraftAppointmentUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
@@ -114,6 +118,7 @@ func (app *App) InitServices(ctx context.Context) *App {
 		app.useCases.changeLanguageUseCase,
 		app.useCases.changeStatusUseCase,
 		app.useCases.updateUserPhoneUseCase,
+		app.useCases.updateUserHomeAddressUseCase,
 		app.useCases.updateUserPatientIdUseCase,
 		app.useCases.updateUserBirthDateUseCase,
 		app.useCases.updateUserThirdNameUseCase,
@@ -131,6 +136,7 @@ func (app *App) InitServices(ctx context.Context) *App {
 		app.useCases.updateDraftAppointmentDateUseCase,
 		app.useCases.updateDraftAppointmentStatusUseCase,
 		app.useCases.updateDraftAppointmentIntFieldUseCase,
+		app.useCases.updateDraftAppointmentStrFieldUseCase,
 		app.useCases.cleanDraftAppointmentUseCase,
 		app.useCases.fastUpdateDraftAppointmentUseCase,
 	)

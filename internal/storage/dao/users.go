@@ -15,6 +15,7 @@ type UserDAO struct {
 	PatientId        *int    `db:"patient_id"`
 	RegistrationTime string  `db:"registration_time"`
 	BirthDate        *string `db:"birth_date"`
+	HomeAddress      *string `db:"home_address"`
 }
 
 func NewUserDAO() *UserDAO {
@@ -33,5 +34,6 @@ func (dao *UserDAO) ToDomain() *entity.User {
 		entity.WithUsrPatientId(dao.PatientId),
 		entity.WithRegistrationTime(dao.RegistrationTime),
 		entity.WithBirthDate(dao.BirthDate),
+		entity.WithUsrHomeAddress(dao.HomeAddress),
 	)
 }

@@ -16,6 +16,14 @@ import (
 	"time"
 )
 
+const (
+	ScheduleStep10Min    = 10
+	ScheduleStep15Min    = 15
+	ScheduleStep20Min    = 20
+	ScheduleStepHalfHour = 30
+	ScheduleStepHour     = 60
+)
+
 func JsonMarshaller[T any](req T, op string, logger *slog.Logger) []byte {
 	jsonBody, err := json.Marshal(req)
 	if err != nil {
@@ -108,15 +116,26 @@ func (mg *MisRenoGateway) sendToMIS(ctx context.Context, method string, body []b
 
 }
 
-func (mg *MisRenoGateway) CreateAppointment(ctx context.Context, patientId, doctorId int, timeStart, timeEnd string) (appointmentId *int, err error) {
+func (mg *MisRenoGateway) CreateAppointment(ctx context.Context, createAppointmentDTO dto.CreateAppointmentDTO) (appointmentId *int, err error) {
 	op := "sorkin_bot.internal.domain.services.appointment.appointment.CreateAppointment"
 	var response mis_dto.CreateAppointmentResponse
 	var request = mis_dto.CreateAppointmentRequest{
-		PatientId: patientId,
-		DoctorId:  doctorId,
+		PatientId: createAppointmentDTO.PatientId,
+		DoctorId:  createAppointmentDTO.DoctorId,
 		ClinicId:  mis_dto.DefaultClinicId,
-		TimeStart: timeStart,
-		TimeEnd:   timeEnd,
+		TimeStart: createAppointmentDTO.TimeStart,
+		TimeEnd:   createAppointmentDTO.TimeEnd,
+	}
+
+	if createAppointmentDTO.OnlineAppointment {
+		isTelemedicine := true
+		request.IsTelemedicine = &isTelemedicine
+	}
+	if createAppointmentDTO.HomeVisit {
+		homeAddress := fmt.Sprintf("Address is %s", createAppointmentDTO.HomeAddress)
+		request.Comment = &homeAddress
+		isOutside := true
+		request.IsOutside = &isOutside
 	}
 
 	responseBody := mg.sendToMIS(ctx, mis_dto.CreateAppointmentMethod, JsonMarshaller(request, op, mg.logger))
@@ -182,7 +201,10 @@ func (mg *MisRenoGateway) MyAppointments(ctx context.Context, patientId int, reg
 	// Преобразуем текущее время в локацию GMT+1
 	currentTime := currentTimeUTC.In(location)
 
-	// todo рассматриваем только записи из бота, то есть человек будет получать только доступ к тем записям, которые были созданы им из бота
+	if currentTime.Hour() == currentTimeUTC.Hour() {
+		currentTime = currentTime.Add(time.Hour)
+	}
+
 	var request = mis_dto.GetAppointmentsRequest{
 		DateCreatedFrom: registrationTime,
 		DateCreatedTo:   fmt.Sprintf("%02d.%02d.%d %02d:%02d", currentTime.Day(), currentTime.Month(), currentTime.Year(), currentTime.Hour(), currentTime.Minute()),

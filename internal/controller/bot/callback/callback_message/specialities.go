@@ -18,7 +18,7 @@ func (c *CallbackBotMessage) chooseSpeciality(ctx context.Context, messageDTO tg
 		c.bot.RemoveMessage(c.tgUser.TgID, sentMessageId)
 	} else {
 		specialityId, _ := strconv.Atoi(callbackData)
-		c.getDoctors(ctx, messageDTO, userEntity, specialityId)
+		c.getDoctorsBySpecialityId(ctx, messageDTO, userEntity, specialityId)
 		c.appointmentService.UpdateDraftAppointmentIntField(ctx, userEntity.GetTgId(), specialityId, "speciality_id")
 	}
 

@@ -52,6 +52,19 @@ func (rs AppointmentStorage) UpdateDateDraftAppointment(
 	return nil
 }
 
+func (rs AppointmentStorage) UpdateStrFieldDraftAppointment(ctx context.Context, tgId int64, strValue, strField string) (err error) {
+	op := "internal/storage/read_repo/appointment/UpdateDateDraftAppointment"
+	q := fmt.Sprintf(`update appointment set %s = $1 where tg_id = $2 and draft = true;`, strField)
+
+	_, err = rs.client.Exec(ctx, q, strValue, tgId)
+	if err != nil {
+		rs.logger.Error(fmt.Sprintf("Error while executing row: %s, op: %s", err, op))
+		return err
+	}
+
+	return nil
+}
+
 func (rs AppointmentStorage) UpdateIntDraftAppointment(ctx context.Context, tgId int64, intValue int, intField string) (err error) {
 	op := "internal/storage/read_repo/appointment/UpdateIntDraftAppointment"
 	q := fmt.Sprintf(`update appointment set %s = $1 where tg_id = $2 and draft = true;`, intField)
@@ -131,7 +144,9 @@ func (rs AppointmentStorage) CleanDraftAppointment(ctx context.Context, tgId int
 		    doctor_id=null, 
 		    time_start=null, 
 		    time_end=null, 
-		    date=null 
+		    date=null,
+		    doctor_name=null,
+		    type=null
 		where tg_id = $1 and draft = true;
 	`
 	_, err = rs.client.Exec(ctx, q, tgId)

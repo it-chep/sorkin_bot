@@ -31,15 +31,12 @@ func (k Keyboards) ConfigureGetPhoneMessage(ctx context.Context, userEntity enti
 }
 
 func (k Keyboards) ConfigureMainMenuMessage(ctx context.Context, userEntity entity.User) (msgText string, keyboard tgbotapi.InlineKeyboardMarkup) {
-	buttonFastAppointment, _ := k.messageService.GetMessage(ctx, userEntity, "btn start fast appointment")
 	buttonCreateAppointment, _ := k.messageService.GetMessage(ctx, userEntity, "btn start create appointment")
 	buttonMyAppointments, _ := k.messageService.GetMessage(ctx, userEntity, "btn my appointments")
 	buttonChangeLanguage, _ := k.messageService.GetMessage(ctx, userEntity, "btn choose language")
+	buttonSupport, _ := k.messageService.GetMessage(ctx, userEntity, "btn support")
 
 	keyboard = tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData(buttonFastAppointment, "fast_appointment"),
-		),
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData(buttonCreateAppointment, "create_appointment"),
 		),
@@ -48,6 +45,9 @@ func (k Keyboards) ConfigureMainMenuMessage(ctx context.Context, userEntity enti
 		),
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData(buttonChangeLanguage, "change_language"),
+		),
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonURL(buttonSupport, "https://t.me/Unitedmedclinic"),
 		),
 	)
 

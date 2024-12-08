@@ -10,15 +10,16 @@ import (
 )
 
 type UserService struct {
-	createUserUseCase          CreateUserUseCase
-	readRepo                   ReadUserStorage
-	logger                     *slog.Logger
-	changeLanguageUseCase      ChangeLanguageUseCase
-	changeStateUseCase         ChangeStateUseCase
-	updateUserPhoneUseCase     UpdateUserPhoneUseCase
-	updateUserPatientIdUseCase UpdateUserPatientIdUseCase
-	updateUserBirthDateUseCase UpdateUserBirthDateUseCase
-	updateUserFullNameUseCase  UpdateUserFullNameUseCase
+	createUserUseCase            CreateUserUseCase
+	readRepo                     ReadUserStorage
+	logger                       *slog.Logger
+	changeLanguageUseCase        ChangeLanguageUseCase
+	changeStateUseCase           ChangeStateUseCase
+	updateUserPhoneUseCase       UpdateUserPhoneUseCase
+	updateUserPatientIdUseCase   UpdateUserPatientIdUseCase
+	updateUserHomeAddressUseCase UpdateUserHomeAddressUseCase
+	updateUserBirthDateUseCase   UpdateUserBirthDateUseCase
+	updateUserFullNameUseCase    UpdateUserFullNameUseCase
 }
 
 func NewUserService(
@@ -26,6 +27,7 @@ func NewUserService(
 	changeLanguageUseCase ChangeLanguageUseCase,
 	changeStateUseCase ChangeStateUseCase,
 	updateUserPhoneUseCase UpdateUserPhoneUseCase,
+	updateUserHomeAddressUseCase UpdateUserHomeAddressUseCase,
 	updateUserPatientIdUseCase UpdateUserPatientIdUseCase,
 	updateUserBirthDateUseCase UpdateUserBirthDateUseCase,
 	updateUserFullNameUseCase UpdateUserFullNameUseCase,
@@ -33,15 +35,16 @@ func NewUserService(
 	logger *slog.Logger,
 ) UserService {
 	return UserService{
-		createUserUseCase:          createUserUseCase,
-		readRepo:                   readRepo,
-		logger:                     logger,
-		changeStateUseCase:         changeStateUseCase,
-		changeLanguageUseCase:      changeLanguageUseCase,
-		updateUserPhoneUseCase:     updateUserPhoneUseCase,
-		updateUserPatientIdUseCase: updateUserPatientIdUseCase,
-		updateUserBirthDateUseCase: updateUserBirthDateUseCase,
-		updateUserFullNameUseCase:  updateUserFullNameUseCase,
+		createUserUseCase:            createUserUseCase,
+		readRepo:                     readRepo,
+		logger:                       logger,
+		changeStateUseCase:           changeStateUseCase,
+		changeLanguageUseCase:        changeLanguageUseCase,
+		updateUserPhoneUseCase:       updateUserPhoneUseCase,
+		updateUserHomeAddressUseCase: updateUserHomeAddressUseCase,
+		updateUserPatientIdUseCase:   updateUserPatientIdUseCase,
+		updateUserBirthDateUseCase:   updateUserBirthDateUseCase,
+		updateUserFullNameUseCase:    updateUserFullNameUseCase,
 	}
 }
 
@@ -109,6 +112,16 @@ func (u UserService) ChangeLanguage(ctx context.Context, dto tg.TgUserDTO, langu
 func (u UserService) UpdatePatientId(ctx context.Context, user entity.User, patientId *int) (err error) {
 	op := "sorkin_bot.internal.domain.services.user.users.UpdatePatientId"
 	err = u.updateUserPatientIdUseCase.Execute(ctx, user, *patientId)
+	if err != nil {
+		u.logger.Error(fmt.Sprintf("%s %s", err, op))
+		return err
+	}
+	return err
+}
+
+func (u UserService) UpdateHomeAddress(ctx context.Context, user entity.User, homeAddress string) (err error) {
+	op := "sorkin_bot.internal.domain.services.user.users.UpdateHomeAddress"
+	err = u.updateUserHomeAddressUseCase.Execute(ctx, user, homeAddress)
 	if err != nil {
 		u.logger.Error(fmt.Sprintf("%s %s", err, op))
 		return err

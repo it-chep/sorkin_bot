@@ -63,22 +63,30 @@ func (c *CallbackBotMessage) Execute(ctx context.Context, messageDTO tg.MessageD
 		c.mainMenu(ctx, messageDTO, userEntity, callbackData)
 	case state_machine.ChooseSpeciality:
 		c.chooseSpeciality(ctx, messageDTO, userEntity, callbackData)
-	case state_machine.ChooseAppointment:
+	case state_machine.ChooseMyAppointment:
 		c.getAppointmentDetail(ctx, messageDTO, callbackData)
 	case state_machine.ChooseSchedule:
 		c.chooseSchedules(ctx, messageDTO, userEntity, callbackData)
 	case state_machine.CreateAppointment:
 		c.preCreateAppointment(ctx, messageDTO, userEntity, callbackData)
-	case state_machine.FastAppointment:
-		c.fastAppointment(ctx, messageDTO, userEntity, callbackData)
 	case state_machine.ChooseDoctor:
 		c.chooseDoctor(ctx, messageDTO, userEntity, callbackData)
+	case state_machine.ChooseCalendar:
+		c.chooseCalendar(ctx, messageDTO, userEntity, callbackData)
 	case state_machine.DetailMyAppointment:
 		c.detailMyAppointment(ctx, messageDTO, callbackData)
 	case state_machine.ChooseLanguage:
 		c.chooseLanguage(ctx, messageDTO, callbackData)
 	case state_machine.GetDoctorInfo:
 		c.afterDoctorInfo(ctx, messageDTO, userEntity, callbackData)
+	case state_machine.ChooseAppointment:
+		c.chooseAppointment(ctx, messageDTO, userEntity, callbackData)
+	case state_machine.ClinicAppointment, state_machine.OnlineAppointment:
+		c.forkDoctorReasonAppointment(ctx, messageDTO, userEntity, callbackData)
+	case state_machine.HomeAppointment:
+		c.forkHomeDoctorSpecialisation(ctx, messageDTO, userEntity, callbackData)
+	case state_machine.Pediatrician, state_machine.Therapist:
+		c.getHomeVisitSchedules(ctx, messageDTO, userEntity, callbackData)
 	}
 }
 

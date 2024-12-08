@@ -63,6 +63,25 @@ func (ms MessageService) translateMessage(user userEntity.User, message tgEntity
 	return ServerError, errors.New(ServerError)
 }
 
+func (ms MessageService) GetWeekdaysName(ctx context.Context, user userEntity.User) (translatedMessages []string, err error) {
+	op := "sorkin_bot.internal.domain.services.message.message.GetMessage"
+	err, messages := ms.readRepo.GetWeekdaysName(ctx)
+	if err != nil {
+		ms.logger.Error(fmt.Sprintf("400 Message Not Found err: %s, place: %s", err, op))
+		return []string{ServerError}, err
+	}
+	for _, weekday := range messages {
+		translatedMessage, err := ms.translateMessage(user, weekday)
+		if err != nil {
+			ms.logger.Error(fmt.Sprintf("400 Message Not Found err: %s, place: %s", err, op))
+			return []string{ServerError}, err
+		}
+		translatedMessages = append(translatedMessages, translatedMessage)
+	}
+
+	return translatedMessages, nil
+}
+
 func (ms MessageService) SaveMessageLog(ctx context.Context, message tg.MessageDTO) (err error) {
 	// todo add photo and video saving
 	//messageLog := tgEntity.NewMessageLog(

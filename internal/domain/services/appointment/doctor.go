@@ -8,7 +8,7 @@ import (
 	"sorkin_bot/pkg/utils"
 )
 
-func (as *AppointmentService) GetDoctors(ctx context.Context, tgId int64, offset int, specialityId *int) (doctorsMap map[int]string) {
+func (as *AppointmentService) GetDoctorsBySpecialityId(ctx context.Context, tgId int64, offset int, specialityId *int) (doctorsMap map[int]string) {
 	_ = "sorkin_bot.internal.domain.services.appointment.doctor.GetDoctorsBySpecialityId"
 	if specialityId == nil {
 		draftAppointment, err := as.GetDraftAppointment(ctx, tgId)
@@ -18,7 +18,32 @@ func (as *AppointmentService) GetDoctors(ctx context.Context, tgId int64, offset
 		specialityIdValue := draftAppointment.GetSpecialityId()
 		specialityId = specialityIdValue
 	}
-	doctors := as.misAdapter.GetDoctors(ctx, *specialityId)
+
+	doctors := as.misAdapter.GetDoctorsBySpecialityId(ctx, *specialityId)
+	doctorsMap = as.getDoctorsMap(doctors)
+	doctorsMap = utils.IntMapWithOffset(utils.SortedIntMap(doctorsMap), offset)
+
+	return doctorsMap
+}
+
+func (as *AppointmentService) GetDoctors(ctx context.Context, tgId int64, offset int) (doctorsMap map[int]string) {
+	_ = "sorkin_bot.internal.domain.services.appointment.doctor.GetDoctors"
+	var doctors []appointment.Doctor
+	draftAppointment, err := as.readDraftAppointmentRepo.GetUserDraftAppointment(ctx, tgId)
+	if err != nil {
+		return nil
+	}
+	if draftAppointment.GetAppointmentType() == nil {
+		return nil
+	}
+	switch *draftAppointment.GetAppointmentType() {
+	case appointment.OnlineAppointment:
+		doctors, err = as.misAdapter.GetDoctors(ctx, false, true, false)
+	case appointment.ClinicAppointment:
+		doctors, err = as.misAdapter.GetDoctors(ctx, false, false, true)
+	case appointment.HomeAppointment:
+		doctors, err = as.misAdapter.GetDoctors(ctx, true, false, false)
+	}
 	doctorsMap = as.getDoctorsMap(doctors)
 	doctorsMap = utils.IntMapWithOffset(utils.SortedIntMap(doctorsMap), offset)
 
