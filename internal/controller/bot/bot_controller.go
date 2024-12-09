@@ -73,6 +73,12 @@ func (t TelegramWebhookController) BotWebhookHandler(c *gin.Context) {
 		return
 	}
 
+	if update.EditedMessage != nil {
+		t.logger.Error("Unregistred message: update.EditedMessage")
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
 	tgUser := t.getUserFromWebhook(update)
 	tgMessage := t.getMessageFromWebhook(update)
 	// Сначала проверяем на команду, потом на текстовое сообщение, потом callback
