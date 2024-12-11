@@ -211,12 +211,9 @@ func (mg *MisRenoGateway) MyAppointments(ctx context.Context, patientId int, reg
 		PatientId:       patientId,
 		StatusId:        mis_dto.ActiveStatusIDs,
 	}
-	mg.logger.Info("REQUEST", request)
 	responseBody := mg.sendToMIS(ctx, mis_dto.GetAppointmentsMethod, JsonMarshaller(request, op, mg.logger))
-	mg.logger.Info("RESPONSE BODY", responseBody)
 
 	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)
-	mg.logger.Info("RESPONSE", response)
 
 	if err != nil {
 		return appointments, err
