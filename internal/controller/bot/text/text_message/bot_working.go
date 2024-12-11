@@ -97,6 +97,11 @@ func (c TextBotMessage) getBirthDate(ctx context.Context, user entity.User, mess
 		return
 	}
 
+	if draftAppointment.GetDoctorId() == nil {
+		// todo err
+		return
+	}
+
 	c.botGateway.SendConfirmAppointmentMessage(ctx, user, messageDTO, *draftAppointment.GetDoctorId())
 	c.appointmentService.CreatePatient(ctx, user)
 	c.machine.SetState(user, state_machine.CreateAppointment)
