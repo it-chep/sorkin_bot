@@ -205,6 +205,11 @@ func (c *CallbackBotMessage) saveDraftAppointment(ctx context.Context, messageDT
 		return
 	}
 
+	if *draftAppointment.GetAppointmentType() == appointment.HomeAppointment {
+		c.appointmentService.UpdateDraftAppointmentIntField(ctx, userEntity.GetTgId(), doctorId, "doctor_id")
+		c.appointmentService.UpdateDraftAppointmentDoctorName(ctx, userEntity.GetTgId(), doctorId)
+	}
+
 	if userEntity.GetPhone() == nil {
 		c.botGateway.SendGetPhoneMessage(ctx, userEntity, messageDTO)
 		c.machine.SetState(userEntity, state_machine.GetPhone)
@@ -212,8 +217,6 @@ func (c *CallbackBotMessage) saveDraftAppointment(ctx context.Context, messageDT
 	}
 
 	if *draftAppointment.GetAppointmentType() == appointment.HomeAppointment {
-		c.appointmentService.UpdateDraftAppointmentIntField(ctx, userEntity.GetTgId(), doctorId, "doctor_id")
-		c.appointmentService.UpdateDraftAppointmentDoctorName(ctx, userEntity.GetTgId(), doctorId)
 		c.botGateway.SendGetHomeAddressMessage(ctx, userEntity, messageDTO)
 		c.machine.SetState(userEntity, state_machine.SetAddress)
 		return
