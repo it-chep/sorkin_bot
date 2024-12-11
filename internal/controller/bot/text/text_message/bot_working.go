@@ -37,8 +37,11 @@ func NewTextBotMessage(logger *slog.Logger, bot telegram.Bot, botGateway botGate
 func (c TextBotMessage) Execute(ctx context.Context, messageDTO tg.MessageDTO) {
 	var _ tgbotapi.MessageConfig
 	// так как мы не изменяем бизнес сущность, а бот меняет состояние, то нахождение сущность в слое controllers некритично
-	userEntity, _ := c.userService.GetUser(ctx, c.tgUser.TgID)
-
+	userEntity, err := c.userService.GetUser(ctx, c.tgUser.TgID)
+	if err != nil {
+		// todo
+		return
+	}
 	if userEntity.GetPatientId() == nil {
 		switch *userEntity.GetState() {
 		case state_machine.GetPhone:
