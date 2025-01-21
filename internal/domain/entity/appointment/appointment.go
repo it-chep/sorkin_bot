@@ -1,6 +1,11 @@
 package appointment
 
-import "strings"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+	"time"
+)
 
 type Appointment struct {
 	id               int
@@ -20,15 +25,15 @@ type Appointment struct {
 	dateUpdated      string
 	status           string
 	statusId         int
-	confirmStatus    string
+	confirmStatus    int
 	source           string
 	movedTo          int
 	movedFrom        int
 }
 
-func NewAppointment(id, clinicId, doctorId, patientId, statusId, movedTo, movedFrom int,
+func NewAppointment(id, clinicId, doctorId, patientId, statusId, movedTo, movedFrom, confirmStatus int,
 	timeStart, timeEnd, clinic, doctor, patientName, patientBirthDate, patientGender,
-	patientPhone, patientEmail, dateCreated, dateUpdated, status, confirmStatus, source string,
+	patientPhone, patientEmail, dateCreated, dateUpdated, status, source string,
 ) Appointment {
 	return Appointment{
 		id:               id,
@@ -68,8 +73,77 @@ func (a Appointment) GetDate() string {
 	return date
 }
 
-func (a Appointment) GetTimeStart() string {
+func (a Appointment) GetClinicId() int {
+	return a.clinicId
+}
+
+func (a Appointment) GetDoctor() string {
+	return a.doctor
+}
+
+func (a Appointment) GetPatientName() string {
+	return a.patientName
+}
+
+func (a Appointment) GetClinic() string {
+	return a.clinic
+}
+
+func (a Appointment) GetStringDateTimeStart() string {
 	return a.timeStart
+}
+
+func (a Appointment) GetStringDateStart() string {
+	parts := strings.Split(a.timeStart, " ")
+	return parts[0]
+}
+
+func (a Appointment) GetStringTimeStart() string {
+	parts := strings.Split(a.timeStart, " ")
+	return parts[1]
+}
+
+func (a Appointment) GetDateTimeStart() (time.Time, error) {
+	location, err := time.LoadLocation("Europe/Lisbon")
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	parts := strings.Split(a.timeStart, " ")
+	dateParts := strings.Split(parts[0], ".")
+	day, err := strconv.Atoi(dateParts[0])
+
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid day: %w", err)
+	}
+
+	month, err := strconv.Atoi(dateParts[1])
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid month: %w", err)
+	}
+
+	year, err := strconv.Atoi(dateParts[2])
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid year: %w", err)
+	}
+
+	timeParts := strings.Split(parts[1], ":")
+
+	hour, err := strconv.Atoi(timeParts[0])
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid hour: %w", err)
+	}
+
+	minute, err := strconv.Atoi(timeParts[1])
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid minute: %w", err)
+	}
+
+	return time.Date(year, time.Month(month), day, hour, minute, 0, 0, location), nil
+}
+
+func (a Appointment) GetPatientPhone() string {
+	return a.patientPhone
 }
 
 func (a Appointment) GetTimeStartShort() string {

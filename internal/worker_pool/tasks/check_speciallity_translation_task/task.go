@@ -1,4 +1,4 @@
-package tasks
+package check_speciallity_translation_task
 
 import (
 	"context"
@@ -9,17 +9,23 @@ import (
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/pkg/client/telegram"
 	"strconv"
+	"time"
 )
 
-type GetTranslatedSpecialityTask struct {
+type Task struct {
 	appointmentService appointmentService
 	userService        userService
 	logger             *slog.Logger
 	bot                telegram.Bot
 }
 
-func NewGetTranslatedSpecialityTask(appointmentService appointmentService, userService userService, logger *slog.Logger, bot telegram.Bot) GetTranslatedSpecialityTask {
-	return GetTranslatedSpecialityTask{
+func NewTask(
+	appointmentService appointmentService,
+	userService userService,
+	logger *slog.Logger,
+	bot telegram.Bot,
+) Task {
+	return Task{
 		appointmentService: appointmentService,
 		userService:        userService,
 		logger:             logger,
@@ -27,7 +33,7 @@ func NewGetTranslatedSpecialityTask(appointmentService appointmentService, userS
 	}
 }
 
-func (task GetTranslatedSpecialityTask) Process(ctx context.Context) error {
+func (task Task) Process(ctx context.Context) error {
 	adminId, err := strconv.Atoi(os.Getenv("ADMIN_ID"))
 	if err != nil {
 		panic("adminId not found")
@@ -40,13 +46,13 @@ func (task GetTranslatedSpecialityTask) Process(ctx context.Context) error {
 
 	getUser, err := task.userService.GetUser(ctx, dto.TgID)
 	if err != nil {
-		msg := tgbotapi.NewMessage(int64(adminId), "error while getting admin in GetTranslatedSpecialityTask")
+		msg := tgbotapi.NewMessage(int64(adminId), "error while getting admin in Task")
 		task.bot.SendMessage(msg, messageDTO)
 		return err
 	}
 	specialities, err := task.appointmentService.GetSpecialities(ctx)
 	if err != nil {
-		msg := tgbotapi.NewMessage(int64(adminId), "error while getting speciality in GetTranslatedSpecialityTask")
+		msg := tgbotapi.NewMessage(int64(adminId), "error while getting speciality in Task")
 		task.bot.SendMessage(msg, messageDTO)
 		return err
 	}
@@ -56,4 +62,8 @@ func (task GetTranslatedSpecialityTask) Process(ctx context.Context) error {
 		task.bot.SendMessage(msg, messageDTO)
 	}
 	return nil
+}
+
+func (task Task) NextSchedule(now time.Time) time.Time {
+	return now.Add(24 * time.Hour)
 }

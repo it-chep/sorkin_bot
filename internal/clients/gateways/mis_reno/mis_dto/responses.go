@@ -172,7 +172,7 @@ type MisAppointment struct {
 	DateUpdated      string `json:"date_updated"` //dd.mm.yyyy hh:mm
 	Status           string `json:"status"`
 	StatusId         int    `json:"status_id"`
-	ConfirmStatus    string `json:"confirm_status"`
+	ConfirmStatus    int    `json:"confirm_status"`
 	Source           string `json:"source"`
 	MovedTo          int    `json:"moved_to"`
 	MovedFrom        int    `json:"moved_from"`
@@ -187,9 +187,9 @@ type GetAppointmentsResponse struct {
 
 func (a MisAppointment) ToDTO() dto.AppointmentDTO {
 	return dto.NewAppointmentDTO(
-		a.Id, a.ClinicId, a.DoctorId, a.PatientId, a.StatusId, a.MovedTo, a.MovedFrom, a.TimeStart, a.TimeEnd, a.Clinic, a.Doctor,
+		a.Id, a.ClinicId, a.DoctorId, a.PatientId, a.StatusId, a.MovedTo, a.MovedFrom, a.ConfirmStatus, a.TimeStart, a.TimeEnd, a.Clinic, a.Doctor,
 		a.PatientName, a.PatientBirthDate, a.PatientGender, a.PatientPhone, a.PatientEmail, a.DateCreated, a.DateUpdated,
-		a.Status, a.ConfirmStatus, a.Source,
+		a.Status, a.Source,
 	)
 }
 

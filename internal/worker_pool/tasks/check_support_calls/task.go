@@ -1,4 +1,4 @@
-package tasks
+package check_support_calls
 
 import (
 	"context"
@@ -9,17 +9,23 @@ import (
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/pkg/client/telegram"
 	"strconv"
+	"time"
 )
 
-type CheckAdministrationHelpTask struct {
+type Task struct {
 	logger         *slog.Logger
 	bot            telegram.Bot
 	messageService messageService
 	userService    userService
 }
 
-func NewCheckAdministrationHelpTask(logger *slog.Logger, bot telegram.Bot, messageService messageService, userService userService) CheckAdministrationHelpTask {
-	return CheckAdministrationHelpTask{
+func NewTask(
+	logger *slog.Logger,
+	bot telegram.Bot,
+	messageService messageService,
+	userService userService,
+) Task {
+	return Task{
 		logger:         logger,
 		bot:            bot,
 		messageService: messageService,
@@ -27,11 +33,12 @@ func NewCheckAdministrationHelpTask(logger *slog.Logger, bot telegram.Bot, messa
 	}
 }
 
-func (task CheckAdministrationHelpTask) Process(ctx context.Context) error {
+func (t Task) Process(ctx context.Context) error {
 	adminId, err := strconv.Atoi(os.Getenv("ADMIN_ID"))
 	if err != nil {
 		panic("adminId not found")
 	}
+
 	minutes, err := strconv.Atoi(os.Getenv("DEFAULT_CHECK_SUPPORT"))
 	if err != nil {
 		panic("DEFAULT_CHECK_SUPPORT not found")
@@ -41,22 +48,29 @@ func (task CheckAdministrationHelpTask) Process(ctx context.Context) error {
 	messageDTO := tg.MessageDTO{
 		Chat: &chatId,
 	}
-	logs, err := task.messageService.GetSupportLogs(ctx, minutes)
+
+	logs, err := t.messageService.GetSupportLogs(ctx, minutes)
 	if err != nil {
 		return err
 	}
 
 	for _, log := range logs {
-		userEntity, err := task.userService.GetUser(ctx, log.GetUserTgId())
+		userEntity, err := t.userService.GetUser(ctx, log.GetUserTgId())
 		if err != nil {
 			continue
 		}
+
 		msg := tgbotapi.NewMessage(int64(adminId),
 			fmt.Sprintf(
 				"tech_support call from %s %s tg_id: %d", userEntity.GetFirstName(), userEntity.GetLastName(), userEntity.GetTgId(),
 			),
 		)
-		task.bot.SendMessage(msg, messageDTO)
+
+		t.bot.SendMessage(msg, messageDTO)
 	}
 	return nil
+}
+
+func (t Task) NextSchedule(now time.Time) time.Time {
+	return now.Add(5 * time.Minute)
 }

@@ -20,15 +20,15 @@ type AppointmentDTO struct {
 	DateUpdated      string
 	Status           string
 	StatusId         int
-	ConfirmStatus    string
+	ConfirmStatus    int
 	Source           string
 	MovedTo          int
 	MovedFrom        int
 }
 
-func NewAppointmentDTO(id, clinicId, doctorId, patientId, statusId, movedTo, movedFrom int,
+func NewAppointmentDTO(id, clinicId, doctorId, patientId, statusId, movedTo, movedFrom, confirmStatus int,
 	timeStart, timeEnd, clinic, doctor, patientName, patientBirthDate, patientGender,
-	patientPhone, patientEmail, dateCreated, dateUpdated, status, confirmStatus, source string,
+	patientPhone, patientEmail, dateCreated, dateUpdated, status, source string,
 ) AppointmentDTO {
 	return AppointmentDTO{
 		Id:               id,
@@ -57,9 +57,9 @@ func NewAppointmentDTO(id, clinicId, doctorId, patientId, statusId, movedTo, mov
 
 func (a AppointmentDTO) ToDomain() appointment.Appointment {
 	return appointment.NewAppointment(
-		a.Id, a.ClinicId, a.DoctorId, a.PatientId, a.StatusId, a.MovedTo, a.MovedFrom, a.TimeStart, a.TimeEnd, a.Clinic, a.Doctor,
+		a.Id, a.ClinicId, a.DoctorId, a.PatientId, a.StatusId, a.MovedTo, a.MovedFrom, a.ConfirmStatus, a.TimeStart, a.TimeEnd, a.Clinic, a.Doctor,
 		a.PatientName, a.PatientBirthDate, a.PatientGender, a.PatientPhone, a.PatientEmail, a.DateCreated, a.DateUpdated,
-		a.Status, a.ConfirmStatus, a.Source,
+		a.Status, a.Source,
 	)
 }
 

@@ -3,6 +3,7 @@ package appointment
 import (
 	"context"
 	"fmt"
+	"github.com/samber/lo"
 	"log/slog"
 	"sorkin_bot/internal/domain/entity/appointment"
 	entity "sorkin_bot/internal/domain/entity/user"
@@ -10,6 +11,7 @@ import (
 	"sorkin_bot/internal/domain/services/user"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type AppointmentService struct {
@@ -102,6 +104,7 @@ func (as *AppointmentService) CreateAppointment(ctx context.Context, user entity
 	return appointmentId
 }
 
+// convertToValidDate конвертирует
 func (as *AppointmentService) convertToValidDate(elements []string) (timeStartValid, timeEndValid string) {
 	timeStartDirt := strings.Split(elements[1], "_")[1]
 	timeEndDirt := strings.Split(elements[2], "_")[1]
@@ -158,4 +161,47 @@ func (as *AppointmentService) RescheduleAppointment(ctx context.Context, user en
 		return false
 	}
 	return true
+}
+
+func (as *AppointmentService) GetAppointmentsForNotifying(ctx context.Context) ([]appointment.Appointment, error) {
+	op := "sorkin_bot.internal.domain.services.appointment.appointment.GetAppointmentsForNotifying"
+
+	location, err := time.LoadLocation("Europe/Lisbon")
+	if err != nil {
+		as.logger.Error("Error loading location:", err)
+		return nil, err
+	}
+
+	now := time.Now().In(location).Round(time.Minute)
+	// берем завтрашнего дня (для уведомления за 24 часа до приема)
+	dateFrom := now.Add(24 * time.Hour).Add(-7 * time.Minute)
+	dateTo := now.Add(2 * 24 * time.Hour).Add(7 * time.Minute)
+
+	dateFromString := convertTimeToString(dateFrom)
+	dateToString := convertTimeToString(dateTo)
+
+	apps, err := as.misAdapter.GetAppointmentsForNotifying(ctx, dateFromString, dateToString)
+
+	apps = lo.Filter(apps, func(item appointment.Appointment, _ int) bool {
+		actualStart, err := item.GetDateTimeStart()
+		if err != nil {
+			as.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
+			return false
+		}
+		expectedTime := now.Add(24 * time.Hour).Round(time.Minute)
+		actualTime := actualStart.Round(time.Minute)
+
+		return expectedTime.Equal(actualTime)
+	})
+
+	if err != nil {
+		as.logger.Error(fmt.Sprintf("error: %s, place: %s", err, op))
+		return nil, err
+	}
+
+	return apps, nil
+}
+
+func convertTimeToString(time time.Time) string {
+	return fmt.Sprintf("%02d.%02d.%d %02d:%02d", time.Day(), time.Month(), time.Year(), time.Hour(), time.Minute())
 }

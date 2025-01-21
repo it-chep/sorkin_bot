@@ -104,7 +104,7 @@ func (k Keyboards) ConfigureAppointmentDetailMessage(ctx context.Context, userEn
 	var err error
 
 	unformattedText, _ := k.messageService.GetMessage(ctx, userEntity, "detail appointment")
-	msgText = fmt.Sprintf(unformattedText, appointmentEntity.GetTimeStart())
+	msgText = fmt.Sprintf(unformattedText, appointmentEntity.GetStringDateTimeStart())
 
 	cancelText, err = k.messageService.GetMessage(ctx, userEntity, "cancel appointment button")
 	if err != nil {

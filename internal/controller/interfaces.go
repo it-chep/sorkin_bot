@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"github.com/gin-gonic/gin"
 	"sorkin_bot/internal/controller/dto/tg"
 	"sorkin_bot/internal/domain/entity/appointment"
 	entity "sorkin_bot/internal/domain/entity/user"
@@ -64,6 +65,15 @@ type userService interface {
 type messageService interface {
 	GetMessage(ctx context.Context, user entity.User, name string) (messageText string, err error)
 	SaveMessageLog(ctx context.Context, messageDTO tg.MessageDTO) (err error)
+}
+
+type notificationService interface {
+	NotifyCancelAppointment(ctx context.Context, appointment appointment.Appointment) error
+	NotifySoonAppointment(ctx context.Context, appointment appointment.Appointment) error
+}
+
+type apiController interface {
+	CancelAppointmentWebhook(ctx *gin.Context)
 }
 
 type botGateway interface {
