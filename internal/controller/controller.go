@@ -62,7 +62,7 @@ func NewRestController(
 
 func (r RestController) InitController() {
 	webhookGroup := r.router.Group("/webhook_event/")
-	webhookGroup.POST("cancel_appointment", r.apiController.CancelAppointmentWebhook)
+	webhookGroup.POST("cancel_appointment/", r.apiController.CancelAppointmentWebhook)
 
 	r.router.POST("/"+r.cfg.Bot.Token+"/", r.botApiController.BotWebhookHandler)
 }

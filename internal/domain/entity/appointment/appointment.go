@@ -89,6 +89,10 @@ func (a Appointment) GetClinic() string {
 	return a.clinic
 }
 
+func (a Appointment) GetPatientId() int {
+	return a.patientId
+}
+
 func (a Appointment) GetStringDateTimeStart() string {
 	return a.timeStart
 }

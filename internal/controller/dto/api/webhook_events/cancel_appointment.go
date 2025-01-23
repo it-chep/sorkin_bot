@@ -21,6 +21,12 @@ type AppointmentDTO struct {
 	StatusId         int    `json:"status_id"`
 }
 
+type AppointmentRequest struct {
+	Event string         `json:"event"`
+	Data  AppointmentDTO `json:"data"`
+	Date  string         `json:"date"`
+}
+
 func (a *AppointmentDTO) ToDomain() appointment.Appointment {
 	return appointment.NewAppointment(
 		a.Id, a.ClinicId, a.DoctorId, a.PatientId, a.StatusId, 0, 0, 0,

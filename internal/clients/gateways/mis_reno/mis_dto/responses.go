@@ -287,6 +287,6 @@ type MisGetPatientsResponse struct {
 
 func (p GetPatientData) ToDTO() dto.CreatedPatientDTO {
 	return dto.NewCreatePatientDTO(
-		p.PatientID, p.Number,
+		p.PatientID, p.Number, p.Age, p.Gender, p.Mobile, p.Email, p.Phone,
 	)
 }

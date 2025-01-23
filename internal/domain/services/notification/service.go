@@ -9,9 +9,15 @@ import (
 
 type Service struct {
 	notifyGateway notifyGateway
+	misGateway    misGateway
 }
 
 func (s *Service) NotifyCancelAppointment(ctx context.Context, appointment appointment.Appointment) error {
+	patientPhone, err := s.getPatientPhone(ctx, appointment)
+	if err != nil {
+		return err
+	}
+
 	data, ok := clinicDataMap[appointment.GetClinicId()]
 	if !ok {
 		return errors.New("invalid clinic id")
@@ -19,7 +25,7 @@ func (s *Service) NotifyCancelAppointment(ctx context.Context, appointment appoi
 
 	cancelAppointmentMessage := s.prepareMessage(cancelAppointmentTemplate, appointment, data)
 
-	err := s.notifyGateway.SendNotification(ctx, []string{appointment.GetPatientPhone()}, cancelAppointmentMessage)
+	err = s.notifyGateway.SendNotification(ctx, []string{patientPhone}, cancelAppointmentMessage)
 	if err != nil {
 		return err
 	}
@@ -28,6 +34,11 @@ func (s *Service) NotifyCancelAppointment(ctx context.Context, appointment appoi
 }
 
 func (s *Service) NotifySoonAppointment(ctx context.Context, appointment appointment.Appointment) error {
+	patientPhone, err := s.getPatientPhone(ctx, appointment)
+	if err != nil {
+		return err
+	}
+
 	data, ok := clinicDataMap[appointment.GetClinicId()]
 	if !ok {
 		return errors.New("invalid clinic id")
@@ -35,12 +46,24 @@ func (s *Service) NotifySoonAppointment(ctx context.Context, appointment appoint
 
 	soonAppointmentMessage := s.prepareMessage(visitReminderTemplate, appointment, data)
 
-	err := s.notifyGateway.SendNotification(ctx, []string{appointment.GetPatientPhone()}, soonAppointmentMessage)
+	err = s.notifyGateway.SendNotification(ctx, []string{patientPhone}, soonAppointmentMessage)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (s *Service) getPatientPhone(ctx context.Context, appointment appointment.Appointment) (string, error) {
+	patientPhone := appointment.GetPatientPhone()
+	if len(patientPhone) == 0 {
+		patientDTO, err := s.misGateway.GetPatientById(ctx, appointment.GetPatientId())
+		if err != nil {
+			return "", err
+		}
+		patientPhone = patientDTO.Phone
+	}
+	return patientPhone, nil
 }
 
 func (s *Service) prepareMessage(template string, appointment appointment.Appointment, clinic clinicData) string {
@@ -57,8 +80,9 @@ func (s *Service) prepareMessage(template string, appointment appointment.Appoin
 	)
 }
 
-func NewService(notifyGateway notifyGateway) *Service {
+func NewService(notifyGateway notifyGateway, misGateway misGateway) *Service {
 	return &Service{
 		notifyGateway: notifyGateway,
+		misGateway:    misGateway,
 	}
 }

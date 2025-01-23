@@ -175,6 +175,7 @@ func (app *App) InitServices(ctx context.Context) *App {
 
 	app.services.notificationService = notification.NewService(
 		app.gateways.WAUSMSGateway,
+		&app.gateways.MisRenoGateway,
 	)
 
 	return app
