@@ -32,6 +32,19 @@ https://maps.app.goo.gl/USF1fBXPYA4rWGg88
 
 Please do not reply to this message, it was sent automatically.`
 
+var createAppointmentTemplate = `Dear, %s .
+You have an appointment on %s, at %s.
+
+%s.
+The doctor is %s.
+
+Address: %s
+Phone number for inquiries: %s
+
+https://maps.app.goo.gl/USF1fBXPYA4rWGg88 
+
+Please do not reply to this message, it was sent automatically.`
+
 type clinicData struct {
 	phone   string
 	address string

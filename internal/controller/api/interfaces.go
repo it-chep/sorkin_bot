@@ -7,4 +7,5 @@ import (
 
 type NotificationService interface {
 	NotifyCancelAppointment(ctx context.Context, appointment appointment.Appointment) error
+	NotifyCreateAppointment(ctx context.Context, appointment appointment.Appointment) error
 }

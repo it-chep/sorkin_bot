@@ -34,6 +34,30 @@ func (s *Service) NotifyCancelAppointment(ctx context.Context, appointment appoi
 	return nil
 }
 
+func (s *Service) NotifyCreateAppointment(ctx context.Context, appointment appointment.Appointment) error {
+	patientPhone, err := s.getPatientPhone(ctx, appointment)
+	if err != nil {
+		return err
+	}
+
+	data, ok := clinicDataMap[appointment.GetClinicId()]
+	if !ok {
+		return errors.New("invalid clinic id")
+	}
+
+	createAppointmentMessage := fmt.Sprintf(
+		createAppointmentTemplate, appointment.GetPatientName(), appointment.GetStringDateStart(),
+		appointment.GetStringTimeStart(), appointment.GetClinic(), appointment.GetDoctor(), data.address, data.phone,
+	)
+
+	err = s.notifyGateway.SendNotification(ctx, []string{patientPhone}, createAppointmentMessage)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *Service) NotifySoonAppointment(ctx context.Context, appointment appointment.Appointment) error {
 	patientPhone, err := s.getPatientPhone(ctx, appointment)
 	if err != nil {

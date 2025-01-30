@@ -47,6 +47,37 @@ func (c Controller) CancelAppointmentWebhook(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+func (c Controller) CreateAppointmentWebhook(ctx *gin.Context) {
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			c.logger.Error(fmt.Sprintf("%s", err))
+		}
+	}(ctx.Request.Body)
+
+	body, err := io.ReadAll(ctx.Request.Body)
+	if err != nil {
+		c.logger.Error(fmt.Sprintf("Error reading request body: %s", err))
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	request, err := parseFormEncodedBody(string(body))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Error while parsing webhook request"})
+		return
+	}
+
+	appointment := request.Data.ToDomain()
+	err = c.notificationService.NotifyCreateAppointment(ctx, appointment)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Error while sending appointment webhook"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
 func parseFormEncodedBody(body string) (*webhook_events.AppointmentRequest, error) {
 	decoded, err := url.ParseQuery(body)
 	if err != nil {

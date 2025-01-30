@@ -70,10 +70,12 @@ type messageService interface {
 type notificationService interface {
 	NotifyCancelAppointment(ctx context.Context, appointment appointment.Appointment) error
 	NotifySoonAppointment(ctx context.Context, appointment appointment.Appointment) error
+	NotifyCreateAppointment(ctx context.Context, appointment appointment.Appointment) error
 }
 
 type apiController interface {
 	CancelAppointmentWebhook(ctx *gin.Context)
+	CreateAppointmentWebhook(ctx *gin.Context)
 }
 
 type botGateway interface {
