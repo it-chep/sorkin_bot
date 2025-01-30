@@ -9,10 +9,10 @@ Please be reminded that you have an appointment on %s, at %s.
 %s.
 The doctor is %s.
 
-Address: %s
-Phone number for inquiries: %s
+Address: %s
+Phone number for inquiries: %s
 
-https://maps.app.goo.gl/USF1fBXPYA4rWGg88 
+https://maps.app.goo.gl/USF1fBXPYA4rWGg88 
 
 Please do not reply to this message, it was sent automatically.`
 
@@ -25,10 +25,10 @@ Your visit's on %s, at %s been canceled.
 %s.
 The doctor is %s.
 
-Address: %s
-Phone number for inquiries: %s
+Address: %s
+Phone number for inquiries: %s
 
-https://maps.app.goo.gl/USF1fBXPYA4rWGg88 
+https://maps.app.goo.gl/USF1fBXPYA4rWGg88 
 
 Please do not reply to this message, it was sent automatically.`
 
