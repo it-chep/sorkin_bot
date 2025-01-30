@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sorkin_bot/internal/domain/entity/appointment"
+	"strings"
 )
 
 type Service struct {
@@ -54,6 +55,13 @@ func (s *Service) NotifySoonAppointment(ctx context.Context, appointment appoint
 	return nil
 }
 
+func (s *Service) cleanPhoneNumber(phone string) string {
+	phone = strings.ReplaceAll(phone, " ", "")
+	phone = strings.ReplaceAll(phone, "-", "")
+
+	return phone
+}
+
 func (s *Service) getPatientPhone(ctx context.Context, appointment appointment.Appointment) (string, error) {
 	patientPhone := appointment.GetPatientPhone()
 	if len(patientPhone) == 0 {
@@ -63,6 +71,9 @@ func (s *Service) getPatientPhone(ctx context.Context, appointment appointment.A
 		}
 		patientPhone = patientDTO.Phone
 	}
+
+	patientPhone = s.cleanPhoneNumber(patientPhone)
+
 	return patientPhone, nil
 }
 

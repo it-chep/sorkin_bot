@@ -8,12 +8,13 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
-	"io/ioutil"
+	"io"
 	"log/slog"
 	"net/http"
 	"sorkin_bot/internal/clients/sms_gateway/wau_sms/sms_dto"
 	"sorkin_bot/internal/config"
 	"time"
+	"unicode/utf8"
 )
 
 const (
@@ -40,15 +41,51 @@ func NewSender(logger *slog.Logger, appConfig config.Config) *Sender {
 	}
 }
 
+func calculateParts(message string) int {
+	runes := utf8.RuneCountInString(message)
+
+	var segmentSize int
+	if isUTF16(message) {
+		segmentSize = 67
+	} else {
+		segmentSize = 160
+		if runes > 160 {
+			segmentSize = 153
+		}
+	}
+
+	parts := runes / segmentSize
+	if runes%segmentSize > 0 {
+		parts += 1
+	}
+
+	if parts > 15 {
+		return 15
+	}
+	return parts
+}
+
+func isUTF16(s string) bool {
+	for _, r := range s {
+		if r > 0xFF {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *Sender) SendNotification(ctx context.Context, to []string, message string) error {
-	var basicResponse sms_dto.BasicResponse
+	var basicResponse []sms_dto.BasicResponse
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
+	parts := calculateParts(message)
+
 	dto := sms_dto.BasicRequest{
-		To:   to,
-		Text: message,
-		From: name,
+		To:    to,
+		Text:  message,
+		From:  name,
+		Parts: parts,
 	}
 
 	requestBody, err := json.Marshal(dto)
@@ -73,7 +110,7 @@ func (s *Sender) SendNotification(ctx context.Context, to []string, message stri
 
 	defer response.Body.Close()
 
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		s.logger.Error(fmt.Sprintf("error reading response: %s", err.Error()))
 		return err
