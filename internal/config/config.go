@@ -14,6 +14,7 @@ type Config struct {
 	HTTPServer    HTTPServer    `yaml:"http_server"`
 	Bot           BotConfig     `yaml:"bot"`
 	MIS           MISConfig     `yaml:"mis"`
+	WAUSMS        WAUSMSConfig  `yaml:"wau_sms"`
 }
 
 type HTTPServer struct {
@@ -22,6 +23,12 @@ type HTTPServer struct {
 	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
 	User        string        `yaml:"user" env-required:"true"`
 	Password    string        `yaml:"password" env-required:"true" env:"HTTP_SERVER_PASSWORD"`
+}
+
+type WAUSMSConfig struct {
+	URL      string `yaml:"url"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
 }
 
 type StorageConfig struct {

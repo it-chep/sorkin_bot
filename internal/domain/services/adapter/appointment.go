@@ -121,3 +121,19 @@ func (a *AppointmentServiceAdapter) cacheMyAppointments(user entity.User, appoin
 
 	return appointments
 }
+
+func (a *AppointmentServiceAdapter) GetAppointmentsForNotifying(ctx context.Context, dateFrom, dateTo string) ([]appointment.Appointment, error) {
+	_ = "adapter.GetAppointmentsForNotifying"
+	var appointments []appointment.Appointment
+
+	appointmentsDTO, err := a.gateway.GetAppointmentsForNotifying(ctx, dateFrom, dateTo)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, appointmentDTO := range appointmentsDTO {
+		appointments = append(appointments, appointmentDTO.ToDomain())
+	}
+
+	return appointments, nil
+}

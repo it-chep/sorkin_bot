@@ -27,6 +27,7 @@ type AppointmentsActions interface {
 	ConfirmAppointment(ctx context.Context, appointmentId int) (result bool, err error)
 	MyAppointments(ctx context.Context, patientId int, registrationTime string) (appointments []dto.AppointmentDTO, err error)
 	DetailAppointment(ctx context.Context, patientId, appointmentId int, registrationTime string) (appointmentDTO dto.AppointmentDTO, err error)
+	GetAppointmentsForNotifying(ctx context.Context, dateFrom, dateTo string) (appointments []dto.AppointmentDTO, err error)
 }
 
 type DoctorsActions interface {

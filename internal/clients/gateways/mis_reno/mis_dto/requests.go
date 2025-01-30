@@ -98,6 +98,12 @@ type GetAppointmentsRequest struct {
 	AppointmentId   int    `json:"id"`
 }
 
+type GetAppointmentsForNotifyRequest struct {
+	DateFrom string `json:"date_from"` //dd.mm.yyyy hh:mm
+	DateTo   string `json:"date_to"`   //dd.mm.yyyy hh:mm
+	StatusId string `json:"status_id"`
+}
+
 type GetPatientRequest struct {
 	Id              int    `json:"id"`
 	LastName        string `json:"last_name"`

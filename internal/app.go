@@ -2,17 +2,18 @@ package internal
 
 import (
 	"context"
-	"log"
 	"log/slog"
 	"net/http"
-	"os"
 	"sorkin_bot/internal/clients/bot_gateway"
 	"sorkin_bot/internal/clients/gateways/mis_reno"
+	"sorkin_bot/internal/clients/sms_gateway/wau_sms"
+	"sorkin_bot/internal/config"
 	"sorkin_bot/internal/controller"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
 	"sorkin_bot/internal/domain/services/adapter"
 	"sorkin_bot/internal/domain/services/appointment"
 	"sorkin_bot/internal/domain/services/message"
+	"sorkin_bot/internal/domain/services/notification"
 	"sorkin_bot/internal/domain/services/user"
 	"sorkin_bot/internal/domain/usecases/appointment/clean_draft_appointment"
 	"sorkin_bot/internal/domain/usecases/appointment/create_draft_appointment"
@@ -33,156 +34,119 @@ import (
 	"sorkin_bot/internal/storage/read_repo"
 	"sorkin_bot/internal/storage/write_repo"
 	"sorkin_bot/internal/worker_pool"
-	"sorkin_bot/internal/worker_pool/tasks"
+	"sorkin_bot/internal/worker_pool/tasks/check_speciallity_translation_task"
+	"sorkin_bot/internal/worker_pool/tasks/check_support_calls"
+	"sorkin_bot/internal/worker_pool/tasks/notify_appointment"
 	"sorkin_bot/pkg/client/postgres"
 	"sorkin_bot/pkg/client/telegram"
-	"time"
 )
 
-//const (
-//	RU    = "RU"
-//	PT_BR = "PT_BR"
-//	EN    = "EN"
-//)
-
-func (app *App) InitLogger(ctx context.Context) *App {
-	app.logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
-	return app
+type controllers struct {
+	telegramWebhookController *controller.RestController
 }
 
-func (app *App) InitPgxConn(ctx context.Context) *App {
-	client, err := postgres.NewClient(ctx, app.config.StorageConfig)
-	if err != nil {
-		log.Fatal(err)
+type services struct {
+	userService         user.UserService
+	appointmentService  appointment.AppointmentService
+	messageService      message.MessageService
+	notificationService *notification.Service
+}
+
+type useCases struct {
+	createUserUserCase                    create_user.CreateUserUseCase
+	changeLanguageUseCase                 change_language.ChangeLanguageUseCase
+	changeStatusUseCase                   change_user_status.ChangeStatusUseCase
+	saveMessageUseCase                    save_message_log.SaveMessageLogUseCase
+	updateUserPatientIdUseCase            update_user_patient_id.UpdateUserPatientIdUseCase
+	updateUserPhoneUseCase                update_user_phone.UpdateUserPhoneUseCase
+	updateUserHomeAddressUseCase          update_home_address.UpdateUserHomeAddressUseCase
+	updateUserThirdNameUseCase            update_user_full_name.UpdateUpdateFullNameUseCase
+	updateUserBirthDateUseCase            update_user_birth_date.UpdateUserBirthDateUseCase
+	createDraftAppointmentUseCase         create_draft_appointment.CreateDraftAppointmentUseCase
+	updateDraftAppointmentStatusUseCase   update_appointment_status.UpdateAppointmentStatusUseCase
+	updateDraftAppointmentIntFieldUseCase update_int_appointment_field.UpdateIntAppointmentFieldUseCase
+	updateDraftAppointmentStrFieldUseCase update_str_appointment_field.UpdateStrAppointmentFieldUseCase
+	updateDraftAppointmentDateUseCase     update_appointment_date.UpdateAppointmentDate
+	cleanDraftAppointmentUseCase          clean_draft_appointment.CleanDraftAppointmentUseCase
+	fastUpdateDraftAppointmentUseCase     fast_update_draft_appointment_use_case.FastUpdateDraftAppointmentUseCase
+}
+
+type storages struct {
+	readUserStorage              read_repo.UserStorage
+	readTranslationStorage       read_repo.TranslationStorage
+	readMessageStorage           read_repo.MessageStorage
+	readDraftAppointmentStorage  read_repo.AppointmentStorage
+	readLogsStorage              read_repo.TelegramMessageStorage
+	writeUserStorage             write_repo.UserStorage
+	writeTelegramStorage         write_repo.TelegramMessageStorage
+	writeDraftAppointmentStorage write_repo.AppointmentStorage
+}
+
+type periodicalTasks struct {
+	getTranslatedSpeciality check_speciallity_translation_task.Task
+	checkSupportTask        check_support_calls.Task
+	notifyAppointmentTask   notify_appointment.Task
+}
+
+type adapters struct {
+	appointmentServiceAdapter *adapter.AppointmentServiceAdapter
+}
+
+type gateways struct {
+	MisRenoGateway mis_reno.MisRenoGateway
+	WAUSMSGateway  *wau_sms.Sender
+}
+
+type App struct {
+	logger          *slog.Logger
+	config          *config.Config
+	controller      controllers
+	machine         *state_machine.UserStateMachine
+	services        services
+	storages        storages
+	useCases        useCases
+	gateways        gateways
+	adapters        adapters
+	botGateway      bot_gateway.BotGateway
+	periodicalTasks periodicalTasks
+	workerPool      worker_pool.WorkerPool
+	bot             telegram.Bot
+	pgxClient       postgres.Client
+	server          *http.Server
+}
+
+func NewApp(ctx context.Context) *App {
+	cfg := config.NewConfig()
+
+	app := &App{
+		config: cfg,
 	}
-	app.pgxClient = client
-	app.logger.Info("init pgxclient", app.pgxClient)
+
+	app.InitLogger(ctx).
+		InitPgxConn(ctx).
+		InitStorage(ctx).
+		InitGateways(ctx).
+		InitAdapters(ctx).
+		InitUseCases(ctx).
+		InitServices(ctx).
+		InitMachine(ctx).
+		InitTelegram(ctx).
+		InitBotGateway(ctx).
+		InitTasks(ctx).
+		InitWorkers(ctx).
+		InitControllers(ctx)
+
 	return app
 }
 
-func (app *App) InitStorage(ctx context.Context) *App {
-	app.storages.writeUserStorage = write_repo.NewUserStorage(app.pgxClient, app.logger)
-	app.storages.readUserStorage = read_repo.NewUserStorage(app.pgxClient, app.logger)
-	app.storages.readTranslationStorage = read_repo.NewTranslationRepo(app.pgxClient, app.logger)
-	app.storages.readMessageStorage = read_repo.NewReadMessageStorage(app.pgxClient, app.logger)
-	app.storages.readLogsStorage = read_repo.NewTelegramMessageStorage(app.pgxClient, app.logger)
-	app.storages.writeTelegramStorage = write_repo.NewTelegramMessageStorage(app.pgxClient, app.logger)
-	app.storages.readDraftAppointmentStorage = read_repo.NewAppointmentStorage(app.pgxClient, app.logger)
-	app.storages.writeDraftAppointmentStorage = write_repo.NewAppointmentStorage(app.pgxClient, app.logger)
-	return app
-}
+func (app *App) Run(ctx context.Context) error {
+	defer func() {
+		if r := recover(); r != nil {
+			app.logger.Error("application recovered from panic", slog.Any("error", r))
+		}
+	}()
 
-func (app *App) InitGateways(ctx context.Context) *App {
-	app.gateways.MisRenoGateway = mis_reno.NewMisRenoGateway(app.logger, http.Client{Timeout: time.Second * 10})
-	return app
-}
-
-func (app *App) InitTasks(ctx context.Context) *App {
-	app.periodicalTasks.getTranslatedSpeciality = tasks.NewGetTranslatedSpecialityTask(&app.services.appointmentService, app.services.userService, app.logger, app.bot)
-	app.periodicalTasks.checkSupportTask = tasks.NewCheckAdministrationHelpTask(app.logger, app.bot, app.services.messageService, app.services.userService)
-	return app
-}
-
-func (app *App) InitWorkers(ctx context.Context) *App {
-	workers := []worker_pool.Worker{
-		worker_pool.NewWorker(app.periodicalTasks.getTranslatedSpeciality, 24*time.Hour),
-		worker_pool.NewWorker(app.periodicalTasks.checkSupportTask, 5*time.Minute),
-	}
-	app.workerPool = worker_pool.NewWorkerPool(workers)
-	return app
-}
-
-func (app *App) InitUseCases(ctx context.Context) *App {
-	app.useCases.createUserUserCase = create_user.NewCreateUserUseCase(app.storages.writeUserStorage, app.logger)
-	app.useCases.changeLanguageUseCase = change_language.NewChangeLanguageUseCase(app.storages.writeUserStorage, app.logger)
-	app.useCases.changeStatusUseCase = change_user_status.NewChangeStatusUseCase(app.storages.writeUserStorage, app.logger)
-	app.useCases.saveMessageUseCase = save_message_log.NewSaveMessageLogUseCase(app.storages.writeTelegramStorage, app.logger)
-	app.useCases.updateUserPhoneUseCase = update_user_phone.NewUpdateUserPhoneUseCase(app.storages.writeUserStorage, app.logger)
-	app.useCases.updateUserPatientIdUseCase = update_user_patient_id.NewUpdateUserPatientIdUseCase(app.storages.writeUserStorage, app.logger)
-	app.useCases.updateUserBirthDateUseCase = update_user_birth_date.NewUpdateUserBirthDateUseCase(app.storages.writeUserStorage, app.logger)
-	app.useCases.updateUserThirdNameUseCase = update_user_full_name.NewUpdateFullNameUseCase(app.storages.writeUserStorage, app.logger)
-	app.useCases.createDraftAppointmentUseCase = create_draft_appointment.NewCreateDraftAppointmentUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
-	app.useCases.updateDraftAppointmentStatusUseCase = update_appointment_status.NewUpdateAppointmentStatusUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
-	app.useCases.updateDraftAppointmentIntFieldUseCase = update_int_appointment_field.NewUpdateIntAppointmentFieldUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
-	app.useCases.updateDraftAppointmentStrFieldUseCase = update_str_appointment_field.NewUpdateStrAppointmentFieldUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
-	app.useCases.updateUserHomeAddressUseCase = update_home_address.NewUpdateUserHomeAddressUseCase(app.storages.writeUserStorage, app.logger)
-	app.useCases.updateDraftAppointmentDateUseCase = update_appointment_date.NewUpdateAppointmentDate(app.storages.writeDraftAppointmentStorage, app.logger)
-	app.useCases.cleanDraftAppointmentUseCase = clean_draft_appointment.NewCleanDraftAppointmentUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
-	app.useCases.fastUpdateDraftAppointmentUseCase = fast_update_draft_appointment_use_case.NewFastUpdateDraftAppointmentUseCase(app.storages.writeDraftAppointmentStorage, app.logger)
-	return app
-}
-
-func (app *App) InitServices(ctx context.Context) *App {
-	app.services.userService = user.NewUserService(
-		app.useCases.createUserUserCase,
-		app.useCases.changeLanguageUseCase,
-		app.useCases.changeStatusUseCase,
-		app.useCases.updateUserPhoneUseCase,
-		app.useCases.updateUserHomeAddressUseCase,
-		app.useCases.updateUserPatientIdUseCase,
-		app.useCases.updateUserBirthDateUseCase,
-		app.useCases.updateUserThirdNameUseCase,
-		app.storages.readUserStorage,
-		app.logger,
-	)
-	// todo исправить
-	app.services.appointmentService = appointment.NewAppointmentService(
-		app.adapters.appointmentServiceAdapter,
-		app.storages.readTranslationStorage,
-		app.storages.readDraftAppointmentStorage,
-		app.logger,
-		app.services.userService,
-		app.useCases.createDraftAppointmentUseCase,
-		app.useCases.updateDraftAppointmentDateUseCase,
-		app.useCases.updateDraftAppointmentStatusUseCase,
-		app.useCases.updateDraftAppointmentIntFieldUseCase,
-		app.useCases.updateDraftAppointmentStrFieldUseCase,
-		app.useCases.cleanDraftAppointmentUseCase,
-		app.useCases.fastUpdateDraftAppointmentUseCase,
-	)
-	app.services.messageService = message.NewMessageService(
-		app.useCases.saveMessageUseCase,
-		app.storages.readMessageStorage,
-		app.storages.readLogsStorage,
-		app.logger,
-		app.storages.readTranslationStorage,
-	)
-
-	return app
-
-}
-
-func (app *App) InitMachine(ctx context.Context) *App {
-	app.machine = state_machine.NewUserStateMachine(app.services.userService)
-	return app
-}
-
-func (app *App) InitTelegram(ctx context.Context) *App {
-	app.bot = *telegram.NewTelegramBot(*app.config, app.logger, app.services.messageService)
-	return app
-}
-
-func (app *App) InitBotGateway(ctx context.Context) *App {
-	app.botGateway = bot_gateway.NewBotGateway(app.logger, app.bot, app.services.messageService, &app.services.appointmentService)
-	return app
-}
-
-func (app *App) InitAdapters(ctx context.Context) *App {
-	app.adapters.appointmentServiceAdapter = adapter.NewAppointmentServiceAdapter(
-		&app.gateways.MisRenoGateway,
-	)
-	return app
-}
-
-func (app *App) InitControllers(ctx context.Context) *App {
-	app.controller.telegramWebhookController = controller.NewRestController(*app.config, app.logger, app.bot, app.machine, app.services.userService, &app.services.appointmentService, app.services.messageService, app.botGateway)
-	app.controller.telegramWebhookController.InitController()
-
-	app.server = &http.Server{
-		Addr:         app.config.HTTPServer.Address,
-		Handler:      app.controller.telegramWebhookController,
-		ReadTimeout:  2 * time.Minute,
-		WriteTimeout: 10 * time.Second,
-	}
-	return app
+	app.logger.Info("start server")
+	go app.workerPool.Run(ctx)
+	return app.server.ListenAndServe()
 }

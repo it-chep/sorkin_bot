@@ -42,6 +42,7 @@ func (c TextBotMessage) Execute(ctx context.Context, messageDTO tg.MessageDTO) {
 		// todo
 		return
 	}
+
 	if userEntity.GetPatientId() == nil {
 		switch *userEntity.GetState() {
 		case state_machine.GetPhone:

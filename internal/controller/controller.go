@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"sorkin_bot/internal/controller/api"
 	botapi "sorkin_bot/internal/controller/bot"
 	"sorkin_bot/internal/domain/entity/user/state_machine"
 	"sorkin_bot/pkg/client/telegram"
@@ -20,6 +21,7 @@ type RestController struct {
 	appointmentService appointmentService
 	messageService     messageService
 	botGateway         botGateway
+	apiController      apiController
 }
 
 func NewRestController(
@@ -30,6 +32,7 @@ func NewRestController(
 	userService userService,
 	appointmentService appointmentService,
 	messageService messageService,
+	notificationService notificationService,
 	botGateway botGateway,
 ) *RestController {
 	router := gin.New()
@@ -43,15 +46,24 @@ func NewRestController(
 		cfg, logger, bot, machine, userService, appointmentService, messageService, botGateway,
 	)
 
+	apiWebhookController := api.NewController(
+		logger,
+		notificationService,
+	)
+
 	return &RestController{
 		router:           router,
 		cfg:              cfg,
 		logger:           logger,
 		botApiController: botApiController,
+		apiController:    apiWebhookController,
 	}
 }
 
 func (r RestController) InitController() {
+	webhookGroup := r.router.Group("/webhook_event/")
+	webhookGroup.POST("cancel_appointment/", r.apiController.CancelAppointmentWebhook)
+
 	r.router.POST("/"+r.cfg.Bot.Token+"/", r.botApiController.BotWebhookHandler)
 }
 

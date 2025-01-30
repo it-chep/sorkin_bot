@@ -7,24 +7,23 @@ import (
 )
 
 type Worker struct {
-	interval time.Duration
-	task     Task
+	task Task
 }
 
-func NewWorker(task Task, interval time.Duration) Worker {
+func NewWorker(task Task) Worker {
 	return Worker{
-		task:     task,
-		interval: interval,
+		task: task,
 	}
 }
 
 func (w Worker) Start(ctx context.Context) {
 LOOP:
 	for {
+		now := time.Now().UTC()
 		select {
 		case <-ctx.Done():
 			break LOOP
-		case <-time.After(w.interval):
+		case <-time.After(w.task.NextSchedule(now).Sub(now)):
 			if err := w.task.Process(ctx); err != nil {
 				log.Printf("task process error: %v", err) // todo: log
 			}

@@ -254,3 +254,28 @@ func (mg *MisRenoGateway) DetailAppointment(ctx context.Context, patientId, appo
 	}
 	return appointmentDTO, nil
 }
+
+func (mg *MisRenoGateway) GetAppointmentsForNotifying(ctx context.Context, dateFrom, dateTo string) (appointments []dto.AppointmentDTO, err error) {
+	op := "sorkin_bot.internal.clients.gateways.mis_reno.appointment.GetAppointmentsForNotifying"
+
+	var response mis_dto.GetAppointmentsResponse
+
+	var request = mis_dto.GetAppointmentsForNotifyRequest{
+		DateFrom: dateFrom,
+		DateTo:   dateTo,
+		StatusId: mis_dto.ActiveStatusIDs,
+	}
+
+	responseBody := mg.sendToMIS(ctx, mis_dto.GetAppointmentsMethod, JsonMarshaller(request, op, mg.logger))
+
+	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)
+	if err != nil {
+		return appointments, err
+	}
+
+	for _, appointment := range response.Data {
+		appointments = append(appointments, appointment.ToDTO())
+	}
+
+	return appointments, nil
+}

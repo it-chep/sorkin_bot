@@ -10,10 +10,17 @@ type CreatedPatientDTO struct {
 	PatientDTO
 }
 
-func NewCreatePatientDTO(patientId, number int) CreatedPatientDTO {
+func NewCreatePatientDTO(patientId, number int, age, gender, mobile, email, phone string) CreatedPatientDTO {
 	return CreatedPatientDTO{
 		PatientID: patientId,
 		Number:    number,
+		Age:       age,
+		Gender:    gender,
+		Mobile:    mobile,
+		Email:     email,
+		PatientDTO: PatientDTO{
+			Phone: phone,
+		},
 	}
 }
 
