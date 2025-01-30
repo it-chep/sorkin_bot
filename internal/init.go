@@ -37,7 +37,7 @@ import (
 	"sorkin_bot/internal/worker_pool"
 	"sorkin_bot/internal/worker_pool/tasks/check_speciallity_translation_task"
 	"sorkin_bot/internal/worker_pool/tasks/check_support_calls"
-	notify_appointment "sorkin_bot/internal/worker_pool/tasks/notify_appointment"
+	"sorkin_bot/internal/worker_pool/tasks/notify_appointment"
 	"sorkin_bot/pkg/client/postgres"
 	"sorkin_bot/pkg/client/telegram"
 	"time"
