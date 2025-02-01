@@ -19,6 +19,8 @@ type AppointmentDTO struct {
 	DateUpdated      string `json:"date_updated"` //dd.mm.yyyy hh:mm
 	Status           string `json:"status"`
 	StatusId         int    `json:"status_id"`
+	MovedFrom        int    `json:"moved_from"`
+	MovedTo          int    `json:"moved_to"`
 }
 
 type AppointmentRequest struct {
@@ -29,7 +31,7 @@ type AppointmentRequest struct {
 
 func (a *AppointmentDTO) ToDomain() appointment.Appointment {
 	return appointment.NewAppointment(
-		a.Id, a.ClinicId, a.DoctorId, a.PatientId, a.StatusId, 0, 0, 0,
+		a.Id, a.ClinicId, a.DoctorId, a.PatientId, a.StatusId, a.MovedTo, a.MovedFrom, 0,
 		a.TimeStart, a.TimeEnd, a.Clinic, a.Doctor, a.PatientName, a.PatientBirthDate, a.PatientGender,
 		a.PatientPhone, "", a.DateCreated, a.DateUpdated, a.Status, "",
 	)

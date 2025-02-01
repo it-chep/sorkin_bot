@@ -52,8 +52,8 @@ func (t Task) Process(ctx context.Context) error {
 	for _, appointmentEntity := range appointments {
 		t.logger.Info(fmt.Sprintf(
 			"fake send to %s, appointment id %d",
-			appointmentEntity.GetPatientPhone(),
-			appointmentEntity.GetAppointmentId()),
+			appointmentEntity.PatientPhone(),
+			appointmentEntity.Id()),
 		)
 
 		err = t.notificationService.NotifySoonAppointment(ctx, appointmentEntity)

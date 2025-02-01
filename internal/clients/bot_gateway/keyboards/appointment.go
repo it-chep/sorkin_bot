@@ -60,7 +60,7 @@ func (k Keyboards) ConfigureGetMyAppointmentsMessage(
 			}
 			btn := tgbotapi.NewInlineKeyboardButtonData(
 				fmt.Sprintf("%s: %s - %s", appointmentEntity.GetDate(), appointmentEntity.GetTimeStartShort(), appointmentEntity.GetTimeEndShort()),
-				fmt.Sprintf("appointmentId_%d", appointmentEntity.GetAppointmentId()),
+				fmt.Sprintf("appointmentId_%d", appointmentEntity.Id()),
 			)
 			row := tgbotapi.NewInlineKeyboardRow(btn)
 			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
@@ -70,7 +70,7 @@ func (k Keyboards) ConfigureGetMyAppointmentsMessage(
 		for _, appointmentEntity := range appointments[offset:] {
 			btn := tgbotapi.NewInlineKeyboardButtonData(
 				fmt.Sprintf("%s: %s - %s", appointmentEntity.GetDate(), appointmentEntity.GetTimeStartShort(), appointmentEntity.GetTimeEndShort()),
-				fmt.Sprintf("appointmentId_%d", appointmentEntity.GetAppointmentId()),
+				fmt.Sprintf("appointmentId_%d", appointmentEntity.Id()),
 			)
 			row := tgbotapi.NewInlineKeyboardRow(btn)
 			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
@@ -124,10 +124,10 @@ func (k Keyboards) ConfigureAppointmentDetailMessage(ctx context.Context, userEn
 	}
 
 	// формируем клавиатуру действий с онлайн записью
-	cancelAppointmentButton := tgbotapi.NewInlineKeyboardButtonData(cancelText, fmt.Sprintf("cancel_%d", appointmentEntity.GetAppointmentId()))
-	rescheduleAppointmentButton := tgbotapi.NewInlineKeyboardButtonData(rescheduleText, fmt.Sprintf("reschedule_%d", appointmentEntity.GetAppointmentId()))
+	cancelAppointmentButton := tgbotapi.NewInlineKeyboardButtonData(cancelText, fmt.Sprintf("cancel_%d", appointmentEntity.Id()))
+	rescheduleAppointmentButton := tgbotapi.NewInlineKeyboardButtonData(rescheduleText, fmt.Sprintf("reschedule_%d", appointmentEntity.Id()))
 
-	docBtn := tgbotapi.NewInlineKeyboardButtonData(docText, fmt.Sprintf("doc_info_%d", appointmentEntity.GetDoctorId()))
+	docBtn := tgbotapi.NewInlineKeyboardButtonData(docText, fmt.Sprintf("doc_info_%d", appointmentEntity.DoctorId()))
 	exitBtn := tgbotapi.NewInlineKeyboardButtonData(exitText, "exit")
 	keyboardRowDoctor := tgbotapi.NewInlineKeyboardRow(docBtn)
 	keyboardRowCancel := tgbotapi.NewInlineKeyboardRow(cancelAppointmentButton, rescheduleAppointmentButton)

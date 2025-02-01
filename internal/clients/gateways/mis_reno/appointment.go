@@ -279,3 +279,22 @@ func (mg *MisRenoGateway) GetAppointmentsForNotifying(ctx context.Context, dateF
 
 	return appointments, nil
 }
+
+func (mg *MisRenoGateway) GetAppointmentByID(ctx context.Context, appointmentID int) (appointment dto.AppointmentDTO, err error) {
+	op := "sorkin_bot.internal.clients.gateways.mis_reno.appointment.GetAppointmentsForNotifying"
+
+	var response mis_dto.GetAppointmentsResponse
+
+	var request = mis_dto.GetAppointmentByIDRequest{
+		AppointmentId: appointmentID,
+	}
+
+	responseBody := mg.sendToMIS(ctx, mis_dto.GetAppointmentsMethod, JsonMarshaller(request, op, mg.logger))
+
+	response, err = JsonUnMarshaller(response, responseBody, op, mg.logger)
+	if err != nil {
+		return dto.AppointmentDTO{}, err
+	}
+
+	return response.Data[0].ToDTO(), nil
+}
