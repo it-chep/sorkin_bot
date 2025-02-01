@@ -3,7 +3,7 @@ package notification
 var visitReminderTemplate = `Visit Reminder
 %s
 
-Dear, %s .
+Dear %s .
 Please be reminded that you have an appointment on %s, at %s.
 
 %s.
@@ -19,20 +19,17 @@ Please do not reply to this message, it was sent automatically.`
 var cancelAppointmentTemplate = `Cancellation of visit
 %s
 
-Dear, %s .
+Dear %s .
 Your visit's on %s, at %s been canceled.
 
 %s.
 The doctor is %s.
 
-Address: %s
 Phone number for inquiries: %s
-
-https://maps.app.goo.gl/USF1fBXPYA4rWGg88 
 
 Please do not reply to this message, it was sent automatically.`
 
-var createAppointmentTemplate = `Dear, %s .
+var createAppointmentTemplate = `Dear %s .
 You have an appointment on %s, at %s.
 
 %s.
@@ -42,6 +39,8 @@ Address: %s
 Phone number for inquiries: %s
 
 https://maps.app.goo.gl/USF1fBXPYA4rWGg88 
+
+If there are any changes, write to Whatsapp: https://wa.me/+351915013427 or Telegram: https://t.me/Unitedmedclinic
 
 Please do not reply to this message, it was sent automatically.`
 
