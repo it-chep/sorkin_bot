@@ -19,7 +19,12 @@ func (s *Service) NotifyCancelAppointment(ctx context.Context, appointment appoi
 		return err
 	}
 
-	data, ok := clinicDataMap[appointment.GetClinicId()]
+	// Если визит перенесен, то выходим
+	if appointment.MovedToID() != 0 {
+		return nil
+	}
+
+	data, ok := clinicDataMap[appointment.ClinicId()]
 	if !ok {
 		return errors.New("invalid clinic id")
 	}
@@ -40,14 +45,14 @@ func (s *Service) NotifyCreateAppointment(ctx context.Context, appointment appoi
 		return err
 	}
 
-	data, ok := clinicDataMap[appointment.GetClinicId()]
+	data, ok := clinicDataMap[appointment.ClinicId()]
 	if !ok {
 		return errors.New("invalid clinic id")
 	}
 
 	createAppointmentMessage := fmt.Sprintf(
-		createAppointmentTemplate, appointment.GetPatientName(), appointment.GetStringDateStart(),
-		appointment.GetStringTimeStart(), appointment.GetClinic(), appointment.GetDoctor(), data.address, data.phone,
+		createAppointmentTemplate, appointment.PatientName(), appointment.GetStringDateStart(),
+		appointment.GetStringTimeStart(), appointment.Clinic(), appointment.Doctor(), data.address, data.phone,
 	)
 
 	err = s.notifyGateway.SendNotification(ctx, []string{patientPhone}, createAppointmentMessage)
@@ -64,7 +69,7 @@ func (s *Service) NotifySoonAppointment(ctx context.Context, appointment appoint
 		return err
 	}
 
-	data, ok := clinicDataMap[appointment.GetClinicId()]
+	data, ok := clinicDataMap[appointment.ClinicId()]
 	if !ok {
 		return errors.New("invalid clinic id")
 	}
@@ -87,12 +92,14 @@ func (s *Service) cleanPhoneNumber(phone string) string {
 }
 
 func (s *Service) getPatientPhone(ctx context.Context, appointment appointment.Appointment) (string, error) {
-	patientPhone := appointment.GetPatientPhone()
+	patientPhone := appointment.PatientPhone()
+
 	if len(patientPhone) == 0 {
-		patientDTO, err := s.misGateway.GetPatientById(ctx, appointment.GetPatientId())
+		patientDTO, err := s.misGateway.GetPatientById(ctx, appointment.PatientId())
 		if err != nil {
 			return "", err
 		}
+
 		patientPhone = patientDTO.Phone
 	}
 
@@ -105,11 +112,11 @@ func (s *Service) prepareMessage(template string, appointment appointment.Appoin
 	return fmt.Sprintf(
 		template,
 		appointment.GetStringDateTimeStart(),
-		appointment.GetPatientName(),
+		appointment.PatientName(),
 		appointment.GetStringDateStart(),
 		appointment.GetStringTimeStart(),
-		appointment.GetClinic(),
-		appointment.GetDoctor(),
+		appointment.Clinic(),
+		appointment.Doctor(),
 		clinic.address,
 		clinic.phone,
 	)

@@ -7,6 +7,14 @@ import (
 	"time"
 )
 
+type Status = int
+
+const (
+	ActiveAppointment     Status = 1
+	RescheduleAppointment Status = 2
+	CancelAppointment     Status = 5
+)
+
 type Appointment struct {
 	id               int
 	timeStart        string
@@ -60,11 +68,15 @@ func NewAppointment(id, clinicId, doctorId, patientId, statusId, movedTo, movedF
 	}
 }
 
-func (a Appointment) GetAppointmentId() int {
+func (a Appointment) Id() int {
 	return a.id
 }
 
-func (a Appointment) GetDoctorId() int {
+func (a Appointment) MovedToID() int {
+	return a.movedTo
+}
+
+func (a Appointment) DoctorId() int {
 	return a.doctorId
 }
 
@@ -73,23 +85,31 @@ func (a Appointment) GetDate() string {
 	return date
 }
 
-func (a Appointment) GetClinicId() int {
+func (a Appointment) IsCanceled() bool {
+	if a.statusId == CancelAppointment {
+		return true
+	}
+
+	return false
+}
+
+func (a Appointment) ClinicId() int {
 	return a.clinicId
 }
 
-func (a Appointment) GetDoctor() string {
+func (a Appointment) Doctor() string {
 	return a.doctor
 }
 
-func (a Appointment) GetPatientName() string {
+func (a Appointment) PatientName() string {
 	return a.patientName
 }
 
-func (a Appointment) GetClinic() string {
+func (a Appointment) Clinic() string {
 	return a.clinic
 }
 
-func (a Appointment) GetPatientId() int {
+func (a Appointment) PatientId() int {
 	return a.patientId
 }
 
@@ -146,7 +166,7 @@ func (a Appointment) GetDateTimeStart() (time.Time, error) {
 	return time.Date(year, time.Month(month), day, hour, minute, 0, 0, location), nil
 }
 
-func (a Appointment) GetPatientPhone() string {
+func (a Appointment) PatientPhone() string {
 	return a.patientPhone
 }
 

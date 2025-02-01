@@ -26,7 +26,7 @@ func (c *CallbackBotMessage) getAppointmentDetail(ctx context.Context, messageDT
 	}
 
 	appointmentEntity := c.appointmentService.GetAppointmentDetail(ctx, userEntity, appointmentId)
-	if appointmentEntity.GetAppointmentId() != 0 {
+	if appointmentEntity.Id() != 0 {
 		c.botGateway.SendDetailAppointmentMessage(ctx, userEntity, messageDTO, appointmentEntity)
 	} else {
 		c.botGateway.SendEmptyAppointments(ctx, userEntity, messageDTO)
