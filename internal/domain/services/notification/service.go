@@ -20,7 +20,7 @@ func (s *Service) NotifyCancelAppointment(ctx context.Context, appointment appoi
 	}
 
 	// Если визит перенесен, то выходим
-	if appointment.MovedToID() != 0 {
+	if appointment.MovedToID() != 0 || appointment.MovedFromID() != 0 {
 		return nil
 	}
 
@@ -43,6 +43,11 @@ func (s *Service) NotifyCreateAppointment(ctx context.Context, appointment appoi
 	patientPhone, err := s.getPatientPhone(ctx, appointment)
 	if err != nil {
 		return err
+	}
+
+	// Если визит перенесен, то выходим
+	if appointment.MovedToID() != 0 || appointment.MovedFromID() != 0 {
+		return nil
 	}
 
 	data, ok := clinicDataMap[appointment.ClinicId()]
