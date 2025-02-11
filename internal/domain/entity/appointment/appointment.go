@@ -76,6 +76,10 @@ func (a Appointment) MovedToID() int {
 	return a.movedTo
 }
 
+func (a Appointment) MovedFromID() int {
+	return a.movedFrom
+}
+
 func (a Appointment) DoctorId() int {
 	return a.doctorId
 }
