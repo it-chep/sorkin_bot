@@ -47,23 +47,12 @@ func (t Task) Process(ctx context.Context) error {
 		return err
 	}
 
-	t.logger.Info("Processing appointments", time.Now())
-
 	for _, appointmentEntity := range appointments {
-		t.logger.Info(fmt.Sprintf(
-			"fake send to %s, appointment id %d",
-			appointmentEntity.PatientPhone(),
-			appointmentEntity.Id()),
-		)
-
 		err = t.notificationService.NotifySoonAppointment(ctx, appointmentEntity)
 		if err != nil {
 			t.notifyErrorTelegramAdmin(int64(adminId), err)
 			return err
 		}
-
-		// fake break because spam
-		break
 	}
 
 	return nil

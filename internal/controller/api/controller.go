@@ -108,6 +108,8 @@ func parseFormEncodedBody(body string) (*webhook_events.AppointmentRequest, erro
 	data.PatientPhone = decoded.Get("data[patient_phone]")
 	data.MovedFrom, _ = strconv.Atoi(decoded.Get("data[moved_from]"))
 	data.MovedTo, _ = strconv.Atoi(decoded.Get("data[moved_to]"))
+	data.IsOutside, _ = strconv.Atoi(decoded.Get("data[is_outside]"))
+	data.IsTelemedicine, _ = strconv.Atoi(decoded.Get("data[is_telemedicine]"))
 
 	request.Data = data
 
