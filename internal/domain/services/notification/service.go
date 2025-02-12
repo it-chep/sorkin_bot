@@ -8,6 +8,14 @@ import (
 	"strings"
 )
 
+type NotificationType = int
+
+const (
+	CreateAppointment NotificationType = iota
+	CancelAppointment
+	RemindAboutAppointment
+)
+
 type Service struct {
 	notifyGateway notifyGateway
 	misGateway    misGateway
@@ -55,17 +63,85 @@ func (s *Service) NotifyCreateAppointment(ctx context.Context, appointment appoi
 		return errors.New("invalid clinic id")
 	}
 
-	createAppointmentMessage := fmt.Sprintf(
-		createAppointmentTemplate, appointment.PatientName(), appointment.GetStringDateStart(),
-		appointment.GetStringTimeStart(), appointment.Clinic(), appointment.Doctor(), data.address, data.phone,
-	)
+	message := s.getMessage(CreateAppointment, appointment, data)
 
-	err = s.notifyGateway.SendNotification(ctx, []string{patientPhone}, createAppointmentMessage)
+	err = s.notifyGateway.SendNotification(ctx, []string{patientPhone}, message)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (s *Service) getMessage(notificationType NotificationType, appointment appointment.Appointment, data clinicData) string {
+	if appointment.IsOutside() {
+		switch notificationType {
+		case CreateAppointment:
+			return fmt.Sprintf(
+				CreateHouseCallAppointmentTemplate,
+				appointment.PatientName(),
+				appointment.GetStringDateStart(),
+				appointment.Doctor(),
+				data.phone,
+			)
+		case RemindAboutAppointment:
+			return fmt.Sprintf(
+				HomeVisitReminderTemplate,
+				appointment.PatientName(),
+				appointment.GetStringDateStart(),
+				appointment.Doctor(),
+				data.phone,
+			)
+		}
+	}
+
+	if appointment.IsTelemedicine() {
+		switch notificationType {
+		case CreateAppointment:
+			return fmt.Sprintf(
+				CreateOnlineAppointmentTemplate,
+				appointment.PatientName(),
+				appointment.GetStringDateStart(),
+				appointment.GetStringTimeStart(),
+				appointment.Doctor(),
+				data.phone,
+			)
+		case RemindAboutAppointment:
+			return fmt.Sprintf(
+				OnlineVisitReminderTemplate,
+				appointment.PatientName(),
+				appointment.GetStringDateStart(),
+				appointment.GetStringTimeStart(),
+				appointment.Doctor(),
+				data.phone,
+			)
+		}
+	}
+
+	switch notificationType {
+	case CreateAppointment:
+		return fmt.Sprintf(
+			CreateInClinicAppointmentTemplate,
+			appointment.PatientName(),
+			appointment.GetStringDateStart(),
+			appointment.GetStringTimeStart(),
+			appointment.Doctor(),
+			data.address,
+			data.phone,
+		)
+	case RemindAboutAppointment:
+		return fmt.Sprintf(
+			InClinicVisitReminderTemplate,
+			appointment.PatientName(),
+			appointment.GetStringDateStart(),
+			appointment.GetStringTimeStart(),
+			appointment.Doctor(),
+			data.address,
+			data.phone,
+		)
+	}
+
+	return ""
 }
 
 func (s *Service) NotifySoonAppointment(ctx context.Context, appointment appointment.Appointment) error {
@@ -79,9 +155,9 @@ func (s *Service) NotifySoonAppointment(ctx context.Context, appointment appoint
 		return errors.New("invalid clinic id")
 	}
 
-	soonAppointmentMessage := s.prepareMessage(visitReminderTemplate, appointment, data)
+	message := s.getMessage(RemindAboutAppointment, appointment, data)
 
-	err = s.notifyGateway.SendNotification(ctx, []string{patientPhone}, soonAppointmentMessage)
+	err = s.notifyGateway.SendNotification(ctx, []string{patientPhone}, message)
 	if err != nil {
 		return err
 	}

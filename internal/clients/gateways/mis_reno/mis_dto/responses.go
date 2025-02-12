@@ -176,6 +176,8 @@ type MisAppointment struct {
 	Source           string `json:"source"`
 	MovedTo          int    `json:"moved_to"`
 	MovedFrom        int    `json:"moved_from"`
+	IsTelemedicine   bool   `json:"is_telemedicine"`
+	IsOutside        bool   `json:"is_outside"`
 }
 
 type GetAppointmentsResponse struct {
@@ -186,10 +188,20 @@ type GetAppointmentsResponse struct {
 }
 
 func (a MisAppointment) ToDTO() dto.AppointmentDTO {
+	outside := 0
+	if a.IsOutside {
+		outside = 1
+	}
+
+	telemedicine := 0
+	if a.IsTelemedicine {
+		telemedicine = 1
+	}
+
 	return dto.NewAppointmentDTO(
-		a.Id, a.ClinicId, a.DoctorId, a.PatientId, a.StatusId, a.MovedTo, a.MovedFrom, a.ConfirmStatus, a.TimeStart, a.TimeEnd, a.Clinic, a.Doctor,
-		a.PatientName, a.PatientBirthDate, a.PatientGender, a.PatientPhone, a.PatientEmail, a.DateCreated, a.DateUpdated,
-		a.Status, a.Source,
+		a.Id, a.ClinicId, a.DoctorId, a.PatientId, a.StatusId, a.MovedTo, a.MovedFrom, a.ConfirmStatus, outside,
+		telemedicine, a.TimeStart, a.TimeEnd, a.Clinic, a.Doctor, a.PatientName, a.PatientBirthDate,
+		a.PatientGender, a.PatientPhone, a.PatientEmail, a.DateCreated, a.DateUpdated, a.Status, a.Source,
 	)
 }
 

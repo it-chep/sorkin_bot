@@ -35,11 +35,13 @@ type Appointment struct {
 	statusId         int
 	confirmStatus    int
 	source           string
+	isOutside        int
+	isTelemedicine   int
 	movedTo          int
 	movedFrom        int
 }
 
-func NewAppointment(id, clinicId, doctorId, patientId, statusId, movedTo, movedFrom, confirmStatus int,
+func NewAppointment(id, clinicId, doctorId, patientId, statusId, movedTo, movedFrom, confirmStatus, isOutside, isTelemedicine int,
 	timeStart, timeEnd, clinic, doctor, patientName, patientBirthDate, patientGender,
 	patientPhone, patientEmail, dateCreated, dateUpdated, status, source string,
 ) Appointment {
@@ -65,6 +67,8 @@ func NewAppointment(id, clinicId, doctorId, patientId, statusId, movedTo, movedF
 		source:           source,
 		movedTo:          movedTo,
 		movedFrom:        movedFrom,
+		isOutside:        isOutside,
+		isTelemedicine:   isTelemedicine,
 	}
 }
 
@@ -82,6 +86,14 @@ func (a Appointment) MovedFromID() int {
 
 func (a Appointment) DoctorId() int {
 	return a.doctorId
+}
+
+func (a Appointment) IsOutside() bool {
+	return a.isOutside != 0
+}
+
+func (a Appointment) IsTelemedicine() bool {
+	return a.isTelemedicine != 0
 }
 
 func (a Appointment) GetDate() string {
