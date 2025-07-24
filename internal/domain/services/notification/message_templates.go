@@ -7,7 +7,9 @@ We would like to remind you that you have an appointment on %s, at %s with the d
 Address: %s
 https://maps.app.goo.gl/USF1fBXPYA4rWGg88 
 
-If there are any changes, text us via  Whatsapp: https://wa.me/+351915013427 or Telegram: https://t.me/Unitedmedclinic.
+You can confirm or cancel your appointment by clicking the button below
+https://a.umedclinic.pt/%s
+
 Or call us: %s
 
 Best regards,
@@ -21,7 +23,9 @@ We would like to remind you that you have an online consultation on %s, at %s wi
 
 Before the consultation you will receive a link to join it to your email.
 
-If there are any changes, text us via  Whatsapp: https://wa.me/+351915013427 or Telegram: https://t.me/Unitedmedclinic.
+You can confirm or cancel your appointment by clicking the button below
+https://a.umedclinic.pt/%s
+
 Or call us: %s
 
 Best regards,
@@ -33,7 +37,9 @@ var HomeVisitReminderTemplate = `Dear %s,
 
 We would like to remind you that you have a home visit on %s, with the doctor %s
 
-If there are any changes, text us via  Whatsapp: https://wa.me/+351915013427 or Telegram: https://t.me/Unitedmedclinic.
+You can confirm or cancel your appointment by clicking the button below
+https://a.umedclinic.pt/%s
+
 Or call us: %s
 
 Best regards,
